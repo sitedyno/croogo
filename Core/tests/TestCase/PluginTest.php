@@ -372,7 +372,9 @@ class PluginTest extends TestCase
      */
     public function testPath($plugin, $path, $expectedException = null)
     {
-        $this->setExpectedException($expectedException);
+        if ($expectedException !== null) {
+            $this->expectException($expectedException);
+        }
 
         $this->assertEquals($path, Plugin::path($plugin));
     }
