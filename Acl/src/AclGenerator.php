@@ -28,7 +28,12 @@ class AclGenerator extends AclExtras
         if (!isset($this->Shell)) {
             $msg = preg_replace('/\<\/?\w+\>/', null, $msg);
         }
-        return parent::out($msg);
+
+        if (isset($this->Shell) || isset($this->Controller)) {
+            return parent::out($msg);
+        } else {
+            \Cake\Log\Log::warning($msg);
+        }
     }
 
     protected function _checkMethods($className, $controllerName, $node, $pluginPath = null, $prefixPath = null)
