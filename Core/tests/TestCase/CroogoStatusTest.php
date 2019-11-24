@@ -9,6 +9,8 @@ use Croogo\Core\TestSuite\CroogoTestCase;
 
 class CroogoStatusTest extends CroogoTestCase implements EventListenerInterface
 {
+    public $CroogoStatus;
+
     public function implementedEvents()
     {
         return [
@@ -23,7 +25,7 @@ class CroogoStatusTest extends CroogoTestCase implements EventListenerInterface
  */
     public function onCroogoStatusSetup($event)
     {
-        $event->data['publishing'][4] = 'Added by event handler';
+        $event->setData('publishing', [4 => 'Added by event handler']);
     }
 
 /**
@@ -86,14 +88,16 @@ class CroogoStatusTest extends CroogoTestCase implements EventListenerInterface
  */
     public function modifyStatus($event)
     {
-        switch ($event->data['accessType']) {
+        switch ($event->getData('accessType')) {
             case 'webmaster':
-                if (!in_array(Status::PREVIEW, $event->data['values'])) {
-                    $event->data['values'][] = Status::PREVIEW;
+                if (!in_array(Status::PREVIEW, $event->getData('values'))) {
+                    $values = $event->getData('values');
+                    $values[] = Status::PREVIEW;
+                    $event->setData('values', $values);
                 }
                 break;
             default:
-                $event->data['values'] = [null];
+                $event->setData('values', [null]);
                 break;
         }
     }
