@@ -55,6 +55,9 @@ Cake\Core\Configure::write('App', [
 ]);
 Cake\Core\Configure::write('debug', true);
 
+// silence deprecation errors until error handling is setup by the app
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
 $tmpDirectory = new \Cake\Filesystem\Folder(TMP);
 $tmpDirectory->delete(TMP . 'cache');
 $tmpDirectory->create(TMP . 'cache/models', 0777);
