@@ -56,7 +56,6 @@ class NodesControllerTest extends IntegrationTestCase
         $installer->controller = false;
         $installer->setupAcos();
         $installer->setupGrants();
-        $installer->seedTables('Nodes');
 
         //$this->Nodes = TableRegistry::get('Croogo/Nodes.Nodes');
     }
