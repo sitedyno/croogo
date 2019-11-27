@@ -18,6 +18,8 @@ class InstallManager
 
     const DATASOURCE_REGEX = "/(\'Datasources'\s\=\>\s\[\n\s*\'default\'\s\=\>\s\[\n\X*\'__FIELD__\'\s\=\>\s\').*(\'\,)(?=\X*\'test\'\s\=\>\s)/";
 
+    const TEST_DATASOURCE_REGEX = "/(\'Datasources'\s\=\>\s\[\n\s*\'test\'\s\=\>\s\[\n\X*\'__FIELD__\'\s\=\>\s\').*(\'\,)(?=\X*\'Log\'\s\=\>\s)/";
+
     use LogTrait;
 
     /**

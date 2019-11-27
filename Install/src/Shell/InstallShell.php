@@ -89,6 +89,11 @@ class InstallShell extends Shell
                 'short' => 't',
                 'required' => true,
             ])
+            ->addOption('test-datasource', [
+                'help' => 'Test Database Driver',
+                'short' => 'e',
+                'required' => false,
+            ])
             //->addOption('prefix', [
                 //'help' => 'Table Prefix',
                 //'short' => 'x',
