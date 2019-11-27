@@ -6,7 +6,9 @@
  */
 namespace Croogo\Install\Test\Fixture;
 
-class InstallUserFixture extends CakeTestFixture
+use Croogo\Core\TestSuite\CroogoTestFixture;
+
+class InstallUserFixture extends CroogoTestFixture
 {
 
 /**
