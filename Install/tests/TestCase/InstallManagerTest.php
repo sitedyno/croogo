@@ -54,11 +54,68 @@ HEREDOC;
 
     public function datasourceTextProvider()
     {
-        yield [];
+        return [
+            [
+                "
+    'Datasources' => [
+        'default' => [
+            'host' => 'localhost',
+        'test' => [
+                ",
+                'host',
+                true
+            ],
+            [
+                "
+    'Datasources' => [
+        'default' => [
+            'username' => 'my_app',
+        'test' => [
+                ",
+                'username',
+                true
+            ],
+            [
+                "
+    'Datasources' => [
+        'default' => [
+            'password' => 'secret',
+        'test' => [
+                ",
+                'password',
+                true
+            ],
+            [
+                "
+    'Datasources' => [
+        'default' => [
+            'database' => 'my_app',
+        'test' => [
+                ",
+                'database',
+                true
+            ],
+            [
+                "
+    'Datasources' => [
+        'default' => [
+            'className' => 'Cake\Database\Connection',
+            'driver' => 'Cake\Database\Driver\Mysql',
+        'test' => [
+                ",
+                'driver',
+                true
+            ],
+        ];
     }
 
-    public function testRegexes()
+    /**
+     * @dataProvider datasourceTextProvider
+     */
+    public function testDatasourceRegexe($config, $field, $expected)
     {
-        $this->assertTrue(true);
+        $pattern = str_replace('__FIELD__', $field, $this->InstallManager::DATASOURCE_REGEX);
+        $actual = preg_match($pattern, $config, $matches);
+        $this->assertEquals($expected, $actual);
     }
 }
