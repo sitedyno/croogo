@@ -18,7 +18,7 @@ class InstallManager
 
     const DATASOURCE_REGEX = "/(\'Datasources'\s\=\>\s\[\n\s*\'default\'\s\=\>\s\[\n\X*\'__FIELD__\'\s\=\>\s\').*(\'\,)(?=\X*\'test\'\s\=\>\s)/";
 
-    const TEST_DATASOURCE_REGEX = "/(\'Datasources'\s\=\>\s\[\n\s*\'test\'\s\=\>\s\[\n\X*\'__FIELD__\'\s\=\>\s\').*(\'\,)(?=\X*\'Log\'\s\=\>\s)/";
+    const TEST_DATASOURCE_REGEX = "/(\'Datasources'\s\=\>\s\[\n\X*\'test\'\s\=\>\s\[\n\X*\'__FIELD__\'\s\=\>\s\').*(\'\,)(?=\X*\'Log\'\s\=\>\s)/";
 
     use LogTrait;
 
@@ -77,6 +77,23 @@ class InstallManager
         return file_put_contents($path, $config);
     }
 
+    protected function _updateTestDatasourceConfig($path, $field, $value)
+    {
+        $field = str_replace('test-', '', $field);
+        $config = file_get_contents($path);
+        $config = preg_replace(
+            str_replace('__FIELD__', $field, InstallManager::TEST_DATASOURCE_REGEX),
+            '$1' . addslashes($value) . '$2',
+            $config
+        );
+
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
+
+        return file_put_contents($path, $config);
+    }
+
     public function createDatabaseFile($config)
     {
         $config += $this->defaultConfig;
@@ -106,6 +123,11 @@ class InstallManager
         foreach (['host', 'username', 'password', 'database', 'driver'] as $field) {
             if (isset($config[$field]) && (!empty($config[$field] || $field == 'password'))) {
                 $this->_updateDatasourceConfig($configPath, $field, $config[$field]);
+            }
+        }
+        foreach (['test-host', 'test-username', 'test-password', 'test-database', 'test-driver'] as $field) {
+            if (isset($config[$field]) && (!empty($config[$field] || $field == 'password'))) {
+                $this->_updateTestDatasourceConfig($configPath, $field, $config[$field]);
             }
         }
 
