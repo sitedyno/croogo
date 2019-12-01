@@ -89,6 +89,31 @@ class InstallShell extends Shell
                 'short' => 't',
                 'required' => true,
             ])
+            ->addOption('test-driver', [
+                'help' => 'Test Database Driver',
+                'required' => false,
+                'options' => $drivers,
+            ])
+            ->addOption('test-host', [
+                'help' => 'Test Database Host',
+                'required' => true,
+            ])
+            ->addOption('test-username', [
+                'help' => 'Test Database User',
+                'required' => false,
+            ])
+            ->addOption('test-password', [
+                'help' => 'Test Database Password',
+                'required' => false,
+            ])
+            ->addOption('test-database-name', [
+                'help' => 'Test Database Name',
+                'required' => false,
+            ])
+            ->addOption('test-port', [
+                'help' => 'Test Database Port',
+                'required' => false,
+            ])
             //->addOption('prefix', [
                 //'help' => 'Table Prefix',
                 //'short' => 'x',
@@ -143,6 +168,14 @@ class InstallShell extends Shell
         $install['database'] = $this->_in(__d('croogo', 'Database'), null, 'croogo', 'database-name');
         //$install['prefix'] = $this->_in(__d('croogo', 'Prefix'), null, '', 'prefix');
         $install['port'] = $this->_in(__d('croogo', 'Port'), null, null, 'port');
+        foreach (['test-driver', 'test-host', 'test-username', 'test-password', 'test-database-name', 'test-port'] as $testArg) {
+            if (isset($this->params[$testArg])) {
+                if ($testArg === 'test-driver') {
+                    $this->params[$testArg] = 'Cake\Database\Driver\\' . $this->params[$testArg];
+                }
+                $install[$testArg] = $this->params[$testArg];
+            }
+        }
 
         $InstallManager = new InstallManager();
         $isFileCreated = $InstallManager->createDatabaseFile($install);

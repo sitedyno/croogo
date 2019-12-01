@@ -6,7 +6,9 @@
  */
 namespace Croogo\Install\Test\Fixture;
 
-class InstallRoleFixture extends CakeTestFixture
+use Croogo\Core\TestSuite\CroogoTestFixture;
+
+class InstallRoleFixture extends CroogoTestFixture
 {
 
 /**
@@ -41,7 +43,7 @@ class InstallRoleFixture extends CakeTestFixture
         [
             'id' => '1',
             'title' => 'Admin',
-            'alias' => 'admin',
+            'alias' => 'superadmin',
             'created' => '2009-04-05 00:10:34',
             'updated' => '2009-04-05 00:10:34'
         ],
