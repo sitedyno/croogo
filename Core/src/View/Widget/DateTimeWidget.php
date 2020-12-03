@@ -76,6 +76,8 @@ class DateTimeWidget extends CakeDateTimeWidget
             $format = $type === 'date' ? 'L' : 'L LT';
         }
 
+        $val = $val->format('m/d/Y g:i:s A');
+
         $widget = <<<html
             <input
                 type="hidden"
