@@ -64,19 +64,18 @@ class DateTimeWidget extends CakeDateTimeWidget
 
         if (!empty($val)) {
             $timestamp = $val->format('U');
+            $val = $val->format('m/d/Y g:i:s A');
         }
 
         $request = Router::getRequest();
         $timezone = $request->session()->read('Auth.User.timezone');
         if (!$timezone) {
-            $timezone = 'UTC';
+            $timezone = Configure::read('App.defaultTimezone');
         }
 
         if (!$format) {
             $format = $type === 'date' ? 'L' : 'L LT';
         }
-
-        $val = $val->format('m/d/Y g:i:s A');
 
         $widget = <<<html
             <input
