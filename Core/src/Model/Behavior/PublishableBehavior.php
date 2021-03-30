@@ -2,6 +2,8 @@
 
 namespace Croogo\Core\Model\Behavior;
 
+use Cake\Chronos\Chronos;
+use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\ORM\Behavior;
 use Cake\ORM\Query;
@@ -89,7 +91,7 @@ class PublishableBehavior extends Behavior
             return $query;
         }
 
-        $date = isset($options['date']) ? $options['date'] : new \DateTime();
+        $date = isset($options['date']) ? $options['date'] : new Chronos(null, Configure::read('App.defaultTimezone'));
         $start = $table->aliasField($config['fields']['publish_start']);
         $end = $table->aliasField($config['fields']['publish_end']);
 
