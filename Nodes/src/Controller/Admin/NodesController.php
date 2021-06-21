@@ -3,11 +3,7 @@
 namespace Croogo\Nodes\Controller\Admin;
 
 use Cake\Event\Event;
-use Cake\Routing\Router;
-
 use Croogo\Core\Controller\Component\CroogoComponent;
-use Croogo\Core\Croogo;
-use Croogo\Nodes\Model\Entity\Node;
 use Croogo\Nodes\Model\Table\NodesTable;
 use Croogo\Taxonomy\Controller\Component\TaxonomiesComponent;
 use Croogo\Taxonomy\Model\Entity\Type;
@@ -27,18 +23,24 @@ use Croogo\Taxonomy\Model\Entity\Type;
  */
 class NodesController extends AppController
 {
+    /**
+     * @return void
+     * @throws \Crud\Error\Exception\MissingActionException
+     * @throws \Crud\Error\Exception\ActionNotConfiguredException
+     */
     public function initialize()
     {
         parent::initialize();
 
-        $this->loadComponent('RequestHandler');
+        //$this->loadComponent('RequestHandler');
         $this->loadComponent('Croogo/Core.BulkProcess');
         $this->loadComponent('Croogo/Core.Recaptcha');
         $this->loadComponent('Croogo/Core.BulkProcess');
 
-        if ($this->request->param('action') == 'toggle') {
+        if ($this->getRequest()->getParam('action') == 'toggle') {
             $this->Croogo->protectToggleAction();
         }
+        $this->Crud->mapAction('hierarchy', 'Crud.Index');
 
         $this->_setupPrg();
     }
@@ -46,19 +48,19 @@ class NodesController extends AppController
     /**
      * Admin create
      *
-     * @return void
+     * @return Cake\Http\Response|void
      * @access public
      */
     public function create()
     {
-        $types = $this->Nodes->Taxonomies->Vocabularies->Types->find('all', array(
-            'order' => array(
+        $types = $this->Nodes->Taxonomies->Vocabularies->Types->find('all', [
+            'order' => [
                 'Types.alias' => 'ASC',
-            ),
-        ));
+            ],
+        ]);
 
         if ($types->count() === 1) {
-            return $this->redirect(['action' => 'add', $types->first()->alias]);
+            return $this->redirect(['action' => 'add', $types->first()->getAlias()]);
         }
 
         $this->set(compact('types'));
@@ -67,10 +69,10 @@ class NodesController extends AppController
     /**
      * Admin update paths
      *
-     * @return void
+     * @return Cake\Http\Response|void
      * @access public
      */
-    public function update_paths()
+    public function updatePaths()
     {
         $Node = $this->{$this->modelClass};
         if ($Node->updateAllNodesPaths()) {
@@ -82,77 +84,47 @@ class NodesController extends AppController
         }
 
         $this->Flash->set($messageFlash, ['element' => 'flash', 'param' => compact('class')]);
+
         return $this->redirect(['action' => 'index']);
-    }
-
-    /**
-     * Admin delete meta
-     *
-     * @param integer $id
-     * @return void
-     * @access public
-     * @deprecated Use MetaController::admin_delete_meta()
-     */
-    public function delete_meta($id = null)
-    {
-        $success = false;
-        $Node = $this->{$this->modelClass};
-        if ($id != null && $Node->Meta->delete($id)) {
-            $success = true;
-        } else {
-            if (!$Node->Meta->exists($id)) {
-                $success = true;
-            }
-        }
-
-        $success = array('success' => $success);
-        $this->set(compact('success'));
-        $this->set('_serialize', 'success');
-    }
-
-    /**
-     * Admin add meta
-     *
-     * @return void
-     * @access public
-     * @deprecated Use MetaController::admin_add_meta()
-     */
-    public function add_meta()
-    {
-        $this->viewBuilder()->setLayout('ajax');
     }
 
     /**
      * Admin process
      *
-     * @return void
+     * @return Cake\Http\Response|void
      * @access public
      */
     public function process()
     {
-        list($action, $ids) = $this->BulkProcess->getRequestVars($this->Nodes->alias());
+        [$action, $ids] = $this->BulkProcess->getRequestVars($this->Nodes->getAlias());
 
-        $options = array(
-            'multiple' => array('copy' => false),
-            'messageMap' => array(
+        $options = [
+            'multiple' => ['copy' => false],
+            'messageMap' => [
                 'delete' => __d('croogo', 'Nodes deleted'),
                 'publish' => __d('croogo', 'Nodes published'),
                 'unpublish' => __d('croogo', 'Nodes unpublished'),
                 'promote' => __d('croogo', 'Nodes promoted'),
                 'unpromote' => __d('croogo', 'Nodes unpromoted'),
                 'copy' => __d('croogo', 'Nodes copied'),
-            ),
-        );
+            ],
+        ];
         $this->BulkProcess->process($this->Nodes, $action, $ids, $options);
     }
 
+    /**
+     * @param Event $event Event
+     * @return void
+     * @throws \Crud\Error\Exception\MissingActionException
+     * @throws \Crud\Error\Exception\ActionNotConfiguredException
+     */
     public function beforePaginate(Event $event)
     {
         /** @var \Cake\ORM\Query $query */
-        $query = $event->subject()->query;
+        $query = $event->getSubject()->query;
 
-        if (empty($this->request->query('sort'))) {
-            if ($this->request->query('type')) {
+        if (empty($this->getRequest()->getQuery('sort'))) {
+            if ($this->getRequest()->getQuery('type')) {
                 $this->paginate['order'] = [
                     $this->Nodes->aliasField('lft') => 'ASC',
                 ];
@@ -185,44 +157,52 @@ class NodesController extends AppController
         $nodeTypes = $types->combine('alias', 'title')->toArray();
         $this->set('nodeTypes', $nodeTypes);
 
-        if ($this->request->query('type')) {
+        if ($this->getRequest()->getQuery('type')) {
             $type = $this->Nodes->Taxonomies->Vocabularies->Types
-                ->findByAlias($this->request->query('type'))
+                ->findByAlias($this->getRequest()->getQuery('type'))
                 ->first();
             $this->set('type', $type);
 
-            $this->Nodes->behaviors()->Tree->config('scope', [
+            $this->Nodes->behaviors()->Tree->setConfig('scope', [
                 'type' => $type->alias,
             ]);
         }
 
-        if (!empty($this->request->query('links')) || isset($this->request->query['chooser'])) {
+        if (!empty($this->getRequest()->getQuery('links')) || $this->getRequest()->getQuery('chooser')) {
             $this->viewBuilder()->setLayout('admin_popup');
             $this->Crud->action()->view('chooser');
         }
     }
 
+    /**
+     * @param Event $event
+     * @return void
+     */
     public function beforeLookup(Event $event)
     {
         /** @var \Cake\ORM\Query $query */
-        $query = $event->subject()->query;
+        $query = $event->getSubject()->query;
 
         $query->contain([
             'Users'
         ]);
     }
 
+    /**
+     * @param Event $event
+     * @return void
+     */
     public function beforeCrudRender(Event $event)
     {
-        if (!isset($event->subject()->entity)) {
+        if (!isset($event->getSubject()->entity)) {
             return;
         }
 
-        $entity = $event->subject()->entity;
+        $entity = $event->getSubject()->entity;
 
-        switch ($this->request->action) {
+        switch ($this->getRequest()->getParam('action')) {
             case 'add':
-                $typeAlias = $this->request->param('pass.0');
+                $typeAlias = $this->getRequest()->getParam('pass.0');
                 break;
             case 'edit':
                 $typeAlias = $entity->type;
@@ -253,7 +233,7 @@ class NodesController extends AppController
      */
     public function beforeCrudFind(Event $event)
     {
-        $event->subject()->query->contain(['Users', 'Parent']);
+        $event->getSubject()->query->contain(['Users', 'Parent']);
     }
 
     /**
@@ -262,23 +242,14 @@ class NodesController extends AppController
      */
     public function beforeCrudSave(Event $event)
     {
-        $entity = $event->subject()->entity;
-        if (($this->request->action === 'add') && ($this->request->param('pass.0'))) {
-            $entity->type = $this->request->param('pass.0');
-            $entity->path = Router::url([
-                'prefix' => false,
-                'plugin' => 'Croogo/Nodes',
-                'controller' => 'Nodes',
-                'action' => 'view',
-                'type' => $entity->type,
-                'slug' => $entity->slug
-            ]);
-
+        $entity = $event->getSubject()->entity;
+        if (($this->getRequest()->getParam('action') === 'add') && ($this->getRequest()->getParam('pass.0'))) {
+            $entity->type = $this->getRequest()->getParam('pass.0');
         }
 
-        $this->Crud->action()->config('name', $entity->type);
+        $this->Crud->action()->setConfig('name', $entity->type);
 
-        $this->Nodes->behaviors()->Tree->config('scope', [
+        $this->Nodes->behaviors()->Tree->setConfig('scope', [
             'type' => $entity->type,
         ]);
     }
@@ -294,6 +265,9 @@ class NodesController extends AppController
         }
     }
 
+    /**
+     * @return array
+     */
     public function implementedEvents()
     {
         return parent::implementedEvents() + [
@@ -312,8 +286,8 @@ class NodesController extends AppController
      */
     protected function _setCommonVariables(Type $type)
     {
-        if (isset($this->Taxonomies)) {
-            $this->Taxonomies->prepareCommonData($type);
+        if (isset($this->Taxonomy)) {
+            $this->Taxonomy->prepareCommonData($type);
         }
         $roles = $this->Nodes->Users->Roles->find('list');
         $parents = $this->Nodes->find('list')->where([
@@ -323,24 +297,66 @@ class NodesController extends AppController
         $this->set(compact('roles', 'parents', 'users'));
     }
 
+    /**
+     * @return \Cake\Http\Response
+     * @throws \Exception
+     */
     public function toggle()
     {
         return $this->Crud->execute();
     }
 
-    public function move($id, $direction = 'up', $step = '1') {
+    /**
+     * @param $id
+     * @param string $direction
+     * @param string $step
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function move($id, $direction = 'up', $step = '1')
+    {
         $node = $this->Nodes->get($id);
         if ($direction == 'up') {
             if ($this->Nodes->moveUp($node)) {
                 $this->Flash->success(__d('croogo', 'Content moved up'));
+
                 return $this->redirect($this->referer());
             }
         } else {
             if ($this->Nodes->moveDown($node)) {
                 $this->Flash->success(__d('croogo', 'Content moved down'));
+
                 return $this->redirect($this->referer());
             }
         }
     }
 
+    /**
+     * @return \Cake\Http\Response
+     * @throws \Exception
+     */
+    public function hierarchy()
+    {
+        $typeAlias = $this->getRequest()->getQuery('type');
+        if ($typeAlias) {
+            $type = $this->Nodes->Types->findByAlias($typeAlias)->first();
+            $this->set(compact('type'));
+        }
+        $this->Crud->on('beforePaginate', function (Event $event) {
+            $event->getSubject()->query->find('treelist');
+        });
+        $this->Crud->on('afterPaginate', function (Event $event) {
+            $subject = $event->getSubject();
+            $nodes = [];
+            foreach ($subject->entities as $id => $title) {
+                $node = $this->Nodes->find()->where(['Nodes.id' => $id])->first();
+                $node->depth = substr_count($title, '_', 0);
+                $node->clean();
+                $nodes[] = $node;
+            }
+            $subject->entities = $nodes;
+        });
+
+        return $this->Crud->execute();
+    }
 }

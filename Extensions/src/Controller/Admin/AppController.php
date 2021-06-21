@@ -2,7 +2,6 @@
 
 namespace Croogo\Extensions\Controller\Admin;
 
-use Cake\Event\Event;
 use Croogo\Core\Controller\Admin\AppController as CroogoController;
 
 /**
@@ -17,17 +16,17 @@ use Croogo\Core\Controller\Admin\AppController as CroogoController;
  */
 class AppController extends CroogoController
 {
-/**
- * beforeFilter
- *
- * @return void
- */
+    /**
+     * beforeFilter
+     *
+     * @return void
+     */
     public function initialize()
     {
         parent::initialize();
 
-        if (in_array($this->request->param('action'), ['admin_delete', 'admin_toggle', 'admin_activate'])) {
-            $this->request->allowMethod('post');
+        if (in_array($this->getRequest()->getParam('action'), ['admin_delete', 'admin_toggle', 'admin_activate'])) {
+            $this->getRequest()->allowMethod('post');
         }
     }
 }

@@ -10,6 +10,7 @@ class NodesSeed extends AbstractSeed
             'id' => '1',
             'parent_id' => null,
             'user_id' => '1',
+            'created_by' => '1',
             'title' => 'Hello World',
             'slug' => 'hello-world',
             'body' => '<p>Welcome to Croogo. This is your first post. You can edit or delete it from the admin panel.</p>',
@@ -26,13 +27,12 @@ class NodesSeed extends AbstractSeed
             'rght' => '2',
             'visibility_roles' => '',
             'type' => 'blog',
-            'updated' => '2009-12-25 11:00:00',
-            'created' => '2009-12-25 11:00:00'
         ],
         [
             'id' => '2',
             'parent_id' => null,
             'user_id' => '1',
+            'created_by' => '1',
             'title' => 'About',
             'slug' => 'about',
             'body' => '<p>This is an example of a Croogo page, you could edit this to put information about yourself or your site.</p>',
@@ -49,8 +49,6 @@ class NodesSeed extends AbstractSeed
             'rght' => '2',
             'visibility_roles' => '',
             'type' => 'page',
-            'updated' => '2009-12-25 22:00:00',
-            'created' => '2009-12-25 22:00:00'
         ],
     ];
 
@@ -59,5 +57,4 @@ class NodesSeed extends AbstractSeed
         $Table = $this->table('nodes');
         $Table->insert($this->records)->save();
     }
-
 }

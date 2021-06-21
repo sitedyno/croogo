@@ -14,7 +14,7 @@ var Terms = {};
  */
 Terms.documentReady = function() {
 
-}
+};
 
 /**
  * Create slugs based on title field
@@ -22,11 +22,11 @@ Terms.documentReady = function() {
  * @return void
  */
 Terms.slug = function() {
-	$("#TermTitle").slug({
-		slug:'slug',
-		hide: false
-	});
-}
+  $("#TermTitle").slug({
+    slug:'slug',
+    hide: false
+  });
+};
 
 /**
  * document ready
@@ -34,10 +34,10 @@ Terms.slug = function() {
  * @return void
  */
 $(document).ready(function() {
-	if (Croogo.params.controller == 'terms') {
-		Terms.documentReady();
-		if (Croogo.params.action == 'admin_add') {
-			Terms.slug();
-		}
-	}
+  if (Croogo.params.controller == 'terms') {
+    Terms.documentReady();
+    if (Croogo.params.action == 'admin_add') {
+      Terms.slug();
+    }
+  }
 });

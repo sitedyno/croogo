@@ -1,4 +1,5 @@
 <?php
+
 use Migrations\AbstractMigration;
 
 class ContactsInitialMigration extends AbstractMigration
@@ -107,22 +108,13 @@ class ContactsInitialMigration extends AbstractMigration
                 'limit' => null,
                 'null' => false,
             ])
-            ->addColumn('updated', 'datetime', [
+            ->addTimestamps('created', 'updated')
+            ->addColumn('created_by', 'integer', [
                 'default' => null,
-                'limit' => null,
+                'limit' => 20,
                 'null' => false,
             ])
             ->addColumn('updated_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
-            ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('created_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
                 'null' => true,
@@ -180,32 +172,27 @@ class ContactsInitialMigration extends AbstractMigration
                 'limit' => null,
                 'null' => false,
             ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
+            ->addTimestamps('created', 'updated')
             ->addColumn('updated_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
                 'null' => true,
-            ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
             ])
             ->addColumn('created_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
                 'null' => true,
             ])
+            ->addForeignKey('contact_id', 'contacts', ['id'], [
+                'constraint' => 'fk_messages2contacts',
+                'delete' => 'RESTRICT',
+            ])
             ->create();
     }
 
     public function down()
     {
-        $this->dropTable('contacts');
-        $this->dropTable('messages');
+        $this->table('contacts')->drop()->save();
+        $this->table('messages')->drop()->save();
     }
 }

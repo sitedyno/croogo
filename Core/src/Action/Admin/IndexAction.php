@@ -2,7 +2,6 @@
 
 namespace Croogo\Core\Action\Admin;
 
-use Cake\Event\Event;
 use Crud\Action\IndexAction as CrudIndexAction;
 
 class IndexAction extends CrudIndexAction
@@ -12,8 +11,8 @@ class IndexAction extends CrudIndexAction
         parent::_handle();
 
         $this->_controller()->set([
-            'displayFields' => $this->config('displayFields'),
-            'searchFields' => $this->config('searchFields'),
+            'displayFields' => $this->getConfig('displayFields'),
+            'searchFields' => $this->getConfig('searchFields'),
         ]);
     }
 }

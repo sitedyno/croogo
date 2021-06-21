@@ -6,14 +6,14 @@ $this->Breadcrumbs
     ->add(__d('croogo', 'Content'), ['plugin' => 'Croogo/Nodes', 'controller' => 'Nodes', 'action' => 'index'])
     ->add(__d('croogo', 'Types'), ['plugin' => 'Croogo/Taxonomy', 'controller' => 'Types', 'action' => 'index']);
 
-if ($this->request->params['action'] == 'edit') {
+if ($this->getRequest()->getParam('action') == 'edit') {
     $this->assign('title', __d('croogo', 'Edit Type'));
 
-    $this->Breadcrumbs->add(h($type->title), $this->request->getRequestTarget());
+    $this->Breadcrumbs->add(h($type->title), $this->getRequest()->getRequestTarget());
 }
 
-if ($this->request->params['action'] == 'add') {
-    $this->Breadcrumbs->add(__d('croogo', 'Add'), $this->request->getRequestTarget());
+if ($this->getRequest()->getParam('action') == 'add') {
+    $this->Breadcrumbs->add(__d('croogo', 'Add'), $this->getRequest()->getRequestTarget());
 }
 
 $this->append('form-start', $this->Form->create($type));
@@ -34,14 +34,6 @@ $this->start('tab-content');
         ]);
         echo $this->Form->input('alias', [
             'label' => __d('croogo', 'Alias'),
-            'label' => __d('croogo', 'Permalink'),
-            'prepend' => str_replace('_placeholder', '', $this->Url->build([
-                'prefix' => false,
-                'plugin' => 'Croogo/Nodes',
-                'controller' => 'Nodes',
-                'action' => 'index',
-                'type' => '_placeholder',
-            ], ['fullbase' => true]))
         ]);
         echo $this->Form->input('description', [
             'label' => __d('croogo', 'Description'),
@@ -52,9 +44,9 @@ $this->start('tab-content');
             'class' => 'c-select',
             'multiple' => 'checkbox'
         ]);
-    echo $this->Html->tabEnd();
+        echo $this->Html->tabEnd();
 
-    echo $this->Html->tabStart('type-comments');
+        echo $this->Html->tabStart('type-comments');
         echo $this->Form->input('comment_status', [
             'type' => 'radio',
             'options' => [
@@ -83,33 +75,33 @@ $this->start('tab-content');
             'action' => 'prefix',
             'Service',
         ]);
-    echo $this->Html->tabEnd();
+        echo $this->Html->tabEnd();
 
-    echo $this->Html->tabStart('type-params');
+        echo $this->Html->tabStart('type-params');
         echo $this->Form->input('params', [
             'type' => 'stringlist',
             'label' => __d('croogo', 'Params'),
             'default' => 'routes=true',
         ]);
-    echo $this->Html->tabEnd();
+        echo $this->Html->tabEnd();
 
-$this->end();
+        $this->end();
 
-$this->start('panels');
-echo $this->Html->beginBox(__d('croogo', 'Publishing'));
-    echo $this->element('Croogo/Core.admin/buttons', ['type' => 'type']);
-    echo $this->Form->input('format_show_author', [
+        $this->start('panels');
+        echo $this->Html->beginBox(__d('croogo', 'Publishing'));
+        echo $this->element('Croogo/Core.admin/buttons', ['type' => 'type']);
+        echo $this->Form->input('format_show_author', [
         'label' => __d('croogo', 'Show author\'s name'),
         'class' => false,
-    ]);
-    echo $this->Form->input('format_show_date', [
+        ]);
+        echo $this->Form->input('format_show_date', [
         'label' => __d('croogo', 'Show date'),
         'class' => false,
-    ]);
-    echo $this->Form->input('format_use_wysiwyg', [
+        ]);
+        echo $this->Form->input('format_use_wysiwyg', [
         'label' => __d('croogo', 'Use rich editor'),
         'class' => false,
         'default' => true
-    ]);
-    echo $this->Html->endBox();
-$this->end();
+        ]);
+        echo $this->Html->endBox();
+        $this->end();

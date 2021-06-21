@@ -8,6 +8,7 @@ echo $this->Form->input('username', [
     'placeholder' => __d('croogo', 'Username'),
     'prepend' => $this->Html->icon('user'),
     'label' => __d('croogo', 'Username'),
+    'value' => '',
 ]);
 echo $this->Form->input('password', [
     'placeholder' => __d('croogo', 'New Password'),
@@ -26,4 +27,3 @@ echo $this->Form->input('verify_password', [
 <?php
 $this->assign('buttons', $this->Form->button(__d('croogo', 'Finalize installation'), ['class' => 'success']));
 $this->assign('after', $this->Form->end());
-?>

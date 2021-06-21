@@ -2,13 +2,14 @@
 
 namespace Croogo\Core\Error;
 
-use Cake\Core\App;
 use Cake\Controller\Controller;
-use Cake\Event\Event;
+use Cake\Core\App;
 use Cake\Error\ExceptionRenderer as CakeExceptionRenderer;
-use Cake\Network\Request;
-use Cake\Network\Response;
+use Cake\Event\Event;
+use Cake\Http\Response;
+use Cake\Http\ServerRequestFactory;
 use Cake\Routing\Router;
+use Exception;
 
 /**
  * Class ExceptionRenderer
@@ -18,7 +19,7 @@ class ExceptionRenderer extends CakeExceptionRenderer
     protected function _getController()
     {
         if (!$request = Router::getRequest(true)) {
-            $request = Request::createFromGlobals();
+            $request = ServerRequestFactory::fromGlobals();
         }
         $response = new Response();
 
@@ -27,7 +28,7 @@ class ExceptionRenderer extends CakeExceptionRenderer
             $controller = new $class($request, $response);
             $controller->startupProcess();
             $startup = true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $startup = false;
         }
 

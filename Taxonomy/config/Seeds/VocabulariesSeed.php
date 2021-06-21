@@ -18,8 +18,7 @@ class VocabulariesSeed extends AbstractSeed
             'tags' => '0',
             'plugin' => null,
             'weight' => '1',
-            'updated' => '2010-05-17 20:03:11',
-            'created' => '2009-07-22 02:16:21'
+            'created_by' => 1,
         ],
         [
             'id' => '2',
@@ -31,8 +30,7 @@ class VocabulariesSeed extends AbstractSeed
             'tags' => '0',
             'plugin' => null,
             'weight' => '2',
-            'updated' => '2010-05-17 20:03:11',
-            'created' => '2009-07-22 02:16:34'
+            'created_by' => 1,
         ],
     ];
 
@@ -41,5 +39,4 @@ class VocabulariesSeed extends AbstractSeed
         $Table = $this->table('vocabularies');
         $Table->insert($this->records)->save();
     }
-
 }

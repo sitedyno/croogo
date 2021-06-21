@@ -7,13 +7,11 @@ use Cake\Cache\Cache;
 use Cake\Controller\ComponentRegistry;
 use Cake\Core\Configure;
 use Cake\Core\Exception\Exception;
+use Cake\Http\ServerRequest;
 use Cake\Log\Log;
 use Cake\Network\Request;
 use Cake\ORM\TableRegistry;
-use Cake\Routing\Router;
 use Cake\Utility\Inflector;
-
-use Psr\Log\LogLevel;
 
 /**
  * An authentication adapter for AuthComponent. Provides similar functionality
@@ -47,19 +45,19 @@ class AclCachedAuthorize extends BaseAuthorize
         ],
     ];
 
-/**
- * Constructor
- */
+    /**
+     * Constructor
+     */
     public function __construct(ComponentRegistry $registry, $config = [])
     {
         parent::__construct($registry, $config);
     }
 
-/**
- * Checks whether $user is an administrator
- *
- * @param bool True if user has administrative role
- */
+    /**
+     * Checks whether $user is an administrator
+     *
+     * @param bool True if user has administrative role
+     */
     protected function _isAdmin($user)
     {
         static $Role = null;
@@ -73,15 +71,16 @@ class AclCachedAuthorize extends BaseAuthorize
             }
             $this->_adminRole = $Role->byAlias('superadmin');
         }
+
         return $user['role_id'] == $this->_adminRole;
     }
 
-/**
- * Get the action path for a given request.
- *
- * @see BaseAuthorize::action()
- */
-    public function action(Request $request, $path = '/:plugin/:prefix/:controller/:action')
+    /**
+     * Get the action path for a given request.
+     *
+     * @see BaseAuthorize::action()
+     */
+    public function action(ServerRequest $request, $path = '/:plugin/:prefix/:controller/:action')
     {
         $apiPath = Configure::read('Croogo.Api.path');
         if (!$request->is('api')) {
@@ -102,17 +101,18 @@ class AclCachedAuthorize extends BaseAuthorize
         $path = str_replace(
             [$apiPath, ':prefix', ':plugin', ':controller', ':action'],
             [$api, $prefix, $plugin, $controller, $action],
-            $this->config('actionPath') . $path
+            $this->getConfig('actionPath') . $path
         );
         $path = str_replace('//', '/', $path);
+
         return trim($path, '/');
     }
 
-/**
- * check request request authorization
- *
- */
-    public function authorize($user, Request $request)
+    /**
+     * check request request authorization
+     *
+     */
+    public function authorize($user, ServerRequest $request)
     {
         // Admin role is allowed to perform all actions, bypassing ACL
         if ($this->_isAdmin($user)) {
@@ -121,18 +121,18 @@ class AclCachedAuthorize extends BaseAuthorize
 
         $allowed = false;
         $Acl = $this->_registry->load('Acl');
-        list($plugin, $userModel) = pluginSplit($this->config('userModel'));
+        list($plugin, $userModel) = pluginSplit($this->getConfig('userModel'));
 
         $action = $this->action($request);
 
-        $cacheName = 'permissions_' . strval($user['id']);
+        $cacheName = 'permissions_' . (string)$user['id'];
         if (($permissions = Cache::read($cacheName, 'permissions')) === false) {
             $permissions = [];
             Cache::write($cacheName, $permissions, 'permissions');
         }
 
         if (!isset($permissions[$action])) {
-            $userTable = TableRegistry::get($this->config('userModel'));
+            $userTable = TableRegistry::getTableLocator()->get($this->getConfig('userModel'));
             $user = $userTable->get($user['id']);
             $allowed = $Acl->check($user, $action);
             $permissions[$action] = $allowed;
@@ -167,15 +167,14 @@ class AclCachedAuthorize extends BaseAuthorize
 
         $primaryKey = $Model->primaryKey();
         $ids = [];
-        if ($request->is('get') && $request->param('pass.0')) {
+        if ($request->is('get') && $request->getParam('pass.0')) {
             // collect id from actions such as: Nodes/admin_edit/1
-            $ids[] = $request->param('pass.0');
+            $ids[] = $request->getParam('pass.0');
         } elseif ($request->is('post') || $request->is('put')) {
-
-            $action = $request->data('action');
+            $action = $request->getData('action');
             if ($action) {
                 // collect ids from 'bulk' processing action
-                foreach ($request->data[$model] as $id => $flag) {
+                foreach ($request->getData($model) as $id => $flag) {
                     if (isset($flag[$primaryKey]) && $flag[$primaryKey] == 1) {
                         $ids[] = $id;
                     }
@@ -206,15 +205,16 @@ class AclCachedAuthorize extends BaseAuthorize
         return $allowed;
     }
 
-/**
- * Checks authorization by content
- *
- * @throws Exception
- */
-    protected function _authorizeByContent($user, Request $request, $id)
+    /**
+     * Checks authorization by content
+     *
+     * @throws Exception
+     */
+    protected function _authorizeByContent($user, ServerRequest $request, $id)
     {
-        if (!isset($this->config('actionMap')[$request->params['action']])) {
-            $message = __d('croogo',
+        if (!isset($this->getConfig('actionMap')[$request->params['action']])) {
+            $message = __d(
+                'croogo',
                 '_authorizeByContent() - Access of un-mapped action "%1$s" in controller "%2$s"',
                 $request->action,
                 $request->controller
@@ -223,13 +223,13 @@ class AclCachedAuthorize extends BaseAuthorize
             throw new Exception($message);
         }
 
-        list($plugin, $userModel) = pluginSplit($this->config('userModel'));
+        list($plugin, $userModel) = pluginSplit($this->getConfig('userModel'));
         $acoNode = [
             'model' => $this->_registry->getController()->name,
             'foreign_key' => $id,
         ];
         $alias = sprintf('%s.%s', $acoNode['model'], $acoNode['foreign_key']);
-        $action = $this->config('actionMap')[$request->param('action')];
+        $action = $this->getConfig('actionMap')[$request->param('action')];
 
         $cacheName = 'permissions_content_' . strval($user['id']);
         if (($permissions = Cache::read($cacheName, 'permissions')) === false) {
@@ -258,6 +258,7 @@ class AclCachedAuthorize extends BaseAuthorize
             $cached = $hit ? ' (cache hit)' : ' (cache miss)';
             Log::write(LOG_ERR, $user['username'] . ' - ' . $action . '/' . $id . $status . $cached);
         }
+
         return $allowed;
     }
 }

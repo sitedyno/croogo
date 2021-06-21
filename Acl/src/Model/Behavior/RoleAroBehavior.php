@@ -7,9 +7,8 @@ use Cake\Event\Event;
 use Cake\ORM\Behavior;
 use Cake\ORM\Entity;
 use Cake\ORM\Query;
-use Cake\ORM\ResultSet;
 use Cake\Utility\Hash;
-use Cake\Utility\Inflector;
+use Cake\Utility\Text;
 
 /**
  * RoleAro Behavior
@@ -30,12 +29,12 @@ class RoleAroBehavior extends Behavior
         ],
     ];
 
-/**
- * parentNode
- *
- * @param Model $model
- * @return $mixed
- */
+    /**
+     * parentNode
+     *
+     * @param Model $model
+     * @return $mixed
+     */
     public function parentNode($model)
     {
         if (!$model->id && empty($model->data)) {
@@ -56,24 +55,25 @@ class RoleAroBehavior extends Behavior
             } else {
                 $return = null;
             }
+
             return $return;
         }
     }
 
-/**
- * afterSave
- *
- * Update the corresponding ACO record alias
- */
+    /**
+     * afterSave
+     *
+     * Update the corresponding ACO record alias
+     */
     public function afterSave(Event $event, Entity $entity)
     {
-        $model = $event->subject();
-        $ref = ['model' => $model->alias(), 'foreign_key' => $entity->id];
+        $model = $event->getSubject();
+        $ref = ['model' => $model->getAlias(), 'foreign_key' => $entity->id];
         $aro = $model->node($ref)->firstOrFail();
         if (!empty($entity->alias)) {
             $aro->alias = sprintf(
                 'Role-%s',
-                Inflector::slug($entity->alias)
+                Text::slug($entity->alias)
             );
         }
         if (!empty($entity->parent_id)) {
@@ -83,16 +83,15 @@ class RoleAroBehavior extends Behavior
         Cache::clearGroup('acl', 'permissions');
     }
 
-/**
- * findRoleHierarchy
- *
- * binds Aro model so that it gets retrieved during admin_[edit|add].
- */
+    /**
+     * findRoleHierarchy
+     *
+     * binds Aro model so that it gets retrieved during admin_[edit|add].
+     */
     public function findRoleHierarchy(Query $query, array $options)
     {
-
-        $alias = $this->_table->alias();
-        $primaryKey = $this->_table->primaryKey();
+        $alias = $this->_table->getAlias();
+        $primaryKey = $this->_table->getPrimaryKey();
         $this->_table->hasOne('ParentAro', [
             'className' => 'Aros',
             'bindingKey' => 'id',
@@ -104,7 +103,7 @@ class RoleAroBehavior extends Behavior
 
         $query
             ->contain('ParentAro')
-            ->formatResults(function($resultSet) {
+            ->formatResults(function ($resultSet) {
                 foreach ($resultSet as $result) {
                     if ($result->parent_aro) {
                         $result->parent_id = $result->parent_aro->parent_id;
@@ -116,31 +115,34 @@ class RoleAroBehavior extends Behavior
                         $result->unsetProperty('parent_aro');
                     }
                 }
+
                 return $resultSet;
             });
+
         return $query;
     }
 
-/**
- * afterFind
- *
- * When 'parent_id' is present, copy its value from Aro to Role data.
- */
+    /**
+     * afterFind
+     *
+     * When 'parent_id' is present, copy its value from Aro to Role data.
+     */
     public function afterFind(Model $model, $results, $primary = false)
     {
         if (!empty($results[0]['Aro']['parent_id'])) {
             $results[0][$model->alias]['parent_id'] = $results[0]['Aro']['parent_id'];
+
             return $results;
         }
     }
 
-/**
- * Retrieve a list of allowed parent roles
- *
- * @paraam integer $roleId
- * @param int $id Role id
- * @return array list of allowable parent roles in 'list' format
- */
+    /**
+     * Retrieve a list of allowed parent roles
+     *
+     * @paraam integer $roleId
+     * @param int $id Role id
+     * @return array list of allowable parent roles in 'list' format
+     */
     public function allowedParents($id = null)
     {
         if (!$this->_table->behaviors()->has('Croogo/Core.Aliasable')) {
@@ -152,16 +154,17 @@ class RoleAroBehavior extends Behavior
         $adminRoleId = $this->_table->byAlias('superadmin');
         $excludes = Hash::filter(array_values([$adminRoleId, $id]));
         $conditions = [
-            'NOT' => [$this->_table->aliasField('id') . ' IN'=> $excludes],
+            'NOT' => [$this->_table->aliasField('id') . ' IN' => $excludes],
         ];
+
         return $this->_table->find('list')
             ->where($conditions)
             ->toArray();
     }
 
-/**
- * afterDelete
- */
+    /**
+     * afterDelete
+     */
     public function afterDelete(Event $event)
     {
         Cache::clearGroup('acl', 'permissions');

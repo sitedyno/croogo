@@ -7,54 +7,73 @@ $this->extend('Croogo/Core./Common/admin_index');
 $this->assign('title', __d('croogo', 'Locales'));
 
 $this->Breadcrumbs
-    ->add(__d('croogo', 'Extensions'), array('plugin' => 'Croogo/Extensions', 'controller' => 'Plugins', 'action' => 'index'))
-    ->add(__d('croogo', 'Locales'), $this->request->getUri()->getPath());
+    ->add(__d('croogo', 'Extensions'), ['plugin' => 'Croogo/Extensions', 'controller' => 'Plugins', 'action' => 'index'])
+    ->add(__d('croogo', 'Locales'), $this->getRequest()->getUri()->getPath());
 
 $this->append('action-buttons');
-    echo $this->Croogo->adminAction(__d('croogo', 'Upload'),
-        array('action' => 'add')
+    echo $this->Croogo->adminAction(
+        __d('croogo', 'Upload'),
+        ['action' => 'add']
     );
-$this->end();
+    $this->end();
 
-$this->start('table-heading');
-    $tableHeaders = $this->Html->tableHeaders(array(
+    $this->start('table-heading');
+    $tableHeaders = $this->Html->tableHeaders([
         '',
         __d('croogo', 'Locale'),
         __d('croogo', 'Name'),
         __d('croogo', 'Default'),
         __d('croogo', 'Actions'),
-    ));
-    echo $this->Html->tag('thead', $tableHeaders);
-$this->end();
+    ]);
+    echo $tableHeaders;
+    $this->end();
 
-$this->append('table-body');
-    $rows = array();
+    $this->append('table-body');
+    $rows = [];
     $vendorDir = ROOT . DS . 'vendor' . DS . 'croogo' . DS . 'locale' . DS;
     $siteLocale = Configure::read('Site.locale');
-    foreach ($locales as $locale => $data):
-        $actions = array();
+    foreach ($locales as $locale => $data) :
+        $actions = [];
 
         if ($locale == $siteLocale) {
             $status = $this->Html->status(1);
-            $actions[] = $this->Croogo->adminRowAction('',
-                array('action' => 'deactivate', $locale),
-                array('icon' => $this->Theme->getIcon('power-off'), 'tooltip' => __d('croogo', 'Deactivate'), 'method' => 'post')
+            $actions[] = $this->Croogo->adminRowAction(
+                '',
+                ['action' => 'deactivate', $locale],
+                [
+                    'icon' => $this->Theme->getIcon('power-off'),
+                    'escapeTitle' => false,
+                    'tooltip' => __d('croogo', 'Deactivate'),
+                    'method' => 'post'
+                ]
             );
         } else {
             $status = $this->Html->status(0);
-            $actions[] = $this->Croogo->adminRowAction('',
-                array('action' => 'activate', $locale),
-                array('icon' => $this->Theme->getIcon('power-on'), 'tooltip' => __d('croogo', 'Activate'), 'method' => 'post')
+            $actions[] = $this->Croogo->adminRowAction(
+                '',
+                ['action' => 'activate', $locale],
+                [
+                    'icon' => $this->Theme->getIcon('power-on'),
+                    'escapeTitle' => false,
+                    'tooltip' => __d('croogo', 'Activate'),
+                    'method' => 'post'
+                ]
             );
         }
 
-        $actions[] = $this->Croogo->adminRowAction('',
-            array('action' => 'edit', $locale),
-            array('icon' => $this->Theme->getIcon('update'), 'tooltip' => __d('croogo', 'Edit this item'))
+        $actions[] = $this->Croogo->adminRowAction(
+            '',
+            ['action' => 'edit', $locale],
+            [
+                'icon' => $this->Theme->getIcon('update'),
+                'escapeTitle' => false,
+                'tooltip' => __d('croogo', 'Edit this item')
+            ]
         );
 
-        if (strpos($data['path'], $vendorDir) !== 0):
-            $actions[] = $this->Croogo->adminRowAction('',
+        if (strpos($data['path'], $vendorDir) !== 0) :
+            $actions[] = $this->Croogo->adminRowAction(
+                '',
                 ['action' => 'delete', $locale],
                 [
                     'icon' => $this->Theme->getIcon('delete'),
@@ -65,19 +84,18 @@ $this->append('table-body');
         endif;
         $actions = $this->Html->div('item-actions', implode(' ', $actions));
 
-        $rows[] = array(
+        $rows[] = [
             '',
             $locale,
             $data['name'],
             $status,
             $actions,
-        );
+        ];
     endforeach;
 
-    usort($rows, function($a, $b) {
+    usort($rows, function ($a, $b) {
         return strcmp($a[3], $b[3]);
     });
 
     echo $this->Html->tableCells($rows);
-$this->end();
-?>
+    $this->end();

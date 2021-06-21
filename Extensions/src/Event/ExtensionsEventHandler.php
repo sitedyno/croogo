@@ -4,7 +4,7 @@ namespace Croogo\Extensions\Event;
 
 use Cake\Core\Plugin;
 use Cake\Event\EventListenerInterface;
-use Croogo\Extensions\CroogoPlugin;
+use Croogo\Core\PluginManager;
 
 /**
  * ExtensionsEventHandler
@@ -17,9 +17,9 @@ use Croogo\Extensions\CroogoPlugin;
 class ExtensionsEventHandler implements EventListenerInterface
 {
 
-/**
- * implementedEvents
- */
+    /**
+     * implementedEvents
+     */
     public function implementedEvents()
     {
         return [
@@ -35,9 +35,9 @@ class ExtensionsEventHandler implements EventListenerInterface
         ];
     }
 
-/**
- * Before Setup admin data
- */
+    /**
+     * Before Setup admin data
+     */
     public function onBeforeSetupAdminData($event)
     {
         $plugins = Plugin::loaded();
@@ -50,9 +50,9 @@ class ExtensionsEventHandler implements EventListenerInterface
         }
     }
 
-/**
- * Setup admin data
- */
+    /**
+     * Setup admin data
+     */
     public function onSetupAdminData($event)
     {
         $plugins = Plugin::loaded();
@@ -63,13 +63,17 @@ class ExtensionsEventHandler implements EventListenerInterface
                 require $file;
             }
         }
+        $file = sprintf('%s/%s', ROOT, $config);
+        if (file_exists($file)){
+            require $file;
+        }
     }
 
-/**
- * onBootstrapComplete
- */
+    /**
+     * onBootstrapComplete
+     */
     public function onBootstrapComplete($event)
     {
-        CroogoPlugin::cacheDependencies();
+        PluginManager::cacheDependencies();
     }
 }

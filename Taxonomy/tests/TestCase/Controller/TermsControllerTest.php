@@ -8,36 +8,36 @@ class TermsControllerTest extends CroogoControllerTestCase
 {
 
     public $fixtures = [
-        'plugin.users.aco',
-        'plugin.users.aro',
-        'plugin.users.aros_aco',
-        'plugin.blocks.block',
-        'plugin.comments.comment',
-        'plugin.contacts.contact',
-        'plugin.translate.i18n',
-        'plugin.settings.language',
-        'plugin.menus.link',
-        'plugin.menus.menu',
-        'plugin.contacts.message',
-        'plugin.nodes.node',
-        'plugin.meta.meta',
-        'plugin.taxonomy.model_taxonomy',
-        'plugin.blocks.region',
-        'plugin.users.role',
-        'plugin.settings.setting',
-        'plugin.taxonomy.taxonomy',
-        'plugin.taxonomy.term',
-        'plugin.taxonomy.type',
-        'plugin.taxonomy.types_vocabulary',
-        'plugin.users.user',
-        'plugin.taxonomy.vocabulary',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Contacts.Contact',
+        'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Menus.Link',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Contacts.Message',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Taxonomy.ModelTaxonomy',
+        'plugin.Croogo/Blocks.Region',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Settings.Setting',
+        'plugin.Croogo/Taxonomy.Taxonomy',
+        'plugin.Croogo/Taxonomy.Term',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -60,22 +60,22 @@ class TermsControllerTest extends CroogoControllerTestCase
             ->will($this->returnCallback([$this, 'authUserCallback']));
     }
 
-/**
- * tearDown
- *
- * @return void
- */
+    /**
+     * tearDown
+     *
+     * @return void
+     */
     public function tearDown()
     {
         parent::tearDown();
         unset($this->TermsController);
     }
 
-/**
- * testAdminIndex
- *
- * @return void
- */
+    /**
+     * testAdminIndex
+     *
+     * @return void
+     */
     public function testAdminIndex()
     {
         $this->testAction('/admin/taxonomy/terms/index/1');
@@ -88,11 +88,11 @@ class TermsControllerTest extends CroogoControllerTestCase
         $this->assertEquals($expected, $termsTree);
     }
 
-/**
- * testAdminAdd
- *
- * @return void
- */
+    /**
+     * testAdminAdd
+     *
+     * @return void
+     */
     public function testAdminAdd()
     {
         $this->expectFlashAndRedirect('Term saved successfuly.');
@@ -118,11 +118,11 @@ class TermsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($termsTreeSlugs, $expected);
     }
 
-/**
- * testAdminAddWithParent
- *
- * @return void
- */
+    /**
+     * testAdminAddWithParent
+     *
+     * @return void
+     */
     public function testAdminAddWithParent()
     {
         $this->expectFlashAndRedirect('Term saved successfuly.');
@@ -148,11 +148,11 @@ class TermsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($termsTreeTitles, $expected);
     }
 
-/**
- * testAdminEdit
- *
- * @return void
- */
+    /**
+     * testAdminEdit
+     *
+     * @return void
+     */
     public function testAdminEdit()
     {
         $this->expectFlashAndRedirect('Term saved successfuly.');
@@ -179,11 +179,11 @@ class TermsControllerTest extends CroogoControllerTestCase
         $this->assertEquals($expected, $termsTree);
     }
 
-/**
- * testAdminDelete
- *
- * @return void
- */
+    /**
+     * testAdminDelete
+     *
+     * @return void
+     */
     public function testAdminDelete()
     {
         $ModelTaxonomy = ClassRegistry::init('Taxonomy.ModelTaxonomy');
@@ -206,11 +206,11 @@ class TermsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($termsTree, $expected);
     }
 
-/**
- * testAdminMoveup
- *
- * @return void
- */
+    /**
+     * testAdminMoveup
+     *
+     * @return void
+     */
     public function testAdminMoveup()
     {
         $this->expectFlashAndRedirect('Moved up successfully');
@@ -223,11 +223,11 @@ class TermsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($termsTree, $expected);
     }
 
-/**
- * testAdminMovedown
- *
- * @return void
- */
+    /**
+     * testAdminMovedown
+     *
+     * @return void
+     */
     public function testAdminMovedown()
     {
         $this->expectFlashAndRedirect('Moved down successfully');

@@ -1,10 +1,117 @@
 <?php
+
 use Migrations\AbstractMigration;
 
 class TaxonomyInitialMigration extends AbstractMigration
 {
     public function up()
     {
+        $this->table('terms')
+            ->addColumn('title', 'string', [
+                'default' => null,
+                'limit' => 255,
+                'null' => false,
+            ])
+            ->addColumn('slug', 'string', [
+                'default' => null,
+                'limit' => 255,
+                'null' => false,
+            ])
+            ->addColumn('description', 'text', [
+                'default' => null,
+                'limit' => null,
+                'null' => true,
+            ])
+            ->addColumn('params', 'text', [
+                'default' => null,
+                'limit' => null,
+                'null' => true,
+            ])
+            ->addTimestamps('created', 'updated')
+            ->addColumn('created_by', 'integer', [
+                'default' => null,
+                'limit' => 20,
+                'null' => false,
+            ])
+            ->addColumn('updated_by', 'integer', [
+                'default' => null,
+                'limit' => 20,
+                'null' => true,
+            ])
+            ->addIndex(
+                [
+                    'slug',
+                ],
+                [
+                    'unique' => true,
+                    'limit' => 190,
+                ]
+            )
+            ->create();
+
+        $this->table('vocabularies')
+            ->addColumn('title', 'string', [
+                'default' => null,
+                'limit' => 255,
+                'null' => false,
+            ])
+            ->addColumn('alias', 'string', [
+                'default' => null,
+                'limit' => 255,
+                'null' => false,
+            ])
+            ->addColumn('description', 'text', [
+                'default' => null,
+                'limit' => null,
+                'null' => true,
+            ])
+            ->addColumn('required', 'boolean', [
+                'default' => false,
+                'limit' => null,
+                'null' => false,
+            ])
+            ->addColumn('multiple', 'boolean', [
+                'default' => false,
+                'limit' => null,
+                'null' => false,
+            ])
+            ->addColumn('tags', 'boolean', [
+                'default' => false,
+                'limit' => null,
+                'null' => false,
+            ])
+            ->addColumn('plugin', 'string', [
+                'default' => null,
+                'limit' => 255,
+                'null' => true,
+            ])
+            ->addColumn('weight', 'integer', [
+                'default' => null,
+                'limit' => 11,
+                'null' => true,
+            ])
+            ->addTimestamps('created', 'updated')
+            ->addColumn('created_by', 'integer', [
+                'default' => null,
+                'limit' => 20,
+                'null' => false,
+            ])
+            ->addColumn('updated_by', 'integer', [
+                'default' => null,
+                'limit' => 20,
+                'null' => true,
+            ])
+            ->addIndex(
+                [
+                    'alias',
+                ],
+                [
+                    'unique' => true,
+                    'limit' => 190,
+                ]
+            )
+            ->create();
+
         $this->table('taxonomies')
             ->addColumn('parent_id', 'integer', [
                 'default' => null,
@@ -31,53 +138,14 @@ class TaxonomyInitialMigration extends AbstractMigration
                 'limit' => 11,
                 'null' => true,
             ])
-            ->create();
-
-        $this->table('terms')
-            ->addColumn('title', 'string', [
-                'default' => null,
-                'limit' => 255,
-                'null' => false,
+            ->addForeignKey('term_id', 'terms', ['id'], [
+                'constraint' => 'fk_taxonomies2terms',
+                'delete' => 'RESTRICT',
             ])
-            ->addColumn('slug', 'string', [
-                'default' => null,
-                'limit' => 255,
-                'null' => false,
+            ->addForeignKey('vocabulary_id', 'vocabularies', ['id'], [
+                'constraint' => 'fk_taxonomies2vocabularies',
+                'delete' => 'RESTRICT',
             ])
-            ->addColumn('description', 'text', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
-            ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('updated_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
-            ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('created_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
-            ])
-            ->addIndex(
-                [
-                    'slug',
-                ],
-                [
-                    'unique' => true,
-                    'limit' => 190,
-                ]
-            )
             ->create();
 
         $this->table('types')
@@ -141,94 +209,13 @@ class TaxonomyInitialMigration extends AbstractMigration
                 'limit' => 255,
                 'null' => true,
             ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('updated_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
-            ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
+            ->addTimestamps('created', 'updated')
             ->addColumn('created_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
-                'null' => true,
-            ])
-            ->addIndex(
-                [
-                    'alias',
-                ],
-                [
-                    'unique' => true,
-                    'limit' => 190,
-                ]
-            )
-            ->create();
-
-        $this->table('vocabularies')
-            ->addColumn('title', 'string', [
-                'default' => null,
-                'limit' => 255,
-                'null' => false,
-            ])
-            ->addColumn('alias', 'string', [
-                'default' => null,
-                'limit' => 255,
-                'null' => false,
-            ])
-            ->addColumn('description', 'text', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
-            ])
-            ->addColumn('required', 'boolean', [
-                'default' => false,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('multiple', 'boolean', [
-                'default' => false,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('tags', 'boolean', [
-                'default' => false,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('plugin', 'string', [
-                'default' => null,
-                'limit' => 255,
-                'null' => true,
-            ])
-            ->addColumn('weight', 'integer', [
-                'default' => null,
-                'limit' => 11,
-                'null' => true,
-            ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
                 'null' => false,
             ])
             ->addColumn('updated_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
-            ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('created_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
                 'null' => true,
@@ -284,6 +271,11 @@ class TaxonomyInitialMigration extends AbstractMigration
                 'limit' => 20,
                 'null' => false,
             ])
+            ->addForeignKey('taxonomy_id', 'taxonomies', ['id'], [
+                'constraint' => 'fk_model_taxonomies2taxonomies',
+                'update' => 'CASCADE',
+                'delete' => 'CASCADE',
+            ])
             ->addIndex(
                 [
                     'model', 'foreign_key', 'taxonomy_id',
@@ -295,11 +287,11 @@ class TaxonomyInitialMigration extends AbstractMigration
 
     public function down()
     {
-        $this->dropTable('taxonomies');
-        $this->dropTable('terms');
-        $this->dropTable('types');
-        $this->dropTable('vocabularies');
-        $this->dropTable('types_vocabularies');
-        $this->dropTable('model_taxonomies');
+        $this->table('model_taxonomies')->drop()->save();
+        $this->table('taxonomies')->drop()->save();
+        $this->table('terms')->drop()->save();
+        $this->table('types')->drop()->save();
+        $this->table('vocabularies')->drop()->save();
+        $this->table('types_vocabularies')->drop()->save();
     }
 }

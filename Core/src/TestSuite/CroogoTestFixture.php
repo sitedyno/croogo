@@ -2,8 +2,6 @@
 
 namespace Croogo\Core\TestSuite;
 
-use Cake\Database\Connection;
-use Cake\Database\Driver\Postgres;
 use Cake\TestSuite\Fixture\TestFixture;
 
 /**
@@ -19,31 +17,4 @@ use Cake\TestSuite\Fixture\TestFixture;
  */
 class CroogoTestFixture extends TestFixture
 {
-
-/**
- * _fixSequence
- *
- * @param Postgres $db
- */
-//	protected function _fixSequence($db) {
-//		$sql = sprintf("
-//			SELECT setval(pg_get_serial_sequence('%s', 'id'), (SELECT MAX(id) FROM %s))",
-//			$this->table, $this->table);
-//
-//		$db->execute($sql);
-//	}
-
-/**
- * insert
- *
- * @param Object $db
- * @return array
- */
-//	public function insert(Connection $db) {
-//		$result = parent::insert($db);
-//		if ($result === true && $db instanceof Postgres) {
-//			$this->_fixSequence($db);
-//		}
-//		return $result;
-//	}
 }

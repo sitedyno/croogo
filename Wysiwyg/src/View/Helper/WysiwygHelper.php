@@ -4,7 +4,6 @@ namespace Croogo\Wysiwyg\View\Helper;
 
 use Cake\Core\Configure;
 use Cake\View\Helper;
-use Cake\Core\App;
 use Croogo\Core\Router;
 
 /**
@@ -20,41 +19,30 @@ use Croogo\Core\Router;
 class WysiwygHelper extends Helper
 {
 
-/**
- * Other helpers used by this helper
- *
- * @var array
- * @access public
- */
+    /**
+     * Other helpers used by this helper
+     *
+     * @var array
+     * @access public
+     */
     public $helpers = [
-        'Html',
+        'Croogo',
         'Url'
     ];
 
-/**
- * beforeRender
- *
- * @param string $viewFile
- * @return void
- */
+    /**
+     * beforeRender
+     *
+     * @param string $viewFile
+     * @return void
+     */
     public function beforeRender($viewFile)
     {
-        $uploadsPath = Configure::read('Wysiwyg.uploadsPath');
-        if ($uploadsPath) {
-            $uploadsPath = Router::url($uploadsPath);
-        }
-        Configure::write('Js.Wysiwyg.uploadsPath', $uploadsPath);
-        Configure::write(
-            'Js.Wysiwyg.attachmentsPath',
-            $this->Url->build(Configure::read('Wysiwyg.attachmentBrowseUrl'))
-        );
-
         $actions = array_keys(Configure::read('Wysiwyg.actions'));
-        $currentAction = Router::getActionPath($this->request, true);
+        $currentAction = Router::getActionPath($this->getView()->getRequest(), true);
         $included = in_array($currentAction, $actions);
         if ($included) {
-            $this->Html->script('Croogo/Wysiwyg.wysiwyg', ['block' => 'script']);
+            $this->Croogo->adminScript('Croogo/Wysiwyg.wysiwyg.js');
         }
     }
-
 }

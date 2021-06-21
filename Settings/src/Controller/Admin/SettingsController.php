@@ -4,6 +4,7 @@ namespace Croogo\Settings\Controller\Admin;
 
 use Cake\Event\Event;
 use Cake\Utility\Inflector;
+use Exception;
 
 /**
  * Settings Controller
@@ -38,35 +39,57 @@ class SettingsController extends AppController
         }
     }
 
-/**
- * Admin prefix
- *
- * @param string $prefix
- * @return void
- * @access public
- */
+    /**
+     * Admin prefix
+     *
+     * @param string $prefix
+     * @return \Cake\Http\Response|void
+     * @access public
+     */
     public function prefix($prefix = null)
     {
-        if ($this->request->is('post')) {
-            foreach ($this->request->data() as $inputName => $value) {
-                $id = str_replace('setting-', '', $inputName);
-                if ($id == '_apply') {
-                    continue;
-                }
-                $setting = $this->Settings->get($id);
-
-                if (is_array($value)) {
-                    if (isset($value['tmp_name'])) {
-                        $value = $this->_handleUpload($setting, $value);
-                    } else {
-                        $value = json_encode($value);
+        if ($this->getRequest()->is('post')) {
+            try {
+                $clearBackground = $this->getRequest()->getData('_clearbackground');
+                if ($prefix == 'Theme' && $clearBackground) {
+                    $bgImagePath = $this->Settings->find('search', ['search' => ['key' => 'Theme.bgImagePath']])->first()->value;
+                    $fullpath = WWW_ROOT . $bgImagePath;
+                    if (file_exists($fullpath)) {
+                        unlink($fullpath);
                     }
+                    $this->Settings->write('Theme.bgImagePath', '');
+                    goto success;
                 }
 
-                $setting->value = $value;
-                $this->Settings->save($setting);
+                foreach ($this->getRequest()->getData() as $inputName => $value) {
+                    $id = str_replace('setting-', '', $inputName);
+                    if (in_array($id, ['_apply', '_clearbackground'])) {
+                        continue;
+                    }
+                    $setting = $this->Settings->get($id);
+
+                    if (is_array($value)) {
+                        if (array_key_exists('tmp_name', $value)) {
+                            if (!empty($value['tmp_name'])) {
+                                $value = $this->_handleUpload($setting, $value);
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            $value = json_encode($value);
+                        }
+                    }
+
+                    $setting->value = $value;
+                    $this->Settings->save($setting);
+                }
+
+success:
+                $this->Flash->success(__d('croogo', 'Settings updated successfully'));
+            } catch (Exception $e) {
+                $this->Flash->error(__d('croogo', 'Settings cannot be updated: ' . $e->getMessage()));
             }
-            $this->Flash->success(__d('croogo', 'Settings updated successfully'));
+
             return $this->redirect(['action' => 'prefix', $prefix]);
         }
 
@@ -94,6 +117,11 @@ class SettingsController extends AppController
             unlink($currentBg);
         }
 
+        $contentType = mime_content_type($value['tmp_name']);
+        if (substr($contentType, 0, 5) !== 'image') {
+            throw new Exception('Invalid file type');
+        }
+
         $dotPosition = strripos($name, '.');
         $filename = strtolower(substr($name, 0, $dotPosition));
         $ext = strtolower(substr($name, $dotPosition + 1));
@@ -108,17 +136,18 @@ class SettingsController extends AppController
         $targetFile = WWW_ROOT . $relativePath;
         move_uploaded_file($value['tmp_name'], $targetFile);
         $value = str_replace('\\', '/', $relativePath);
+
         return $value;
     }
 
-/**
- * Admin moveup
- *
- * @param int $id
- * @param int $step
- * @return void
- * @access public
- */
+    /**
+     * Admin moveup
+     *
+     * @param int $id
+     * @param int $step
+     * @return \Cake\Http\Response|void
+     * @access public
+     */
     public function moveup($id, $step = 1)
     {
         if ($this->Setting->moveUp($id, $step)) {
@@ -130,22 +159,23 @@ class SettingsController extends AppController
         if (!$redirect = $this->referer()) {
             $redirect = [
                 'admin' => true,
-                'plugin' => 'settings',
-                'controller' => 'settings',
+                'plugin' => 'Croogo/Settings',
+                'controller' => 'Settings',
                 'action' => 'index'
             ];
         }
+
         return $this->redirect($redirect);
     }
 
-/**
- * Admin moveup
- *
- * @param int $id
- * @param int $step
- * @return void
- * @access public
- */
+    /**
+     * Admin moveup
+     *
+     * @param int $id
+     * @param int $step
+     * @return \Cake\Http\Response|void
+     * @access public
+     */
     public function movedown($id, $step = 1)
     {
         if ($this->Setting->moveDown($id, $step)) {
@@ -154,6 +184,6 @@ class SettingsController extends AppController
             $this->Flash->error(__d('croogo', 'Could not move down'));
         }
 
-        return $this->redirect(['admin' => true, 'controller' => 'settings', 'action' => 'index']);
+        return $this->redirect(['admin' => true, 'controller' => 'Settings', 'action' => 'index']);
     }
 }

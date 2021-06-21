@@ -9,38 +9,38 @@ class CommentsControllerTest extends CroogoControllerTestCase
 {
 
     public $fixtures = [
-        'plugin.users.aco',
-        'plugin.users.aro',
-        'plugin.users.aros_aco',
-        'plugin.blocks.block',
-        'plugin.comments.comment',
-        'plugin.contacts.contact',
-        'plugin.translate.i18n',
-        'plugin.settings.language',
-        'plugin.menus.link',
-        'plugin.menus.menu',
-        'plugin.contacts.message',
-        'plugin.meta.meta',
-        'plugin.nodes.node',
-        'plugin.taxonomy.model_taxonomy',
-        'plugin.blocks.region',
-        'plugin.users.role',
-        'plugin.settings.setting',
-        'plugin.taxonomy.taxonomy',
-        'plugin.taxonomy.term',
-        'plugin.taxonomy.type',
-        'plugin.taxonomy.types_vocabulary',
-        'plugin.users.user',
-        'plugin.taxonomy.vocabulary',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Contacts.Contact',
+        'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Menus.Link',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Contacts.Message',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Taxonomy.ModelTaxonomy',
+        'plugin.Croogo/Blocks.Region',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Settings.Setting',
+        'plugin.Croogo/Taxonomy.Taxonomy',
+        'plugin.Croogo/Taxonomy.Term',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
     protected $_level;
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -62,11 +62,11 @@ class CommentsControllerTest extends CroogoControllerTestCase
             ->will($this->returnCallback([$this, 'authUserCallback']));
     }
 
-/**
- * tearDown
- *
- * @return void
- */
+    /**
+     * tearDown
+     *
+     * @return void
+     */
     public function tearDown()
     {
         parent::tearDown();
@@ -74,22 +74,22 @@ class CommentsControllerTest extends CroogoControllerTestCase
         unset($this->CommentsController);
     }
 
-/**
- * testAdminIndex
- *
- * @return void
- */
+    /**
+     * testAdminIndex
+     *
+     * @return void
+     */
     public function testAdminIndex()
     {
         $this->testAction('/admin/comments/index');
         $this->assertNotEmpty($this->vars['comments']);
     }
 
-/**
- * testAdminEdit
- *
- * @return void
- */
+    /**
+     * testAdminEdit
+     *
+     * @return void
+     */
     public function testAdminEdit()
     {
         $this->expectFlashAndRedirect('The Comment has been saved');
@@ -107,11 +107,11 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertEquals('Mr Croogo [modified]', $result['Comment']['name']);
     }
 
-/**
- * testAdminDelete
- *
- * @return void
- */
+    /**
+     * testAdminDelete
+     *
+     * @return void
+     */
     public function testAdminDelete()
     {
         $this->expectFlashAndRedirect('Comment deleted');
@@ -122,11 +122,11 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertFalse($hasAny);
     }
 
-/**
- * testAdminProcessDelete
- *
- * @return void
- */
+    /**
+     * testAdminProcessDelete
+     *
+     * @return void
+     */
     public function testAdminProcessDelete()
     {
         $this->expectFlashAndRedirect('Comments deleted');
@@ -148,11 +148,11 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($list, [2 => 'Mrs Croogo']);
     }
 
-/**
- * testAdminProcessPublish
- *
- * @return void
- */
+    /**
+     * testAdminProcessPublish
+     *
+     * @return void
+     */
     public function testAdminProcessPublish()
     {
         // unpublish a Comment for testing
@@ -197,11 +197,11 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($relevantNode['Node']['comment_count'], 1);
     }
 
-/**
- * testAdminProcessUnpublish
- *
- * @return void
- */
+    /**
+     * testAdminProcessUnpublish
+     *
+     * @return void
+     */
     public function testAdminProcessUnpublish()
     {
         $this->expectFlashAndRedirect('Comments unpublished');
@@ -229,9 +229,9 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($relevantNode['Node']['comment_count'], 0);
     }
 
-/**
- * testAdd
- */
+    /**
+     * testAdd
+     */
     public function testAdd()
     {
         Configure::write('Comment.email_notification', 1);
@@ -274,9 +274,9 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertFalse(strpos($output, '<pre class="cake-debug">'));
     }
 
-/**
- * testAddWithParent
- */
+    /**
+     * testAddWithParent
+     */
     public function testAddWithParent()
     {
         Configure::write('Comment.email_notification', 1);
@@ -316,9 +316,9 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertFalse(strpos($output, '<pre class="cake-debug">'));
     }
 
-/**
- * testAddWithoutEmailNotification
- */
+    /**
+     * testAddWithoutEmailNotification
+     */
     public function testAddWithoutEmailNotification()
     {
         Configure::write('Comment.email_notification', 0);
@@ -352,9 +352,9 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->assertFalse(strpos($output, '<pre class="cake-debug">'));
     }
 
-/**
- * testAddNotAllowedByType
- */
+    /**
+     * testAddNotAllowedByType
+     */
     public function testAddNotAllowedByType()
     {
         $Type = ClassRegistry::init('Taxonomy.Type');
@@ -381,9 +381,9 @@ class CommentsControllerTest extends CroogoControllerTestCase
         $this->CommentsController->add('Node', 1);
     }
 
-/**
- * testAddShouldWorkWhenLoggedIn
- */
+    /**
+     * testAddShouldWorkWhenLoggedIn
+     */
     public function testAddShouldWorkWhenLoggedIn()
     {
         Configure::write('Comment.email_notification', 0);

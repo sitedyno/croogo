@@ -3,18 +3,17 @@
 namespace Croogo\Acl\Test\TestCase\View\Helper;
 
 use Acl\View\Helper\AclHelper;
-use Cake\View\View;
 use Croogo\TestSuite\CroogoTestCase;
 
 class AclHelperTest extends CroogoTestCase
 {
 
     public $fixtures = [
-        'plugin.users.user',
-        'plugin.users.role',
-        'plugin.users.aro',
-        'plugin.users.aco',
-        'plugin.users.aros_aco',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.ArosAco',
     ];
 
     public function setUp()
@@ -24,9 +23,9 @@ class AclHelperTest extends CroogoTestCase
         $this->AclHelper = $this->getMock('AclHelper', null, [$View]);
     }
 
-/**
- * testLinkIsAllowedByRoleId
- */
+    /**
+     * testLinkIsAllowedByRoleId
+     */
     public function testLinkIsAllowedByRoleId()
     {
         Cache::clearGroup('acl', 'permissions');
@@ -59,9 +58,9 @@ class AclHelperTest extends CroogoTestCase
         $this->assertFalse($result);
     }
 
-/**
- * testLinkIsAllowedByUserId
- */
+    /**
+     * testLinkIsAllowedByUserId
+     */
     public function testLinkIsAllowedByUserId()
     {
         Cache::clearGroup('acl', 'permissions');

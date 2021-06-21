@@ -2,9 +2,11 @@
 
 use Croogo\Core\Status;
 
+$this->Croogo->adminScript(['Croogo/Menus.admin']);
+
 $this->extend('Croogo/Core./Common/admin_index');
 
-$this->Breadcrumbs->add(__d('croogo', 'Menus'), $this->request->getUri()->getPath());
+$this->Breadcrumbs->add(__d('croogo', 'Menus'), $this->getRequest()->getUri()->getPath());
 
 $this->start('table-heading');
 $tableHeaders = $this->Html->tableHeaders([
@@ -14,22 +16,30 @@ $tableHeaders = $this->Html->tableHeaders([
     $this->Paginator->sort('status', __d('croogo', 'Status')),
     __d('croogo', 'Actions'),
 ]);
-echo $this->Html->tag('thead', $tableHeaders);
+echo $tableHeaders;
 $this->end();
 
 $this->start('table-body');
 $rows = [];
-foreach ($menus as $menu):
+foreach ($menus as $menu) :
     $actions = [];
-    $actions[] = $this->Croogo->adminRowAction('',
+    $actions[] = $this->Croogo->adminRowAction(
+        '',
         ['controller' => 'Links', 'action' => 'index', '?' => ['menu_id' => $menu->id]],
-        ['icon' => $this->Theme->getIcon('inspect'), 'tooltip' => __d('croogo', 'View links')]);
+        ['icon' => $this->Theme->getIcon('inspect'), 'escapeTitle' => false, 'tooltip' => __d('croogo', 'View links')]
+    );
     $actions[] = $this->Croogo->adminRowActions($menu->id);
-    $actions[] = $this->Croogo->adminRowAction('', ['controller' => 'Menus', 'action' => 'edit', $menu->id],
-        ['icon' => $this->Theme->getIcon('update'), 'tooltip' => __d('croogo', 'Edit this item')]);
-    $actions[] = $this->Croogo->adminRowAction('', ['controller' => 'Menus', 'action' => 'delete', $menu->id],
-        ['icon' => $this->Theme->getIcon('delete'), 'tooltip' => __d('croogo', 'Remove this item')],
-        __d('croogo', 'Are you sure?'));
+    $actions[] = $this->Croogo->adminRowAction(
+        '',
+        ['controller' => 'Menus', 'action' => 'edit', $menu->id],
+        ['icon' => $this->Theme->getIcon('update'), 'escapeTitle' => false, 'tooltip' => __d('croogo', 'Edit this item')]
+    );
+    $actions[] = $this->Croogo->adminRowAction(
+        '',
+        ['controller' => 'Menus', 'action' => 'delete', $menu->id],
+        ['icon' => $this->Theme->getIcon('delete'), 'escapeTitle' => false, 'tooltip' => __d('croogo', 'Remove this item')],
+        __d('croogo', 'Are you sure?')
+    );
     $actions = $this->Html->div('item-actions', implode(' ', $actions));
 
     $title = $this->Html->link($menu->title, [
@@ -45,7 +55,7 @@ foreach ($menus as $menu):
 
     $status = $this->element('Croogo/Core.admin/toggle', [
         'id' => $menu->id,
-        'status' => $menu->status,
+        'status' => (int)$menu->status,
     ]);
 
     $rows[] = [

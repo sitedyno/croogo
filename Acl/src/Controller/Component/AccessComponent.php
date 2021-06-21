@@ -23,36 +23,36 @@ use Croogo\Core\Croogo;
 class AccessComponent extends Component
 {
 
-/**
- * _controller
- *
- * @var Controller
- */
+    /**
+     * _controller
+     *
+     * @var Controller
+     */
     protected $_controller = null;
 
-/**
- * startup
- *
- * @param Event $event
- */
+    /**
+     * startup
+     *
+     * @param Event $event
+     */
     public function startup(Event $event)
     {
-        $controller = $event->subject();
+        $controller = $event->getSubject();
         $this->_controller = $controller;
-        if ($controller->request->param('prefix') != 'admin') {
+        if ($controller->request->getParam('prefix') != 'admin') {
             return;
         }
 
-        switch ($controller->name) {
+        switch ($controller->getName()) {
             case 'Roles':
                 $this->_setupRole();
                 break;
         }
     }
 
-/**
- * Hook admin menu element to set role parent
- */
+    /**
+     * Hook admin menu element to set role parent
+     */
     protected function _setupRole()
     {
         $title = __d('croogo', 'Parent Role');
@@ -61,25 +61,25 @@ class AccessComponent extends Component
         Croogo::hookAdminTab('Admin/Roles/edit', $title, $element);
 
         $id = null;
-        if (!empty($this->_controller->request->params['pass'][0])) {
-            $id = $this->_controller->request->params['pass'][0];
+        if (!empty($this->_controller->request->getParam('pass')[0])) {
+            $id = $this->_controller->request->getParam('pass')[0];
         }
         $this->_controller->set('parents', $this->_controller->Roles->allowedParents($id));
     }
 
-/**
- * Add ACO
- *
- * Creates ACOs with permissions for roles.
- *
- * Action Path format:
- * - ControllerName
- * - ControllerName/method_name
- *
- * @param string $action action path
- * @param array $allowRoles Role aliases
- * @return void
- */
+    /**
+     * Add ACO
+     *
+     * Creates ACOs with permissions for roles.
+     *
+     * Action Path format:
+     * - ControllerName
+     * - ControllerName/method_name
+     *
+     * @param string $action action path
+     * @param array $allowRoles Role aliases
+     * @return void
+     */
     public function addAco($action, $allowRoles = [])
     {
         $actionPath = $this->_controller->Auth->config('authorize.all.actionPath');
@@ -90,18 +90,18 @@ class AccessComponent extends Component
         $Aco->addAco($action, $allowRoles);
     }
 
-/**
- * Remove ACO
- *
- * Removes ACOs and their Permissions
- *
- * Action Path format:
- * - ControllerName
- * - ControllerName/method_name
- *
- * @param string $action action path
- * @return void
- */
+    /**
+     * Remove ACO
+     *
+     * Removes ACOs and their Permissions
+     *
+     * Action Path format:
+     * - ControllerName
+     * - ControllerName/method_name
+     *
+     * @param string $action action path
+     * @return void
+     */
     public function removeAco($action)
     {
         $actionPath = $this->_controller->Auth->authorize['all']['actionPath'];
@@ -115,21 +115,15 @@ class AccessComponent extends Component
     public function isUrlAuthorized($user, $url)
     {
         if (is_string($url)) {
-            $parsedUrl = Router::parse($url);
-            unset($parsedUrl['_matchedRoute']);
-            $options = [
-                'params' => $parsedUrl,
-                'url' => $url,
-            ];
+            $request = new ServerRequest($url);
+            $params = Router::parseRequest($request);
+            $request = $request->withAttribute('params', $params);
         } else {
-            $reversedRoute = Router::reverse($url);
-            $options = [
-                'params' => $url,
-                'url' => $reversedRoute,
-            ];
+            $request = new ServerRequest();
+            $params = Router::reverse($url);
+            $request = $request->withAttribute('params', $params);
         }
-        $request = new ServerRequest($options);
+
         return $this->getController()->Auth->isAuthorized($user, $request);
     }
-
 }

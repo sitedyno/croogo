@@ -2,15 +2,12 @@
 
 namespace Croogo\Core\Test\TestCase\Controller\Component;
 
-use App\Controller\AppController;
-use Cake\Controller\Component;
 use Cake\Controller\ComponentRegistry;
 use Cake\Controller\Controller;
 use Cake\Event\Event;
 use Cake\Network\Request;
 use Cake\Network\Response;
 use Croogo\Core\Controller\Component\CroogoComponent;
-use Croogo\Core\TestSuite\CroogoTestCase;
 use Croogo\Core\TestSuite\TestCase;
 
 class MockCroogoComponent extends CroogoComponent
@@ -18,7 +15,7 @@ class MockCroogoComponent extends CroogoComponent
 
     public function startup(Event $event)
     {
-        $this->_controller = $event->subject();
+        $this->_controller = $event->getSubject();
     }
 }
 
@@ -26,17 +23,17 @@ class CroogoComponentTest extends TestCase
 {
 
     public $fixtures = [
-//		'plugin.croogo/users.aco',
-//		'plugin.croogo/users.aro',
-//		'plugin.croogo/users.aros_aco',
-//		'plugin.croogo/settings.setting',
-//		'plugin.croogo/menus.menu',
-//		'plugin.croogo/menus.link',
-//		'plugin.croogo/users.role',
-//		'plugin.croogo/taxonomy.type',n
-//		'plugin.croogo/taxonomy.vocabulary',
-//		'plugin.croogo/taxonomy.types_vocabulary',
-//		'plugin.croogo/nodes.node',
+//      'plugin.Croogo/Users.Aco',
+//      'plugin.Croogo/Users.Aro',
+//      'plugin.Croogo/Users.ArosAco',
+//      'plugin.Croogo/Settings.Setting',
+//      'plugin.Croogo/Menus.Menu',
+//      'plugin.Croogo/Menus.Link',
+//      'plugin.Croogo/Users.Role',
+//      'plugin.Croogo/Taxonomy.Type',
+//      'plugin.Croogo/Taxonomy.Vocabulary',
+//      'plugin.Croogo/Taxonomy.TypesVocabulary',
+//      'plugin.Croogo/Nodes.Node',
     ];
 
     public $component = null;
@@ -55,13 +52,13 @@ class CroogoComponentTest extends TestCase
         $registry = new ComponentRegistry($this->controller);
         $this->component = new CroogoComponent($registry);
 
-//		$this->Controller = new Controller(new Request(), new Response());
-////		$this->Controller->constructClasses();
-//		$this->Controller->Croogo = new MockCroogoComponent($this->Controller->components());
-//		$this->Controller->components()->unload('Blocks');
-//		$this->Controller->components()->unload('Menus');
-//		$this->Controller->components()->set('Croogo', $this->Controller->Croogo);
-//		$this->Controller->startupProcess();
+//      $this->Controller = new Controller(new Request(), new Response());
+////        $this->Controller->constructClasses();
+//      $this->Controller->Croogo = new MockCroogoComponent($this->Controller->components());
+//      $this->Controller->components()->unload('Blocks');
+//      $this->Controller->components()->unload('Menus');
+//      $this->Controller->components()->set('Croogo', $this->Controller->Croogo);
+//      $this->Controller->startupProcess();
     }
 
     public function testAddRemoveAcos()
@@ -87,28 +84,12 @@ class CroogoComponentTest extends TestCase
         $this->assertEmpty($parent);
     }
 
-/**
- * testRedirect
- *
- * @return void
- * @dataProvider redirectData
- */
-    public function testRedirect($expected, $url, $data = [], $indexUrl = [])
-    {
-        $this->controller->request->data = $data;
-        $this->controller->expects($this->once())
-            ->method('redirect')
-            ->with($this->equalTo($expected));
-        $CroogoComponent = new CroogoComponent(new ComponentRegistry());
-        $CroogoComponent->startup(new Event(null, $this->controller));
-        $CroogoComponent->redirect($url, null, true, $indexUrl);
-    }
+    /**
 
-/**
- * redirectData
- *
- * @return array
- */
+     * redirectData
+     *
+     * @return array
+     */
     public function redirectData()
     {
         return [

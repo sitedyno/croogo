@@ -1,19 +1,4 @@
-/**
- * Nodes
- *
- * for NodesController
- */
 var Attachments = {};
-
-/**
- * functions to execute when document is ready
- *
- * only for NodesController
- *
- * @return void
- */
-Attachments.documentReady = function () {
-}
 
 Attachments.confirmProcess = function (event) {
   var $el = $(event.currentTarget);
@@ -36,17 +21,8 @@ Attachments.confirmProcess = function (event) {
     }
   }
   return false;
-}
+};
 
-/**
- * document ready
- *
- * @return void
- */
-$(document).ready(function () {
-  if (Croogo.params.controller == 'Attachments') {
-    Attachments.documentReady();
-  }
-
+Attachments.init = function() {
   Admin.toggleRowSelection('#AttachmentsCheckAll');
-});
+};

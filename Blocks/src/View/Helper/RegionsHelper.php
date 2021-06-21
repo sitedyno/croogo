@@ -6,7 +6,6 @@ use Cake\Event\Event;
 use Cake\Log\LogTrait;
 use Cake\Utility\Hash;
 use Cake\View\Helper;
-use Croogo\Blocks\Catalog;
 use Croogo\Blocks\Model\Entity\Block;
 use Croogo\Core\Croogo;
 
@@ -31,7 +30,7 @@ class RegionsHelper extends Helper
      * returns true if Region has no Blocks.
      *
      * @param string $regionAlias Region alias
-     * @return boolean
+     * @return bool
      */
     public function isEmpty($regionAlias)
     {
@@ -72,17 +71,24 @@ class RegionsHelper extends Helper
         $event = Croogo::dispatchEvent('Helper.Regions.beforeSetBlock', $this->_View, [
             'content' => $block->body,
         ]);
-        $block->body = $event->data()['content'];
+        $block->body = $event->getData()['content'];
 
         if ($exists) {
             $blockOutput = $this->_View->element($element, compact('block'), $elementOptions);
         } else {
             if (!empty($element)) {
-                $this->log(sprintf('Missing element `%s` in block `%s` (%s)', $block->element, $block->alias,
-                    $block->id), LOG_WARNING);
+                $this->log(sprintf(
+                    'Missing element `%s` in block `%s` (%s)',
+                    $block->element,
+                    $block->alias,
+                    $block->id
+                ), LOG_WARNING);
             }
-            $blockOutput = $this->_View->element($defaultElement, compact('block'),
-                ['ignoreMissing' => true] + $elementOptions);
+            $blockOutput = $this->_View->element(
+                $defaultElement,
+                compact('block'),
+                ['ignoreMissing' => true] + $elementOptions
+            );
         }
 
         if ($block->get('cell')) {
@@ -169,7 +175,7 @@ class RegionsHelper extends Helper
      */
     public function filter(Event $event)
     {
-        preg_match_all('/\[(region):([A-Za-z0-9_\-]*)(.*?)\]/i', $event->data['content'], $tagMatches);
+        preg_match_all('/\[(region):([A-Za-z0-9_\-]*)(.*?)\]/i', $event->getData('content'), $tagMatches);
         for ($i = 0, $ii = count($tagMatches[1]); $i < $ii; $i++) {
             $regex = '/(\S+)=[\'"]?((?:.(?![\'"]?\s+(?:\S+)=|[>\'"]))+.)[\'"]?/i';
             preg_match_all($regex, $tagMatches[3][$i], $attributes);
@@ -182,6 +188,6 @@ class RegionsHelper extends Helper
             $event->data['content'] = str_replace($tagMatches[0][$i], $this->blocks($regionAlias, $options), $event->data['content']);
         }
 
-        return $event->data;
+        return $event->getData();
     }
 }

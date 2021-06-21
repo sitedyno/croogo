@@ -1,4 +1,5 @@
 <?php
+
 use Migrations\AbstractMigration;
 
 class CommentsInitialMigration extends AbstractMigration
@@ -23,9 +24,9 @@ class CommentsInitialMigration extends AbstractMigration
                 'null' => false,
             ])
             ->addColumn('user_id', 'integer', [
-                'default' => 0,
+                'default' => null,
                 'limit' => 20,
-                'null' => false,
+                'null' => true,
             ])
             ->addColumn('name', 'string', [
                 'default' => null,
@@ -92,25 +93,20 @@ class CommentsInitialMigration extends AbstractMigration
                 'limit' => 11,
                 'null' => true,
             ])
-            ->addColumn('updated', 'datetime', [
+            ->addTimestamps('created', 'updated')
+            ->addColumn('created_by', 'integer', [
                 'default' => null,
-                'limit' => null,
-                'null' => false,
+                'limit' => 20,
+                'null' => true,
             ])
             ->addColumn('updated_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
                 'null' => true,
             ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('created_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
+            ->addForeignKey('user_id', 'users', ['id'], [
+                'constraint' => 'fk_comments2users',
+                'delete' => 'RESTRICT',
             ])
             ->addIndex(
                 [
@@ -123,6 +119,6 @@ class CommentsInitialMigration extends AbstractMigration
 
     public function down()
     {
-        $this->dropTable('comments');
+        $this->table('comments')->drop()->save();
     }
 }

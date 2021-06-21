@@ -2,9 +2,7 @@
 
 namespace Croogo\Comments\Controller\Admin;
 
-use App\Network\Email\Email;
 use Cake\Event\Event;
-use Croogo\Comments\Model\Entity\Comment;
 
 /**
  * Comments Controller
@@ -23,6 +21,9 @@ class CommentsController extends AppController
         parent::initialize();
 
         $this->_loadCroogoComponents(['Akismet', 'BulkProcess', 'Recaptcha']);
+        $this->Crud->setConfig('actions.index', [
+            'displayFields' => $this->Comments->displayFields()
+        ]);
     }
 
     /**
@@ -33,7 +34,7 @@ class CommentsController extends AppController
      */
     public function process()
     {
-        list($action, $ids) = $this->BulkProcess->getRequestVars($this->Comments->alias());
+        list($action, $ids) = $this->BulkProcess->getRequestVars($this->Comments->getAlias());
 
         $options = [
             'messageMap' => [
@@ -48,7 +49,7 @@ class CommentsController extends AppController
 
     public function beforePaginate(Event $event)
     {
-        $query = $event->subject()->query;
+        $query = $event->getSubject()->query;
 
         $query->find('relatedEntity');
     }
@@ -67,5 +68,4 @@ class CommentsController extends AppController
             return;
         }
     }
-
 }

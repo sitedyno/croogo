@@ -1,32 +1,33 @@
 <?php
+
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 
 if (empty($modelClass)) {
     $modelClass = $this->name;
 }
-if (!empty($searchFields)):
+if (!empty($searchFields)) :
     echo $this->Form->create(null, [
         'align' => 'inline',
         'novalidate' => true,
         'url' => [
-            'plugin' => $this->request->params['plugin'],
-            'controller' => $this->request->params['controller'],
-            'action' => $this->request->params['action'],
+            'plugin' => $this->getRequest()->getParam('plugin'),
+            'controller' => $this->getRequest()->getParam('controller'),
+            'action' => $this->getRequest()->getParam('action'),
         ],
     ]);
-    $this->Form->templates([
+    $this->Form->setTemplates([
         'label' => false,
         'submitContainer' => '{{content}}',
     ]);
-    if (isset($this->request->query['chooser'])):
+    if ($this->getRequest()->getQuery('chooser')) :
         echo $this->Form->input('chooser', [
             'type' => 'hidden',
-            'value' => isset($this->request->query['chooser']),
+            'value' => $this->getRequest()->getQuery('chooser'),
         ]);
     endif;
     foreach ($searchFields as $field => $fieldOptions) {
-        $options = ['empty' => true, 'required' => false, 'class' => 'col-3'];
+        $options = ['empty' => true, 'required' => false];
         if (is_numeric($field) && is_string($fieldOptions)) {
             $field = $fieldOptions;
             $fieldOptions = [];
@@ -38,7 +39,7 @@ if (!empty($searchFields)):
         if (substr($label, -3) === '_id') {
             $label = substr($label, 0, -3);
         }
-        $options['default'] = $this->request->query($field);
+        $options['default'] = $this->getRequest()->getQuery($field);
         $label = __(Inflector::humanize(Inflector::underscore($label)));
         $options['placeholder'] = __d('croogo', $label);
         $this->Form->unlockField($field);

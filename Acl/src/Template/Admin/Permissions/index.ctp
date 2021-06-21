@@ -1,16 +1,20 @@
 <?php
 
+$tabContentClass = $this->Theme->getCssClass('tabContentClass');
+
 $this->extend('Croogo/Core./Common/admin_index');
 
 $this->Croogo->adminScript('Croogo/Acl.acl_permissions');
 
-$this->Breadcrumbs->add(__d('croogo', 'Users'),
-        ['plugin' => 'Croogo/Users', 'controller' => 'Users', 'action' => 'index'])
-    ->add(__d('croogo', 'Permissions'), $this->request->getUri()->getPath());
+$this->Breadcrumbs->add(
+    __d('croogo', 'Users'),
+    ['plugin' => 'Croogo/Users', 'controller' => 'Users', 'action' => 'index']
+)
+    ->add(__d('croogo', 'Permissions'), $this->getRequest()->getUri()->getPath());
 
 $this->append('action-buttons');
 $toolsButton = $this->Html->link(__d('croogo', 'Tools'), '#', [
-        'button' => 'secondary',
+        'button' => 'outline-secondary btn-sm',
         'class' => 'dropdown-toggle',
         'data-toggle' => 'dropdown',
         'escape' => false,
@@ -46,8 +50,10 @@ echo $this->Html->div('btn-group', $toolsButton . $this->Html->tag('ul', $out, [
     'class' => 'dropdown-menu dropdown-menu-right',
 ]));
 
-echo $this->Croogo->adminAction(__d('croogo', 'Edit Actions'),
-    ['controller' => 'Actions', 'action' => 'index', 'permissions' => 1]);
+echo $this->Croogo->adminAction(
+    __d('croogo', 'Edit Actions'),
+    ['controller' => 'Actions', 'action' => 'index', 'permissions' => 1]
+);
 $this->end();
 
 $this->Js->buffer('AclPermissions.tabSwitcher();');
@@ -62,7 +68,7 @@ $this->Js->buffer('AclPermissions.tabSwitcher();');
         ?>
         </ul>
 
-        <div class="tab-content">
+        <div class="<?= $tabContentClass ?>">
             <?= $this->Croogo->adminTabs() ?>
         </div>
 

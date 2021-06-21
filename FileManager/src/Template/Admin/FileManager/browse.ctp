@@ -1,21 +1,31 @@
 <?php
 
 $this->extend('Croogo/Core./Common/admin_index');
+$tableHeaderClass = $this->Theme->getCssClass('tableHeaderClass');
 
 $this->assign('title', __d('croogo', 'File Manager'));
-$this->Breadcrumbs->add(__d('croogo', 'File Manager'), $this->request->getRequestTarget());
+$this->Breadcrumbs->add(__d('croogo', 'File Manager'), $this->getRequest()->getRequestTarget());
 
 ?>
 
 <?php $this->start('action-buttons') ?>
 <div class="btn-group">
     <?php
-    echo $this->FileManager->adminAction(__d('croogo', 'Upload here'),
-        ['controller' => 'FileManager', 'action' => 'upload'], $path);
-    echo $this->FileManager->adminAction(__d('croogo', 'Create directory'),
-        ['controller' => 'FileManager', 'action' => 'create_directory'], $path);
-    echo $this->FileManager->adminAction(__d('croogo', 'Create file'),
-        ['controller' => 'FileManager', 'action' => 'create_file'], $path);
+    echo $this->FileManager->adminAction(
+        __d('croogo', 'Upload here'),
+        ['controller' => 'FileManager', 'action' => 'upload'],
+        $path
+    );
+    echo $this->FileManager->adminAction(
+        __d('croogo', 'Create directory'),
+        ['controller' => 'FileManager', 'action' => 'create_directory'],
+        $path
+    );
+    echo $this->FileManager->adminAction(
+        __d('croogo', 'Create file'),
+        ['controller' => 'FileManager', 'action' => 'create_file'],
+        $path
+    );
     ?>
 </div>
 <?php $this->end() ?>
@@ -31,17 +41,17 @@ $this->Breadcrumbs->add(__d('croogo', 'File Manager'), $this->request->getReques
             __d('croogo', 'Actions'),
         ]);
         ?>
-        <thead>
+        <thead class="<?= $tableHeaderClass ?>">
             <?= $tableHeaders ?>
         </thead>
         <?php
         // directories
         $rows = [];
-        foreach ($content['0'] as $directory):
+        foreach ($content['0'] as $directory) :
             $actions = [];
             $fullpath = $path . $directory;
             $actions[] = $this->FileManager->linkDirectory(__d('croogo', 'Open'), $fullpath . DS);
-            if ($this->FileManager->inPath($deletablePaths, $fullpath)) {
+            if ($this->FileManager->isDeletable($fullpath)) {
                 $actions[] = $this->FileManager->link(__d('croogo', 'Delete'), [
                     'controller' => 'FileManager',
                     'action' => 'delete_directory',
@@ -62,11 +72,11 @@ $this->Breadcrumbs->add(__d('croogo', 'File Manager'), $this->request->getReques
 
         // files
         $rows = [];
-        foreach ($content['1'] as $file):
+        foreach ($content['1'] as $file) :
             $actions = [];
             $fullpath = $path . $file;
             $icon = $this->FileManager->filename2icon($file);
-            if ($icon == 'picture.png'):
+            if ($icon == 'picture.png') :
                 $image = '/' . str_replace(WWW_ROOT, '', $fullpath);
                 $lightboxOptions = [
                     'data-toggle' => 'lightbox',
@@ -74,7 +84,7 @@ $this->Breadcrumbs->add(__d('croogo', 'File Manager'), $this->request->getReques
                 ];
                 $linkFile = $this->Html->link($file, $image, $lightboxOptions);
                 $actions[] = $this->Html->link(__d('croogo', 'View'), $image, $lightboxOptions);
-            else:
+            else :
                 $linkFile = $this->FileManager->linkFile($file, $fullpath);
                 $actions[] = $this->FileManager->link(__d('croogo', 'Edit'), [
                         'plugin' => 'Croogo/FileManager',
@@ -82,7 +92,7 @@ $this->Breadcrumbs->add(__d('croogo', 'File Manager'), $this->request->getReques
                         'action' => 'edit_file',
                     ], $fullpath);
             endif;
-            if ($this->FileManager->inPath($deletablePaths, $fullpath)) {
+            if ($this->FileManager->isDeletable($fullpath)) {
                 $actions[] = $this->FileManager->link(__d('croogo', 'Delete'), [
                     'plugin' => 'Croogo/FileManager',
                     'controller' => 'FileManager',
@@ -104,7 +114,7 @@ $this->Breadcrumbs->add(__d('croogo', 'File Manager'), $this->request->getReques
         echo $this->Html->tableCells($rows, ['class' => 'file-listing'], ['class' => 'file-listing']);
 
         ?>
-        <thead>
+        <thead class="<?= $tableHeaderClass ?>">
             <?= $tableHeaders ?>
         </thead>
     </table>

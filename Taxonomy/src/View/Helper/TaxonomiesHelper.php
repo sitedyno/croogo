@@ -3,7 +3,6 @@
 namespace Croogo\Taxonomy\View\Helper;
 
 use Cake\Event\Event;
-use Cake\Utility\Inflector;
 use Cake\View\Helper;
 use Croogo\Core\Croogo;
 
@@ -36,7 +35,8 @@ class TaxonomiesHelper extends Helper
      */
     public function beforeRender($viewFile)
     {
-        if ($this->request->param('prefix') === 'admin' && !$this->request->is('ajax')) {
+        $request = $this->getView()->getRequest();
+        if ($request->getParam('prefix') === 'admin' && !$request->is('ajax')) {
             $this->_adminTabs();
         }
     }
@@ -46,8 +46,9 @@ class TaxonomiesHelper extends Helper
      */
     protected function _adminTabs()
     {
-        $controller = $this->request->params['controller'];
-        if (empty($this->_View->viewVars['taxonomies']) || $controller == 'Terms') {
+        $request = $this->getView()->getRequest();
+        $controller = $request->getParam('controller');
+        if (empty($this->getView()->viewVars['taxonomies']) || $controller == 'Terms') {
             return;
         }
         $title = __d('croogo', 'Terms');
@@ -83,7 +84,7 @@ class TaxonomiesHelper extends Helper
             );
         }
 
-        return $event->data;
+        return $event->getData();
     }
 
     /**
@@ -147,7 +148,7 @@ class TaxonomiesHelper extends Helper
                         'controller' => $options['controller'],
                         'action' => $options['action'],
                         'type' => $options['type'],
-                        'slug' => $term->term->slug,
+                        'term' => $term->term->slug,
                     ],
                     $termAttr
                 );
@@ -177,14 +178,10 @@ class TaxonomiesHelper extends Helper
     public function generateTypeLinks($typeData, $termData)
     {
         $typeLinks = '';
-        if (count($typeData) <= 1) {
-            return $typeLinks;
-        }
-
         $typeLink = [];
         $typeLink[] = ' (';
 
-        foreach ($typeData as $type) {
+        foreach ((array)$typeData as $type) {
             $typeLink[] = $this->Html->link(
                 $type->title,
                 [
@@ -193,7 +190,7 @@ class TaxonomiesHelper extends Helper
                     'controller' => 'Nodes',
                     'action' => 'term',
                     'type' => $type->alias,
-                    'slug' => $termData['Term']['slug'],
+                    'term' => $termData->slug,
                 ],
                 [
                     'target' => '_blank',

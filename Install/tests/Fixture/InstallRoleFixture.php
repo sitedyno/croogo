@@ -11,16 +11,16 @@ use Croogo\Core\TestSuite\CroogoTestFixture;
 class InstallRoleFixture extends CroogoTestFixture
 {
 
-/**
- * Table name
- */
+    /**
+     * Table name
+     */
     public $table = 'roles';
 
-/**
- * Fields
- *
- * @var array
- */
+    /**
+     * Fields
+     *
+     * @var array
+     */
     public $fields = [
         'id' => ['type' => 'integer', 'null' => false, 'default' => null],
         'title' => ['type' => 'string', 'null' => false, 'default' => null, 'length' => 100, 'collate' => 'utf8_unicode_ci', 'charset' => 'utf8'],
@@ -34,11 +34,11 @@ class InstallRoleFixture extends CroogoTestFixture
         '_options' => ['charset' => 'utf8', 'collate' => 'utf8_unicode_ci', 'engine' => 'InnoDB']
     ];
 
-/**
- * Records
- *
- * @var array
- */
+    /**
+     * Records
+     *
+     * @var array
+     */
     public $records = [
         [
             'id' => '1',

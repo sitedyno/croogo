@@ -2,6 +2,8 @@
 
 namespace Croogo\Taxonomy\Model\Behavior;
 
+use ArrayObject;
+use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Event\Event;
 use Cake\I18n\I18n;
 use Cake\Log\Log;
@@ -9,6 +11,8 @@ use Cake\ORM\Behavior;
 use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\Utility\Hash;
+use Cake\Utility\Text;
+use Croogo\Taxonomy\Model\Entity\Term;
 
 /**
  * TaxonomizableBehavior
@@ -22,11 +26,21 @@ use Cake\Utility\Hash;
  */
 class TaxonomizableBehavior extends Behavior
 {
+    /**
+     * @param array $config
+     * @return void
+     */
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->_setupRelationships();
+
+        $this->_table->searchManager()
+            ->add('vocab', 'Search.Finder', [
+                'finder' => 'withVocabulary',
+            ])
+            ->add('term', 'Search.Finder', [
+                'finder' => 'withTerm',
+            ]);
     }
 
     /**
@@ -47,30 +61,30 @@ class TaxonomizableBehavior extends Behavior
      */
     protected function _setupRelationships()
     {
-        $this->_table->belongsToMany(
-            'Taxonomies',
-            [
-                'className' => 'Croogo/Taxonomy.Taxonomies',
-                'through' => 'Croogo/Taxonomy.ModelTaxonomies',
-                'foreignKey' => 'foreign_key',
-                'associationForeignKey' => 'taxonomy_id',
-                'conditions' => [
-                    'model' => $this->_table->registryAlias(),
-                ],
-            ]
-        );
-        $this->_table->Taxonomies->belongsToMany(
-            $this->_table->alias(),
-            [
-                'targetTable' => $this->_table,
-                'through' => 'Croogo/Taxonomy.ModelTaxonomies',
-                'foreignKey' => 'foreign_key',
-                'associationForeignKey' => 'taxonomy_id',
-                'conditions' => [
-                    'model' => $this->_table->registryAlias(),
-                ],
-            ]
-        );
+        $this->_table->belongsTo('Types', [
+            'className' => 'Croogo/Taxonomy.Types',
+            'foreignKey' => 'type',
+            'bindingKey' => 'alias',
+            'propertyName' => 'node_type',
+        ]);
+        $this->_table->belongsToMany('Taxonomies', [
+            'className' => 'Croogo/Taxonomy.Taxonomies',
+            'through' => 'Croogo/Taxonomy.ModelTaxonomies',
+            'foreignKey' => 'foreign_key',
+            'associationForeignKey' => 'taxonomy_id',
+            'conditions' => [
+                'model' => $this->_table->getRegistryAlias(),
+            ],
+        ]);
+        $this->_table->Taxonomies->belongsToMany($this->_table->getAlias(), [
+            'targetTable' => $this->_table,
+            'through' => 'Croogo/Taxonomy.ModelTaxonomies',
+            'foreignKey' => 'foreign_key',
+            'associationForeignKey' => 'taxonomy_id',
+            'conditions' => [
+                'model' => $this->_table->getRegistryAlias(),
+            ],
+        ]);
     }
 
     /**
@@ -95,36 +109,32 @@ class TaxonomizableBehavior extends Behavior
         if ($entity->has($typeField)) {
             $typeAlias = $entity->{$typeField};
         } else {
-            Log::error('Unable to determine type for model ' . $this->_table->alias());
+            Log::error('Unable to determine type for model ' . $this->_table->getAlias());
 
             return false;
         }
 
         $type = $this->_table->Taxonomies->Vocabularies->Types->find()
-            ->select(
-                [
-                    'id',
-                    'title',
-                    'alias',
-                ]
-            )
-            ->contain(
-                [
-                    'Vocabularies' => function (Query $q) {
-                        return $q->select(
-                            [
-                                'id',
-                                'title',
-                                'alias',
-                                'required',
-                                'multiple',
-                            ]
-                        )->contain(['Taxonomies']);
-                    },
-                ]
-            )
+            ->select([
+                'id',
+                'title',
+                'alias',
+            ])
+            ->contain([
+                'Vocabularies' => function (Query $q) {
+                    return $q
+                        ->select([
+                            'id',
+                            'title',
+                            'alias',
+                            'required',
+                            'multiple',
+                        ])
+                        ->contain(['Taxonomies']);
+                },
+            ])
             ->where([
-                'alias' => $typeAlias
+                'alias' => $typeAlias,
             ])
             ->first();
 
@@ -157,27 +167,22 @@ class TaxonomizableBehavior extends Behavior
      * @param \Cake\ORM\Entity $entity Entity being saved
      * @param string $typeAlias string Node type alias
      * @return void
-     * @throws InvalidArgumentException
+     * @throws RecordNotFoundException
      */
     public function formatTaxonomyData(Entity $entity, $typeAlias)
     {
         $type = $this->_table->Taxonomies->Vocabularies->Types->findByAlias($typeAlias)
             ->first();
         if (empty($type)) {
-            throw new InvalidArgumentException(__d('croogo', 'Invalid Content Type'));
+            throw new RecordNotFoundException(__d('croogo', 'Invalid Content Type'));
         }
         $entity->type = $type->alias;
-        if (!$this->_table->behaviors()
-            ->has('Tree')
-        ) {
-            $this->_table->addBehavior(
-                'Tree',
-                [
-                    'scope' => [
-                        $this->_table->aliasField('type') => $entity->type,
-                    ],
-                ]
-            );
+        if (!$this->_table->behaviors()->has('Tree')) {
+            $this->_table->addBehavior('Tree', [
+                'scope' => [
+                    $this->_table->aliasField('type') => $entity->type,
+                ],
+            ]);
         }
         if ($entity->has('taxonomy_data')) {
             $taxonomies = [];
@@ -186,10 +191,15 @@ class TaxonomizableBehavior extends Behavior
                     continue;
                 }
                 foreach ((array)$taxonomyIds as $taxonomyId) {
+                    if (!is_numeric($taxonomyId)) {
+                        $term = $this->findOrCreateTerm($entity, $vocabularyId, $taxonomyId);
+                        $taxonomy = $this->findTermTaxonomy($term, $vocabularyId);
+                        $taxonomyId = $taxonomy->id;
+                    }
                     $taxonomies[] = [
                         'id' => $taxonomyId,
                         '_joinData' => [
-                            'model' => $entity->source(),
+                            'model' => $entity->getSource(),
                         ],
                     ];
                 }
@@ -199,11 +209,65 @@ class TaxonomizableBehavior extends Behavior
     }
 
     /**
+     * Find or create term and linkage with the relevant taxonomy and vocabulary
+     *
+     * @param Cake\ORM\Entity $entity Entity
+     * @param int $vocabularyId Vocabulary Id
+     * @param string $taxonomyId Taxonomy ID
+     * @return \Croogo\Taxonomy\Model\Entity\Term
+     */
+    private function findOrCreateTerm(Entity $entity, int $vocabularyId, $taxonomyId)
+    {
+        $Terms = $this->_table->Taxonomies->Terms;
+        $term = $Terms->find()
+            ->where([
+                'title' => $taxonomyId,
+            ])->first();
+
+        if (!$term) {
+            $term = $Terms->newEntity([
+                'title' => $taxonomyId,
+                'slug' => Text::slug(strtolower($taxonomyId)),
+                'vocabularies' => [
+                    ['id' => $vocabularyId],
+                ],
+                'taxonomies' => [
+                    ['model' => $entity->getSource()],
+                ],
+            ], [
+                'associated' => [
+                    'vocabularies',
+                ]
+            ]);
+            $Terms->setScopeForTaxonomy($vocabularyId);
+            $term = $Terms->save($term, [
+                'associated' => [
+                    'vocabularies',
+                ],
+            ]);
+        }
+
+        return $term;
+    }
+
+    private function findTermTaxonomy(Term $term, int $vocabularyId)
+    {
+        $Taxonomies = $this->_table->Taxonomies;
+
+        return $Taxonomies->find()
+            ->where([
+                'vocabulary_id' => $vocabularyId,
+                'term_id' => $term->id,
+            ])
+            ->first();
+    }
+
+    /**
      * beforeSave
      *
-     * @return bool
+     * @return void
      */
-    public function beforeSave(Event $event, Entity $entity)
+    public function beforeSave(Event $event, Entity $entity, ArrayObject $options)
     {
         if (!$entity->has('taxonomy_data')) {
             return;
@@ -218,11 +282,29 @@ class TaxonomizableBehavior extends Behavior
         $this->validateTaxonomyData($entity);
     }
 
+    /**
+     * @param Event $event
+     * @param Query $query
+     *
+     * @return array|Query
+     */
     public function beforeFind(Event $event, Query $query)
     {
-        $query->contain(['Taxonomies']);
+        return $query->contain([
+            'Taxonomies' => [
+                'Terms',
+                'Vocabularies',
+            ],
+            'Types',
+        ]);
     }
 
+    /**
+     * @param Query $query
+     * @param array $options
+     *
+     * @return Query
+     */
     public function findWithTerm(Query $query, array $options)
     {
         if (empty($options['term'])) {
@@ -234,7 +316,7 @@ class TaxonomizableBehavior extends Behavior
             $locale = I18n::getLocale();
             $cacheKeys = ['term', $locale, $term];
             $cacheKey = implode('_', $cacheKeys);
-            $term = $this->_table->Taxonomies->Terms->find()
+            $entity = $this->_table->Taxonomies->Terms->find()
                 ->where([
                     'Terms.slug' => $term
                 ])
@@ -242,15 +324,55 @@ class TaxonomizableBehavior extends Behavior
                 ->first();
         }
 
-        if (!$term) {
-            return $query;
+        if (!$entity) {
+            throw new RecordNotFoundException(__d('croogo', 'Term not found: %s', $term));
         }
 
         $query
-            ->matching('Taxonomies', function (Query $q) use ($term) {
-               return $q
+            ->matching('Taxonomies', function (Query $q) use ($entity) {
+                return $q
                    ->where([
-                       'term_id' => $term->id
+                       'term_id' => $entity->id
+                   ]);
+            });
+
+        return $query;
+    }
+
+    /**
+     * @param Query $query
+     * @param array $options
+     *
+     * @return Query
+     */
+    public function findWithVocabulary(Query $query, array $options)
+    {
+        if (empty($options['vocab'])) {
+            return $query;
+        }
+        $vocab = $options['vocab'];
+
+        if (is_string($vocab)) {
+            $locale = I18n::getLocale();
+            $cacheKeys = ['term', $locale, $vocab];
+            $cacheKey = implode('_', $cacheKeys);
+            $entity = $this->_table->Taxonomies->Vocabularies->find()
+                ->where([
+                    'Vocabularies.alias' => $vocab
+                ])
+                ->cache($cacheKey, 'croogo_vocabularies')
+                ->first();
+        }
+
+        if (!$entity) {
+            throw new RecordNotFoundException(__d('croogo', 'Vocabulary not found: {0}', $vocab));
+        }
+
+        $query
+            ->matching('Taxonomies', function (Query $q) use ($entity) {
+                return $q
+                   ->where([
+                       'vocabulary_id' => $entity->id
                    ]);
             });
 

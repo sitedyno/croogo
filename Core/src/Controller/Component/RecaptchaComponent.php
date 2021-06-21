@@ -44,15 +44,15 @@ class RecaptchaComponent extends Component
     {
         $controller = $this->_registry->getController();
         $this->_controller = $controller;
-        if ($controller->name === 'CakeError') {
+        if ($controller->getName() === 'CakeError') {
             return;
         }
 
-        if (in_array($this->request->param('action'), $this->config('actions'))) {
+        if (in_array($this->request->getParam('action'), $this->getConfig('actions'))) {
             $controller->Security->validatePost = false;
         }
 
-        $controller->viewBuilder()->helpers(['Croogo/Core.Recaptcha']);
+        $controller->viewBuilder()->setHelpers(['Croogo/Core.Recaptcha']);
     }
 
     /**
@@ -72,8 +72,8 @@ class RecaptchaComponent extends Component
      */
     public function verify()
     {
-        if (isset($this->request->data['g-recaptcha-response'])) {
-            $captcha = $this->request->data['g-recaptcha-response'];
+        if ($this->request->getData('g-recaptcha-response')) {
+            $captcha = $this->request->getData('g-recaptcha-response');
             $response = $this->_getApiResponse($captcha);
 
             if (!$response->success) {

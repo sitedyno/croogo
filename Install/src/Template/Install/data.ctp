@@ -2,20 +2,17 @@
 $this->assign('title', __d('croogo', 'Step 2: Build database'));
 ?>
 
-<div class="install">
-    <h2><?= $this->fetch('title') ?></h2>
-
-    <p>
-        <?php
-        echo __d('croogo', 'Create tables and load initial data');
-        ?>
-    </p>
-</div>
-<div class="form-actions">
+<p>
     <?php
+    echo __d('croogo', 'Create tables and load initial data');
+    ?>
+</p>
+
+<?php $this->start('buttons');
+
     echo $this->Html->link(__d('croogo', 'Build database'), [
         'plugin' => 'Croogo/Install',
-        'controller' => 'install',
+        'controller' => 'Install',
         'action' => 'data',
         '?' => ['run' => 1],
     ], [
@@ -24,7 +21,6 @@ $this->assign('title', __d('croogo', 'Step 2: Build database'));
             'data-placement' => 'left',
         ],
         'button' => 'success',
-        'icon' => 'none',
     ]);
-    ?>
-</div>
+
+    $this->end();

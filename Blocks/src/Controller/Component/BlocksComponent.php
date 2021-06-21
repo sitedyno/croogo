@@ -6,11 +6,8 @@ use Cake\Cache\Cache;
 use Cake\Collection\Collection;
 use Cake\Controller\Component;
 use Cake\Event\Event;
-use Cake\ORM\Query;
 use Cake\ORM\TableRegistry;
-
 use Cake\Utility\Hash;
-use Cake\Utility\Inflector;
 use Cake\Utility\Text;
 use Croogo\Blocks\Model\Entity\Block;
 use Croogo\Core\Utility\StringConverter;
@@ -24,20 +21,20 @@ use Croogo\Core\Utility\VisibilityFilter;
 class BlocksComponent extends Component
 {
 
-/**
- * Blocks for layout
- *
- * @var string
- * @access public
- */
+    /**
+     * Blocks for layout
+     *
+     * @var string
+     * @access public
+     */
     public $blocksForLayout = [];
 
-/**
- * Blocks data: contains parsed value of bb-code like strings
- *
- * @var array
- * @access public
- */
+    /**
+     * Blocks data: contains parsed value of bb-code like strings
+     *
+     * @var array
+     * @access public
+     */
     public $blocksData = [
         'menus' => [],
         'vocabularies' => [],
@@ -49,14 +46,14 @@ class BlocksComponent extends Component
      */
     protected $_stringConverter = null;
 
-/**
- * initialize
- *
- * @param Event $event
- */
+    /**
+     * initialize
+     *
+     * @param Event $event
+     */
     public function beforeFilter(Event $event)
     {
-        $this->controller = $event->subject();
+        $this->controller = $event->getSubject();
         $this->_stringConverter = new StringConverter();
         if (isset($this->controller->Blocks)) {
             $this->Blocks = $this->controller->Blocks;
@@ -65,37 +62,37 @@ class BlocksComponent extends Component
         }
     }
 
-/**
- * Startup
- *
- * @param Event $event
- * @return void
- */
+    /**
+     * Startup
+     *
+     * @param Event $event
+     * @return void
+     */
     public function startup(Event $event)
     {
-        if ($this->request->param('prefix') !== 'admin' && !$this->request->param('requested')) {
+        if ($this->request->getParam('prefix') !== 'admin' && !$this->request->getParam('requested')) {
             $this->blocks();
         }
     }
 
-/**
- * beforeRender
- *
- * @param object $event
- * @return void
- */
+    /**
+     * beforeRender
+     *
+     * @param object $event
+     * @return void
+     */
     public function beforeRender(Event $event)
     {
-        $event->subject()->set('blocksForLayout', $this->blocksForLayout);
+        $event->getSubject()->set('blocksForLayout', $this->blocksForLayout);
     }
 
-/**
- * Blocks
- *
- * Blocks will be available in this variable in views: $blocksForLayout
- *
- * @return void
- */
+    /**
+     * Blocks
+     *
+     * Blocks will be available in this variable in views: $blocksForLayout
+     *
+     * @return void
+     */
     public function blocks()
     {
         $this->blocksForLayout = [];
@@ -103,17 +100,17 @@ class BlocksComponent extends Component
             'valueField' => 'alias'
         ]);
 
-        $alias = $this->Blocks->alias();
+        $alias = $this->Blocks->getAlias();
         $roleId = $this->controller->Croogo->roleId();
         $status = $this->Blocks->status();
         $request = $this->controller->request;
-        $slug = Text::slug(strtolower($request->url));
+        $slug = Text::slug(strtolower($request->getPath()));
         $Filter = new VisibilityFilter($request);
         foreach ($regions as $regionId => $regionAlias) {
             $cacheKey = $regionAlias . '_' . $roleId;
             $this->blocksForLayout[$regionAlias] = [];
 
-            $visibilityCachePrefix = 'visibility_' .  $slug . '_' . $cacheKey;
+            $visibilityCachePrefix = 'visibility_' . $slug . '_' . $cacheKey;
             $blocks = Cache::read($visibilityCachePrefix, 'croogo_blocks');
             if ($blocks === false) {
                 $blocks = $this->Blocks->find('regionPublished', [
@@ -139,12 +136,12 @@ class BlocksComponent extends Component
         }
     }
 
-/**
- * Process blocks for bb-code like strings
- *
- * @param Collection $blocks
- * @return void
- */
+    /**
+     * Process blocks for bb-code like strings
+     *
+     * @param Collection $blocks
+     * @return void
+     */
     public function processBlocksData(Collection $blocks)
     {
         $converter = $this->_stringConverter;
@@ -167,46 +164,5 @@ class BlocksComponent extends Component
                 )
             );
         }
-    }
-
-/**
- * Parses bb-code like string.
- *
- * Example: string containing [menu:main option1="value"] will return an array like
- *
- * Array
- * (
- *     [main] => Array
- *         (
- *             [option1] => value
- *         )
- * )
- *
- * @deprecated Use StringConverter::parseString()
- * @see StringConverter::parseString()
- * @param string $exp
- * @param string $text
- * @param array  $options
- * @return array
- */
-    public function parseString($exp, $text, $options = [])
-    {
-        return $this->_stringConverter->parseString($exp, $text, $options);
-    }
-
-/**
- * Converts formatted string to array
- *
- * A string formatted like 'Nodes.type:blog;' will be converted to
- * array('Nodes.type' => 'blog');
- *
- * @deprecated Use StringConverter::stringToArray()
- * @see StringConverter::stringToArray()
- * @param string $string in this format: Nodes.type:blog;Nodes.user_id:1;
- * @return array
- */
-    public function stringToArray($string)
-    {
-        return $this->_stringConverter->stringToArray($string);
     }
 }

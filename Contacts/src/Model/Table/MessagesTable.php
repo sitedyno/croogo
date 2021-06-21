@@ -20,8 +20,7 @@ class MessagesTable extends CroogoTable
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-        $this->entityClass('Croogo/Contacts.Message');
+        $this->setEntityClass('Croogo/Contacts.Message');
         $this->belongsTo('Contacts', [
             'className' => 'Croogo/Contacts.Contacts',
             'foreignKey' => 'contact_id',
@@ -38,14 +37,7 @@ class MessagesTable extends CroogoTable
         ]);
         $this->addBehavior('Croogo/Core.Trackable');
         $this->addBehavior('Search.Search');
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always'
-                ]
-            ]
-        ]);
+        $this->addBehavior('Timestamp');
 
         $this->searchManager()
             ->value('contact_id')
@@ -72,15 +64,16 @@ class MessagesTable extends CroogoTable
         $validator->email('email', __d('croogo', 'Please provide a valid email address.'));
         $validator->notBlank('title', $notBlankMessage);
         $validator->notBlank('body', $notBlankMessage);
+
         return $validator;
     }
 
-/**
- * Mark messages as read in bulk
- *
- * @param array $ids Array of Message Ids
- * @return boolean True if successful, false otherwise
- */
+    /**
+     * Mark messages as read in bulk
+     *
+     * @param array $ids Array of Message Ids
+     * @return bool True if successful, false otherwise
+     */
     public function bulkRead($ids)
     {
         return $this->updateAll(
@@ -89,12 +82,12 @@ class MessagesTable extends CroogoTable
         );
     }
 
-/**
- * Mark messages as Unread in bulk
- *
- * @param array $ids Array of Message Ids
- * @return boolean True if successful, false otherwise
- */
+    /**
+     * Mark messages as Unread in bulk
+     *
+     * @param array $ids Array of Message Ids
+     * @return bool True if successful, false otherwise
+     */
     public function bulkUnread($ids)
     {
         return $this->updateAll(

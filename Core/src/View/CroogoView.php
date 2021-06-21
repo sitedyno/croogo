@@ -4,7 +4,6 @@ namespace Croogo\Core\View;
 
 use App\View\AppView;
 use Cake\Core\App;
-use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Croogo\Core\Croogo;
 use Croogo\Extensions\CroogoTheme;
@@ -73,12 +72,12 @@ class CroogoView extends AppView
     {
         parent::loadHelpers();
 
-        $prefix = $this->request->param('prefix') ?: '';
+        $prefix = $this->getRequest()->getParam('prefix') ?: '';
         if ($prefix === 'admin') {
             $this->loadHelper('Croogo/Core.Croogo');
         }
 
-        $themeConfig = CroogoTheme::config($this->theme());
+        $themeConfig = CroogoTheme::config($this->getTheme());
         if (!empty($themeConfig['settings']['prefixes'][$prefix]['helpers'])) {
             $this->loadHelperList($themeConfig['settings']['prefixes'][$prefix]['helpers']);
         }
@@ -87,13 +86,13 @@ class CroogoView extends AppView
 
         $this->loadHelperList($hookHelpers);
         $this->loadHelper('Time', [
-            'outputTimezone' => $this->request->session()->read('Auth.User.timezone'),
+            'outputTimezone' => $this->getRequest()->getSession()->read('Auth.User.timezone'),
         ]);
     }
 
     public function loadHelperList($list)
     {
-        foreach ($list as $helper => $config) {
+        foreach ((array)$list as $helper => $config) {
             if (!is_array($config)) {
                 $helper = $config;
                 $config = [];

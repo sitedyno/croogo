@@ -1,19 +1,18 @@
 <?php
 
-use Croogo\Core\Status;
-
 $this->extend('Croogo/Core./Common/admin_edit');
+$this->Croogo->adminScript('Croogo/Menus.admin');
 
 $this->Breadcrumbs->add(__d('croogo', 'Menus'), ['action' => 'index']);
 
-if ($this->request->params['action'] == 'edit') {
-    $this->Breadcrumbs->add(h($menu->title), $this->request->getRequestTarget());
+if ($this->getRequest()->getParam('action') == 'edit') {
+    $this->Breadcrumbs->add(h($menu->title), $this->getRequest()->getRequestTarget());
 
     $this->assign('title', __d('croogo', 'Edit Menu'));
 }
 
-if ($this->request->params['action'] == 'add') {
-    $this->Breadcrumbs->add(__d('croogo', 'Add'), $this->request->getRequestTarget());
+if ($this->getRequest()->getParam('action') == 'add') {
+    $this->Breadcrumbs->add(__d('croogo', 'Add'), $this->getRequest()->getRequestTarget());
 
     $this->assign('title', __d('croogo', 'Add Menu'));
 }
@@ -44,6 +43,7 @@ $this->append('tab-content');
 echo $this->Html->tabStart('menu-misc');
 echo $this->Form->input('params', [
     'label' => __d('croogo', 'Params'),
+    'type' => 'stringlist',
 ]);
 echo $this->Html->tabEnd();
 

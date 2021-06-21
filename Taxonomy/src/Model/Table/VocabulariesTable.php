@@ -14,25 +14,17 @@ class VocabulariesTable extends CroogoTable
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
         $this->addBehavior('ADmad/Sequence.Sequence', [
             'order' => 'weight',
         ]);
 
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always'
-                ]
-            ]
-        ]);
+        $this->addBehavior('Timestamp');
         $this->addBehavior('Search.Search');
         $this->addBehavior('Croogo/Core.Cached', [
             'groups' => ['taxonomy']
         ]);
         $this->belongsToMany('Croogo/Taxonomy.Types', [
-            'joinTable' => 'types_vocabularies',
+            'through' => 'Croogo/Taxonomy.TypesVocabularies',
         ]);
         $this->hasMany('Croogo/Taxonomy.Taxonomies', [
             'dependent' => true,
@@ -62,6 +54,7 @@ class VocabulariesTable extends CroogoTable
             ['alias'],
             __d('croogo', 'That alias is already taken')
         ));
+
         return parent::buildRules($rules);
     }
 }

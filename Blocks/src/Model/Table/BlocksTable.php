@@ -35,22 +35,24 @@ class BlocksTable extends CroogoTable
         $validator
             ->notBlank('title', __d('croogo', 'Title cannot be empty.'))
             ->notBlank('alias', __d('croogo', 'Alias cannot be empty.'));
+
         return $validator;
     }
 
     public function buildRules(RulesChecker $rules)
     {
         $rules
-            ->add($rules->isUnique( ['alias'],
+            ->add($rules->isUnique(
+                ['alias'],
                 __d('croogo', 'That alias is already taken')
             ));
+
         return $rules;
     }
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-        $this->entityClass('Croogo/Blocks.Block');
+        $this->setEntityClass('Croogo/Blocks.Block');
 
         $this->belongsTo('Regions', [
             'className' => 'Croogo/Blocks.Regions',
@@ -74,19 +76,15 @@ class BlocksTable extends CroogoTable
             ],
         ]);
 
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always',
-                ],
-            ],
-        ]);
+        $this->addBehavior('Timestamp');
         $this->addBehavior('Croogo/Core.Trackable');
         $this->addBehavior('Search.Search');
 
         $this->searchManager()
             ->value('region_id')
+            ->add('regionAlias', 'Search.Finder', [
+                'finder' => 'filterByRegionAlias',
+            ])
             ->add('title', 'Search.Like', [
                 'before' => true,
                 'after' => true,
@@ -96,9 +94,9 @@ class BlocksTable extends CroogoTable
 
     protected function _initializeSchema(TableSchema $table)
     {
-        $table->columnType('visibility_roles', 'encoded');
-        $table->columnType('visibility_paths', 'encoded');
-        $table->columnType('params', 'params');
+        $table->setColumnType('visibility_roles', 'encoded');
+        $table->setColumnType('visibility_paths', 'encoded');
+        $table->setColumnType('params', 'params');
 
         return parent::_initializeSchema($table);
     }
@@ -139,4 +137,16 @@ class BlocksTable extends CroogoTable
                 'region_id IN' => $options['regionId']
             ]);
     }
+
+    public function findFilterByRegionAlias(Query $query, array $options = [])
+    {
+        return $query
+            ->find('published', $options)
+            ->find('byAccess', $options)
+            ->innerJoinWith('Regions')
+            ->where([
+                $this->Regions->aliasField('alias') => $options['regionAlias'],
+            ]);
+    }
+
 }

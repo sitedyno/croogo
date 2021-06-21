@@ -7,8 +7,6 @@ use Croogo\Core\Model\Table\CroogoTable;
 class RolesTable extends CroogoTable
 {
 
-    const ROLE_REGISTERED = 2;
-
     /**
      * Display fields for this model
      *
@@ -21,8 +19,6 @@ class RolesTable extends CroogoTable
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->addBehavior('Acl.Acl', [
             'className' => 'Croogo/Core.CroogoAcl',
             'type' => 'requester'

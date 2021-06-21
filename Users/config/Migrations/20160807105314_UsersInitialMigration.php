@@ -1,4 +1,5 @@
 <?php
+
 use Migrations\AbstractMigration;
 
 class UsersInitialMigration extends AbstractMigration
@@ -17,20 +18,11 @@ class UsersInitialMigration extends AbstractMigration
                 'limit' => 100,
                 'null' => true,
             ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
-            ])
+            ->addTimestamps('created', 'updated')
             ->addColumn('created_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
-                'null' => true,
-            ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
+                'null' => false,
             ])
             ->addColumn('updated_by', 'integer', [
                 'default' => null,
@@ -96,9 +88,15 @@ class UsersInitialMigration extends AbstractMigration
                 'limit' => null,
                 'null' => false,
             ])
-            ->addColumn('updated', 'datetime', [
+            ->addColumn('timezone', 'string', [
+                'default' => 'UTC',
+                'limit' => 40,
+                'null' => false,
+            ])
+            ->addTimestamps('created', 'updated')
+            ->addColumn('created_by', 'integer', [
                 'default' => null,
-                'limit' => null,
+                'limit' => 20,
                 'null' => false,
             ])
             ->addColumn('updated_by', 'integer', [
@@ -106,20 +104,9 @@ class UsersInitialMigration extends AbstractMigration
                 'limit' => 20,
                 'null' => true,
             ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('timezone', 'string', [
-                'default' => 'UTC',
-                'limit' => 40,
-                'null' => false,
-            ])
-            ->addColumn('created_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
+            ->addForeignKey('role_id', 'roles', ['id'], [
+                'constraint' => 'fk_users2roles',
+                'delete' => 'RESTRICT',
             ])
             ->create();
 
@@ -139,15 +126,14 @@ class UsersInitialMigration extends AbstractMigration
                 'limit' => 11,
                 'null' => true,
             ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
+            ->addTimestamps('created', 'updated')
+            ->addForeignKey('user_id', 'users', ['id'], [
+                'constraint' => 'fk_roles_users2users',
+                'delete' => 'RESTRICT',
             ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
+            ->addForeignKey('role_id', 'roles', ['id'], [
+                'constraint' => 'fk_roles_users2roles',
+                'delete' => 'RESTRICT',
             ])
             ->addIndex(
                 [
@@ -159,8 +145,8 @@ class UsersInitialMigration extends AbstractMigration
 
     public function down()
     {
-        $this->dropTable('roles');
-        $this->dropTable('users');
-        $this->dropTable('roles_users');
+        $this->table('roles')->drop()->save();
+        $this->table('users')->drop()->save();
+        $this->table('roles_users')->drop()->save();
     }
 }

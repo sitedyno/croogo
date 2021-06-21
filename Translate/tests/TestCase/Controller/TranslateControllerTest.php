@@ -10,28 +10,28 @@ class TranslateControllerTest extends CroogoControllerTestCase
 {
 
     public $fixtures = [
-        'plugin.users.aro',
-        'plugin.users.aco',
-        'plugin.users.aros_aco',
-        'plugin.comments.comment',
-        'plugin.menus.menu',
-        'plugin.meta.meta',
-        'plugin.nodes.node',
-        'plugin.settings.language',
-        'plugin.settings.setting',
-        'plugin.taxonomy.taxonomy',
-        'plugin.taxonomy.model_taxonomy',
-        'plugin.taxonomy.type',
-        'plugin.taxonomy.types_vocabulary',
-        'plugin.taxonomy.vocabulary',
-        'plugin.translate.i18n',
-        'plugin.users.user',
-        'plugin.users.role',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Settings.Setting',
+        'plugin.Croogo/Taxonomy.Taxonomy',
+        'plugin.Croogo/Taxonomy.ModelTaxonomy',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Taxonomy.Vocabulary',
+        'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Users.Role',
     ];
 
-/**
- * setUp
- */
+    /**
+     * setUp
+     */
     public function setUp()
     {
         parent::setUp();
@@ -55,9 +55,9 @@ class TranslateControllerTest extends CroogoControllerTestCase
         $this->TranslateController->Security->Session = $this->getMock('Session');
     }
 
-/**
- * test admin_index action
- */
+    /**
+     * test admin_index action
+     */
     public function testAdminIndex()
     {
         $this->testAction('/admin/translate/translate/index/2/Node');
@@ -65,9 +65,9 @@ class TranslateControllerTest extends CroogoControllerTestCase
         $this->assertEquals('Node', $this->vars['modelAlias']);
     }
 
-/**
- * test admin_edit action with invalid language
- */
+    /**
+     * test admin_edit action with invalid language
+     */
     public function testAdminEditWithBogusLanguage()
     {
         $this->expectFlashAndRedirect('Invalid Language', null, [
@@ -78,9 +78,9 @@ class TranslateControllerTest extends CroogoControllerTestCase
         $this->testAction('/admin/translate/translate/edit/2/Node/locale:lol');
     }
 
-/**
- * test admin_edit action
- */
+    /**
+     * test admin_edit action
+     */
     public function testAdminEdit()
     {
         $this->testAction('/admin/translate/translate/edit/2/Node/locale:eng');
@@ -90,9 +90,9 @@ class TranslateControllerTest extends CroogoControllerTestCase
         $this->assertEquals(2, $this->controller->request->data['Node']['id']);
     }
 
-/**
- * test saving translation with admin_edit action
- */
+    /**
+     * test saving translation with admin_edit action
+     */
     public function testSaveWithAdminEdit()
     {
         $this->expectFlashAndRedirect('Record has been translated');

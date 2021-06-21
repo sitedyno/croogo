@@ -7,7 +7,6 @@ use Cake\Datasource\ModelAwareTrait;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
 use Cake\ORM\Locator\LocatorAwareTrait;
-use Cake\Utility\Hash;
 use Croogo\Core\Croogo;
 use Croogo\Core\Utility\StringConverter;
 
@@ -28,12 +27,12 @@ class BlocksEventHandler implements EventListenerInterface
      */
     public function __construct()
     {
-        $this->modelFactory('Table', [$this->tableLocator(), 'get']);
+        $this->modelFactory('Table', [$this->getTableLocator(), 'get']);
     }
 
     /**
- * implementedEvents
- */
+     * implementedEvents
+     */
     public function implementedEvents()
     {
         return [
@@ -63,13 +62,13 @@ class BlocksEventHandler implements EventListenerInterface
         ];
     }
 
-/**
- * Filter block shortcode in node body, eg [block:snippet] and replace it with
- * the block content
- *
- * @param Event $event
- * @return void
- */
+    /**
+     * Filter block shortcode in node body, eg [block:snippet] and replace it with
+     * the block content
+     *
+     * @param Event $event
+     * @return void
+     */
     public function filterBlockShortcode(Event $event)
     {
         $this->loadModel('Croogo/Blocks.Blocks');
@@ -78,7 +77,7 @@ class BlocksEventHandler implements EventListenerInterface
             $converter = new StringConverter();
         }
 
-        $View = $event->subject;
+        $View = $event->getSubject();
         $body = null;
         $data = $event->getData();
         if (isset($data['content'])) {
@@ -110,12 +109,12 @@ class BlocksEventHandler implements EventListenerInterface
         ]);
     }
 
-/**
- * Clear Blocks related cache after bulk operation
- *
- * @param CakeEvent $event
- * @return void
- */
+    /**
+     * Clear Blocks related cache after bulk operation
+     *
+     * @param CakeEvent $event
+     * @return void
+     */
     public function onAfterBulkProcess($event)
     {
         Cache::clearGroup('blocks', 'croogo_blocks');

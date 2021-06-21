@@ -2,19 +2,23 @@
 
 namespace Croogo\Install;
 
+use Cake\Cache\Cache;
+use Cake\Console\Shell;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\Database\Exception\MissingConnectionException;
 use Cake\Datasource\ConnectionManager;
 use Cake\Log\LogTrait;
 use Cake\ORM\TableRegistry;
 use Croogo\Acl\AclGenerator;
-use Croogo\Core\Plugin;
 use Croogo\Core\Database\SequenceFixer;
+use Croogo\Core\PluginManager;
+use Exception;
 
 class InstallManager
 {
-    const PHP_VERSION = '5.5.9';
-    const CAKE_VERSION = '3.4.8';
+    const PHP_VERSION = '7.1.30';
+    const CAKE_VERSION = '3.8.0';
 
     const DATASOURCE_REGEX = "/(\'Datasources'\s\=\>\s\[\n\s*\'default\'\s\=\>\s\[\n\X*\'__FIELD__\'\s\=\>\s\').*(\'\,)(?=\X*\'test\'\s\=\>\s)/";
 
@@ -49,7 +53,7 @@ class InstallManager
 
     /**
      *
-     * @var \Croogo\Core\Plugin
+     * @var \Croogo\Core\PluginManager
      */
     protected $_croogoPlugin;
 
@@ -105,17 +109,19 @@ class InstallManager
         }
 
         ConnectionManager::drop('default');
-        ConnectionManager::config('default', $config);
+        ConnectionManager::setConfig('default', $config);
 
         try {
             $db = ConnectionManager::get('default');
             $db->connect();
         } catch (MissingConnectionException $e) {
             ConnectionManager::drop('default');
+
             return __d('croogo', 'Could not connect to database: ') . $e->getMessage();
         }
         if (!$db->isConnected()) {
             ConnectionManager::drop('default');
+
             return __d('croogo', 'Could not connect to database.');
         }
 
@@ -141,12 +147,16 @@ class InstallManager
      */
     public function installCompleted()
     {
-        Plugin::load('Croogo/Settings', ['routes' => true]);
+        PluginManager::load('Croogo/Settings', ['routes' => true]);
+        Configure::write('Trackable.Auth.User', ['id' => 1]);
         $Setting = TableRegistry::get('Croogo/Settings.Settings');
         $Setting->removeBehavior('Cached');
         if (!function_exists('mcrypt_decrypt')) {
             $Setting->write('Access Control.autoLoginDuration', '');
         }
+
+        $Setting->updateVersionInfo();
+        $Setting->updateAppVersionInfo();
 
         return $Setting->write('Croogo.installed', true);
     }
@@ -161,6 +171,7 @@ class InstallManager
         $plugins = [
             'Croogo/Users',
             'Croogo/Acl',
+            'Croogo/Settings',
             'Croogo/Blocks',
             'Croogo/Taxonomy',
             'Croogo/FileManager',
@@ -170,7 +181,6 @@ class InstallManager
             'Croogo/Contacts',
             'Croogo/Menus',
             'Croogo/Dashboards',
-            'Croogo/Settings',
         ];
 
         $migrationsSucceed = true;
@@ -199,8 +209,8 @@ class InstallManager
 
     protected function _getCroogoPlugin()
     {
-        if (!($this->_croogoPlugin instanceof Plugin)) {
-            $this->_setCroogoPlugin(new Plugin());
+        if (!($this->_croogoPlugin instanceof PluginManager)) {
+            $this->_setCroogoPlugin(new PluginManager());
         }
 
         return $this->_croogoPlugin;
@@ -214,8 +224,8 @@ class InstallManager
 
     public function runMigrations($plugin)
     {
-        if (!Plugin::loaded($plugin)) {
-            Plugin::load($plugin);
+        if (!Plugin::isLoaded($plugin)) {
+            PluginManager::load($plugin);
         }
         $croogoPlugin = $this->_getCroogoPlugin();
         $result = $croogoPlugin->migrate($plugin);
@@ -228,8 +238,8 @@ class InstallManager
 
     public function seedTables($plugin)
     {
-        if (!Plugin::loaded($plugin)) {
-            Plugin::load($plugin);
+        if (!Plugin::isLoaded($plugin)) {
+            PluginManager::load($plugin);
         }
         $croogoPlugin = $this->_getCroogoPlugin();
 
@@ -239,7 +249,7 @@ class InstallManager
     /**
      * Create admin user
      *
-     * @var array $user User datas
+     * @var User $user User entity
      * @return If user is created
      */
     public function createAdminUser($user)
@@ -248,17 +258,13 @@ class InstallManager
         $Roles = TableRegistry::get('Croogo/Users.Roles');
         $Roles->addBehavior('Croogo/Core.Aliasable');
 
-        if (is_array($user)) {
-            $user = $Users->newEntity($user);
-        }
-
         $user->name = $user['username'];
         $user->email = '';
         $user->timezone = 'UTC';
         $user->role_id = $Roles->byAlias('superadmin');
         $user->status = true;
         $user->activation_key = md5(uniqid());
-        if ($user->errors()) {
+        if ($user->getErrors()) {
             return __d('croogo', 'Unable to create administrative user. Validation errors:');
         }
 
@@ -267,10 +273,11 @@ class InstallManager
 
     public function setupAcos()
     {
+        Cache::clearAll();
         $generator = new AclGenerator();
         if ($this->controller) {
             $dummyShell = new DummyShell();
-            $generator->Shell = $dummyShell;
+            $generator->setShell($dummyShell);
         }
         $generator->insertAcos(ConnectionManager::get('default'));
     }
@@ -278,7 +285,7 @@ class InstallManager
     public function setupGrants($success = null, $error = null)
     {
         if (!$success) {
-            $success = function() {
+            $success = function () {
             };
         }
         if (!$error) {
@@ -301,6 +308,7 @@ class InstallManager
             //            'controllers/Croogo\Comments/Comments/delete' => [$registered],
             'controllers/Croogo\Contacts/Contacts/view' => [$public],
             'controllers/Croogo\Nodes/Nodes/index' => [$public],
+            'controllers/Croogo\Nodes/Nodes/feed' => [$public],
             'controllers/Croogo\Nodes/Nodes/term' => [$public],
             'controllers/Croogo\Nodes/Nodes/promoted' => [$public],
             'controllers/Croogo\Nodes/Nodes/search' => [$public],
@@ -335,7 +343,7 @@ class InstallManager
                     if ($result) {
                         $success(__d('croogo', 'Permission %s granted to %s', $aco, $aro));
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $error($e->getMessage());
                 }
             }
@@ -343,9 +351,12 @@ class InstallManager
     }
 }
 
-class DummyShell {
+//phpcs:disable
+class DummyShell extends Shell
+{
     use LogTrait;
-    function out($msg, $newlines = 1, $level = 1) {
+    public function out($msg = null, $newlines = 1, $level = Shell::NORMAL)
+    {
         $msg = preg_replace('/\<\/?\w+\>/', null, $msg);
         $this->log($msg);
     }

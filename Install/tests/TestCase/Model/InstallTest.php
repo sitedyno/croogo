@@ -10,9 +10,9 @@ class InstallTest extends TestCase
 {
 
     public $fixtures = [
-        'plugin.croogo/users.aro',
-        'plugin.croogo/install.install_user',
-        'plugin.croogo/install.install_role',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Install.InstallUser',
+        'plugin.Croogo/Install.InstallRole',
     ];
 
     public function setUp()
@@ -50,8 +50,16 @@ class InstallTest extends TestCase
             'password' => '1234',
         ];
         $this->Install->addAdminUser($user);
-        $count = TableRegistry::get('Users.Users')->find('all');
-        $count = $count->count();
-        $this->assertEquals($count, 0);
+        $count = ClassRegistry::init('Users.User')->find('count');
+        $this->assertEqual($count, 0);
+    }
+
+    protected function _runProtectedMethod($name, $args = [])
+    {
+        $this->skipIf(version_compare(PHP_VERSION, '5.3.0', '<'), 'PHP >= 5.3.0 required to run this test.');
+        $method = new ReflectionMethod(get_class($this->Install), $name);
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($this->Install, $args);
     }
 }

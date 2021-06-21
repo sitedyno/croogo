@@ -1,4 +1,5 @@
 <?php
+
 use Cake\Core\Configure;
 
 ?>
@@ -25,14 +26,7 @@ use Cake\Core\Configure;
         </header>
 
         <div id="wrap" class="d-flex justify-content-center align-items-center">
-            <div class="card">
-                <div class="card-body">
-                <?php
-                echo $this->Layout->sessionFlash();
-                echo $this->fetch('content');
-                ?>
-                </div>
-            </div>
+            <?= $this->fetch('content') ?>
         </div>
         <?= $this->element('Croogo/Core.admin/footer') ?>
     </body>

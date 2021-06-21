@@ -7,37 +7,36 @@ class RolesControllerTest extends CroogoControllerTestCase
 {
 
     public $fixtures = [
-        'plugin.croogo/users.role',
-        'plugin.croogo/users.user',
-        'plugin.croogo/users.aco',
-        'plugin.croogo/users.aro',
-        'plugin.croogo/users.aros_aco',
-//		'plugin.blocks.block',
-//		'plugin.comments.comment',
-//		'plugin.contacts.contact',
-//		'plugin.translate.i18n',
-        'plugin.croogo/settings.language',
-//		'plugin.menus.link',
-//		'plugin.menus.menu',
-//		'plugin.contacts.message',
-//		'plugin.meta.meta',
-        'plugin.croogo/nodes.node',
-//		'plugin.taxonomy.model_taxonomy',
-//		'plugin.blocks.region',
-
-        'plugin.croogo/settings.setting',
-//		'plugin.taxonomy.taxonomy',
-//		'plugin.taxonomy.term',
-//		'plugin.taxonomy.type',
-//		'plugin.taxonomy.types_vocabulary',
-//		'plugin.taxonomy.vocabulary',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+//      'plugin.Croogo/Blocks.Block',
+//      'plugin.Croogo/Comments.Comment',
+//      'plugin.Croogo/Contacts.Contact',
+//      'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Settings.Language',
+//      'plugin.Croogo/Menus.Link',
+//      'plugin.Croogo/Menus.Menu',
+//      'plugin.Croogo/Contacts.Message',
+//      'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+//      'plugin.Croogo/Taxonomy.ModelTaxonomy',
+//      'plugin.Croogo/Blocks.Region',
+        'plugin.Croogo/Settings.Setting',
+//      'plugin.Croogo/Taxonomy.Taxonomy',
+//      'plugin.Croogo/Taxonomy.Term',
+//      'plugin.Croogo/Taxonomy.Type',
+//      'plugin.Croogo/Taxonomy.TypesVocabulary',
+//      'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -57,22 +56,22 @@ class RolesControllerTest extends CroogoControllerTestCase
             ->will($this->returnCallback([$this, 'authUserCallback']));
     }
 
-/**
- * tearDown
- *
- * @return void
- */
+    /**
+     * tearDown
+     *
+     * @return void
+     */
     public function tearDown()
     {
         parent::tearDown();
         unset($this->RolesController);
     }
 
-/**
- * testAdminIndex
- *
- * @return void
- */
+    /**
+     * testAdminIndex
+     *
+     * @return void
+     */
     public function testAdminIndex()
     {
         $this->testAction('/admin/users/roles/index');
@@ -80,11 +79,11 @@ class RolesControllerTest extends CroogoControllerTestCase
         $this->assertNotEmpty($this->vars['roles']);
     }
 
-/**
- * testAdminAdd
- *
- * @return void
- */
+    /**
+     * testAdminAdd
+     *
+     * @return void
+     */
     public function testAdminAdd()
     {
         $this->expectFlashAndRedirect('The Role has been saved');
@@ -100,11 +99,11 @@ class RolesControllerTest extends CroogoControllerTestCase
         $this->assertEqual($newRole['Role']['title'], 'new_role');
     }
 
-/**
- * testAdminIndex
- *
- * @return void
- */
+    /**
+     * testAdminIndex
+     *
+     * @return void
+     */
     public function testAdminEdit()
     {
         $this->expectFlashAndRedirect('The Role has been saved');
@@ -120,11 +119,11 @@ class RolesControllerTest extends CroogoControllerTestCase
         $this->assertEquals('Registered [modified]', $registered['Role']['title']);
     }
 
-/**
- * testAdminDelete
- *
- * @return void
- */
+    /**
+     * testAdminDelete
+     *
+     * @return void
+     */
     public function testAdminDelete()
     {
         $this->expectFlashAndRedirect('Role deleted');

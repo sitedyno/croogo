@@ -34,10 +34,17 @@ class TypesVocabulariesSeed extends AbstractSeed
         ],
     ];
 
+    public function getDependencies()
+    {
+        return [
+            'TypesSeed',
+            'VocabulariesSeed',
+        ];
+    }
+
     public function run()
     {
         $Table = $this->table('types_vocabularies');
         $Table->insert($this->records)->save();
     }
-
 }

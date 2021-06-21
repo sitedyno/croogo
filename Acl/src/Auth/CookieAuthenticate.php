@@ -1,14 +1,12 @@
 <?php
+
 namespace Croogo\Acl\Auth;
 
 use Cake\Auth\BaseAuthenticate;
-use Cake\Controller\Component\AuthComponent;
-use Cake\Controller\ComponentRegistry;
 use Cake\Core\Configure;
 use Cake\Core\Exception\Exception;
-use Cake\Network\Request;
-use Cake\Network\Response;
-use Cake\Routing\Router;
+use Cake\Http\Response;
+use Cake\Http\ServerRequest;
 use Cake\ORM\TableRegistry;
 
 /**
@@ -37,7 +35,8 @@ use Cake\ORM\TableRegistry;
  * @license     http://www.opensource.org/licenses/mit-license.php The MIT License
  * @see AclAutoLoginComponent
  */
-class CookieAuthenticate extends BaseAuthenticate {
+class CookieAuthenticate extends BaseAuthenticate
+{
 
     /**
      * Cookie configuration
@@ -56,7 +55,8 @@ class CookieAuthenticate extends BaseAuthenticate {
      *
      * return boolean|array User data or boolean False when data is invalid
      */
-    protected function _verify($cookie) {
+    protected function _verify($cookie)
+    {
         if (empty($cookie['data'])) {
             return false;
         }
@@ -68,7 +68,7 @@ class CookieAuthenticate extends BaseAuthenticate {
         }
 
         $data = json_decode($cookie['data'], true);
-        $settings = $this->config();
+        $settings = $this->getConfig();
         $fields = $settings['fields'];
         if (empty($data['hash']) ||
             empty($data['time']) ||
@@ -92,14 +92,15 @@ class CookieAuthenticate extends BaseAuthenticate {
      *
      * @param Request $request The unused request object
      * @return mixed False on login failure. An array of User data on success.
-     * @throws CakeException
+     * @throws Exception
      */
-    public function getUser(Request $request) {
+    public function getUser(ServerRequest $request)
+    {
         if (!$this->_registry->has('Cookie')) {
             throw new Exception('CookieComponent is not loaded');
         }
 
-        $config = $this->config();
+        $config = $this->getConfig();
         if (!function_exists('mcrypt_encrypt')) {
             throw new Exception('Cannot use encryption, mcrypt_encrypt() is required');
         }
@@ -125,8 +126,10 @@ class CookieAuthenticate extends BaseAuthenticate {
         $user = $this->_findUser($data[$username]);
         if ($user) {
             $this->_registry->Auth->setUser($user);
+
             return $user;
         }
+
         return false;
     }
 
@@ -137,7 +140,7 @@ class CookieAuthenticate extends BaseAuthenticate {
      */
     protected function _findUser($conditions, $password = null)
     {
-        $config = $this->config();
+        $config = $this->getConfig();
         $userModel = $config['userModel'];
         list(, $model) = pluginSplit($userModel);
         $fields = $config['fields'];
@@ -168,6 +171,7 @@ class CookieAuthenticate extends BaseAuthenticate {
         ) {
             unset($user[$fields['password']]);
         }
+
         return $user;
     }
 
@@ -176,12 +180,12 @@ class CookieAuthenticate extends BaseAuthenticate {
      *
      * @see BaseAuthenticate::authenticate()
      */
-    public function authenticate(Request $request, Response $response)
+    public function authenticate(ServerRequest $request, Response $response)
     {
-        if (!empty($request->data) || $request->is('post')) {
+        if ($request->getData() || $request->is('post')) {
             return false;
         }
+
         return $this->getUser($request);
     }
-
 }

@@ -2,23 +2,32 @@
 
 use Cake\Routing\Router;
 
-$this->assign('title', $node->title);
-
 $this->extend('Croogo/Core./Common/admin_edit');
-$this->Html->script(array('Croogo/Nodes.admin'), ['block' => true]);
+$this->Croogo->adminScript(['Croogo/Nodes.admin.js']);
 
 $this->Breadcrumbs->add(__d('croogo', 'Content'), ['action' => 'index']);
 
-if ($this->request->params['action'] == 'add') {
+if ($this->getRequest()->getParam('action') == 'add') :
     $this->assign('title', __d('croogo', 'Create content: %s', $type->title));
 
     $this->Breadcrumbs->add(__d('croogo', 'Create'), ['action' => 'create'])
-        ->add(h($type->title), $this->request->getRequestTarget());
-}
+        ->add(h($type->title), $this->getRequest()->getRequestTarget());
+endif;
 
-if ($this->request->params['action'] == 'edit') {
-    $this->Breadcrumbs->add(h($node->title), $this->request->getRequestTarget());
-}
+if ($this->getRequest()->getParam('action') == 'edit') :
+    $this->assign('title', __d('croogo', 'Edit %s: %s', $node->type, $node->title));
+
+    $this->Breadcrumbs
+        ->add(h($type->title), [
+            'action' => 'index',
+            '?' => ['type' => $type->alias],
+        ])
+        ->add(h($node->title), $this->getRequest()->getRequestTarget(), [
+            'innerAttrs' => [
+                'title' => h($node->title),
+            ],
+        ]);
+endif;
 
 $this->append('form-start', $this->Form->create($node, [
     'class' => 'protected-form',
@@ -35,7 +44,7 @@ $this->start('tab-content');
             'placeholder' => __d('croogo', '%s title', h($type->title)),
             'data-slug' => '#slug',
             'data-slug-editable' => true,
-            'data-slug-edit-class' => 'btn btn-secondary btn-sm',
+            'data-slug-edit-class' => 'btn btn-outline-secondary',
         ]);
         echo $this->Form->input('slug', [
             'class' => 'slug',
@@ -55,23 +64,22 @@ $this->start('tab-content');
         echo $this->Form->input('excerpt', [
             'label' => __d('croogo', 'Excerpt'),
         ]);
-    echo $this->Html->tabEnd();
-$this->end();
+        echo $this->Html->tabEnd();
+        $this->end();
 
-$this->start('panels');
-    $username = isset($node->user->username) ? $node->user->username : $this->request->session()
+        $this->start('panels');
+        $username = isset($node->user->username) ? $node->user->username : $this->getRequest()->getSession()
         ->read('Auth.User.username');
-    echo $this->Html->beginBox(__d('croogo', 'Publishing'));
-    echo $this->element('Croogo/Core.admin/buttons', ['type' => h($type->title)]);
-    echo $this->element('Croogo/Core.admin/publishable');
+        echo $this->Html->beginBox(__d('croogo', 'Publishing'));
+        echo $this->element('Croogo/Core.admin/buttons', ['type' => h($type->title)]);
+        echo $this->element('Croogo/Core.admin/publishable');
 
-    echo $this->Form->input('promote', [
+        echo $this->Form->input('promote', [
         'label' => __d('croogo', 'Promoted to front page'),
-        'class' => false,
-    ]);
-    echo $this->Html->endBox();
+        ]);
+        echo $this->Html->endBox();
 
-    echo $this->Html->beginBox(__d('croogo', '%s attributes', h($type->title)));
+        echo $this->Html->beginBox(__d('croogo', '%s attributes', h($type->title)));
         echo $this->Form->autocomplete('user_id', [
             'label' => __d('croogo', 'Author'),
             'options' => $users,
@@ -86,7 +94,6 @@ $this->start('panels');
                     'plugin' => 'Croogo/Users',
                     'controller' => 'Users',
                     'action' => 'lookup',
-                    '_ext' => 'json',
                 ]),
             ],
         ]);
@@ -106,19 +113,18 @@ $this->start('panels');
                     'controller' => 'Nodes',
                     'action' => 'lookup',
                     'type' => $node->type,
-                    '_ext' => 'json',
                 ]),
             ],
         ]);
 
-    echo $this->Html->endBox();
+        echo $this->Html->endBox();
 
-    echo $this->Html->beginBox(__d('croogo', 'Access control'));
-    echo $this->Form->input('visibility_roles', [
+        echo $this->Html->beginBox(__d('croogo', 'Access control'));
+        echo $this->Form->input('visibility_roles', [
         'class' => 'c-select',
         'options' => $roles,
         'multiple' => true,
         'label' => false,
-    ]);
-    echo $this->Html->endBox();
-$this->end();
+        ]);
+        echo $this->Html->endBox();
+        $this->end();

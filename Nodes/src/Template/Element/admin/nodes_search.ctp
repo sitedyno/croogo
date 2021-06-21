@@ -3,7 +3,7 @@ echo $this->Form->create(null, [
     'align' => 'inline',
 ]);
 
-$this->Form->templates([
+$this->Form->setTemplates([
     'label' => false,
     'submitContainer' => '{{content}}',
 ]);
@@ -12,18 +12,17 @@ echo $this->Form->input('filter', [
     'title' => __d('croogo', 'Search'),
     'placeholder' => __d('croogo', 'Search...'),
     'tooltip' => false,
-    'default' => $this->request->query('filter'),
+    'default' => $this->getRequest()->getQuery('filter'),
 ]);
 
-if (!isset($this->request->query['chooser'])):
+echo $this->Form->input('type', [
+    'options' => $nodeTypes,
+    'empty' => __d('croogo', 'Type'),
+    'class' => 'c-select',
+    'default' => $this->getRequest()->getQuery('type'),
+]);
 
-    echo $this->Form->input('type', [
-        'options' => $nodeTypes,
-        'empty' => __d('croogo', 'Type'),
-        'class' => 'c-select',
-        'default' => $this->request->query('type'),
-    ]);
-
+if (!$this->getRequest()->getQuery('chooser')) :
     echo $this->Form->input('status', [
         'options' => [
             '1' => __d('croogo', 'Published'),
@@ -31,7 +30,7 @@ if (!isset($this->request->query['chooser'])):
         ],
         'empty' => __d('croogo', 'Status'),
         'class' => 'c-select',
-        'default' => $this->request->query('status'),
+        'default' => $this->getRequest()->getQuery('status'),
     ]);
 
     echo $this->Form->input('promote', [
@@ -41,17 +40,20 @@ if (!isset($this->request->query['chooser'])):
         ],
         'empty' => __d('croogo', 'Promoted'),
         'class' => 'c-select',
-        'default' => $this->request->query('promote'),
+        'default' => $this->getRequest()->getQuery('promote'),
     ]);
-
 endif;
 
 echo $this->Form->submit(__d('croogo', 'Filter'), [
-    'class' => 'btn-outline-success',
+    'class' => 'btn-outline-success mr-1',
 ]);
-echo $this->Html->link('Reset', [
+echo $this->Html->link('Reset', array_merge([
     'action' => 'index',
 ], [
+    '?' => [
+        'chooser' => $this->getRequest()->getQuery('chooser')
+    ],
+]), [
     'class' => 'btn btn-outline-secondary',
 ]);
 echo $this->Form->end();

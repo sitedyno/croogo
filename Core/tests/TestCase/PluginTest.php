@@ -6,7 +6,7 @@ use Cake\Cache\Cache;
 use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
-use Croogo\Core\Plugin;
+use Croogo\Core\PluginManager;
 use Croogo\Core\TestSuite\TestCase;
 
 class PluginTest extends TestCase
@@ -25,7 +25,7 @@ class PluginTest extends TestCase
     {
         parent::setUp();
 
-        $this->plugin = $this->getMockBuilder(Plugin::class)
+        $this->plugin = $this->getMockBuilder(PluginManager::class)
             ->setMethods([
                 '_writeSetting',
                 'needMigration',
@@ -51,8 +51,8 @@ class PluginTest extends TestCase
 
         // Backup the PDO connection instance as the Migrations CakeAdapter replaces it with Phinx's.
         $this->connection = ConnectionManager::get('test')
-            ->driver()
-            ->connection();
+            ->getDriver()
+            ->getConnection();
     }
 
     public function tearDown()
@@ -62,7 +62,7 @@ class PluginTest extends TestCase
         unset($this->plugin);
 
         // Restore the PDO connection instance
-        ConnectionManager::get('test')->driver()->connection($this->connection);
+        ConnectionManager::get('test')->getDriver()->getConnection($this->connection);
     }
 
     protected function _getMockMigrationVersion()
@@ -100,7 +100,7 @@ class PluginTest extends TestCase
         Configure::write('Hook.bootstraps', 'suppliers');
 
         $migrationVersion = $this->_getMockMigrationVersion();
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
 
         $suppliers = $croogoPlugin->getData('Suppliers');
 
@@ -147,20 +147,19 @@ class PluginTest extends TestCase
         $this->assertEquals('MixedManifest', $data['name']);
     }
 
-
     public function testNeedMigrationPluginNotExists()
     {
         $migrationVersion = $this->_getMockMigrationVersion();
         $migrationVersion->expects($this->any())
             ->method('getMapping')
             ->will($this->returnValue(false));
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
         $this->assertEquals(false, $croogoPlugin->needMigration('Anything', true));
     }
 
     public function testNeedMigrationPluginNotActive()
     {
-        $croogoPlugin = new Plugin();
+        $croogoPlugin = new PluginManager();
         $this->assertEquals(false, $croogoPlugin->needMigration('Anything', false));
     }
 
@@ -175,7 +174,7 @@ class PluginTest extends TestCase
         $migrationVersion->expects($this->any())
             ->method('getVersion')
             ->will($this->returnValue(1346748933));
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
         $this->assertEquals(false, $croogoPlugin->needMigration('app', true));
     }
 
@@ -190,7 +189,7 @@ class PluginTest extends TestCase
         $migrationVersion->expects($this->any())
             ->method('getVersion')
             ->will($this->returnValue(1346748762));
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
         $this->assertEquals(true, $croogoPlugin->needMigration('app', true));
     }
 
@@ -205,7 +204,7 @@ class PluginTest extends TestCase
         $migrationVersion->expects($this->any())
             ->method('getMapping')
             ->will($this->returnValue($this->_mapping));
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
 
         $this->assertEquals(false, $croogoPlugin->migrate('Suppliers'));
 
@@ -214,7 +213,7 @@ class PluginTest extends TestCase
 
     public function testMigratePluginWithMigration()
     {
-        Plugin::load('Suppliers');
+        PluginManager::load('Suppliers');
 
         $actives = Configure::read('Hook.bootstraps');
         Configure::write('Hook.bootstraps', 'Suppliers');
@@ -250,7 +249,7 @@ class PluginTest extends TestCase
             ->method('run')
             ->will($this->returnValue('An error message'));
 
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
 
         $expectedErrors = ['An error message'];
         $this->assertEquals(false, $croogoPlugin->migrate('Suppliers'));
@@ -275,7 +274,7 @@ class PluginTest extends TestCase
             ->with($this->arrayHasKey('version', 'type', 'direction'))
             ->will($this->returnValue(true));
 
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
 
         $this->assertEquals(true, $croogoPlugin->unmigrate('Suppliers'));
 
@@ -297,16 +296,16 @@ class PluginTest extends TestCase
             ->method('run')
             ->will($this->returnValue(false));
 
-        $croogoPlugin = new Plugin($migrationVersion);
+        $croogoPlugin = new PluginManager($migrationVersion);
 
         $this->assertEquals(false, $croogoPlugin->unmigrate('Suppliers'));
 
         Configure::read('Hook.bootstraps', $actives);
     }
 
-/**
- * testReorderBootstraps
- */
+    /**
+     * testReorderBootstraps
+     */
     public function testReorderBootstraps()
     {
         $bootstraps = explode(',', 'Croogo/Settings,Croogo/Taxonomy,Sites,Croogo/Example');
@@ -324,9 +323,9 @@ class PluginTest extends TestCase
         $this->assertEquals('Croogo/Example is already at the first position', $result);
     }
 
-/**
- * testReorderBootstrapsWithDependency
- */
+    /**
+     * testReorderBootstrapsWithDependency
+     */
     public function testReorderBootstrapsWithDependency()
     {
         $bootstraps = explode(',', 'Widgets,Editors');
@@ -340,31 +339,31 @@ class PluginTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-/**
- * testDeleteEmptyPlugin
- * @expectedException InvalidArgumentException
- */
+    /**
+     * testDeleteEmptyPlugin
+     * @expectedException InvalidArgumentException
+     */
     public function testDeleteEmptyPlugin()
     {
         $this->plugin->delete(null);
     }
 
-/**
- * testUsedBy
- */
+    /**
+     * testUsedBy
+     */
     public function testUsedBy()
     {
         Cache::delete('pluginDeps', 'cached_settings');
-        Plugin::load('Widgets');
-        Plugin::load('Editors');
-        Plugin::load('Articles');
-        Plugin::cacheDependencies();
+        PluginManager::load('Widgets');
+        PluginManager::load('Editors');
+        PluginManager::load('Articles');
+        PluginManager::cacheDependencies();
         $usedBy = $this->plugin->usedBy('Widgets');
         $this->assertTrue(in_array('Articles', $usedBy));
         $this->assertTrue(in_array('Editors', $usedBy));
-        Plugin::unload('Articles');
-        Plugin::unload('Editors');
-        Plugin::unload('Widgets');
+        PluginManager::unload('Articles');
+        PluginManager::unload('Editors');
+        PluginManager::unload('Widgets');
     }
 
     /**
@@ -385,21 +384,21 @@ class PluginTest extends TestCase
     public function testAvailable($plugin, $path)
     {
         if ($path) {
-            $this->assertTrue(Plugin::available($plugin));
+            $this->assertTrue(PluginManager::available($plugin));
 
             return;
         }
 
-        $this->assertFalse(Plugin::available($plugin));
+        $this->assertFalse(PluginManager::available($plugin));
     }
 
     public function testEventsSinglePlugin()
     {
-        Plugin::load('Shops', [
+        PluginManager::load('Shops', [
             'events' => true
         ]);
 
-        $this->assertTrue(Plugin::events('Shops'));
+        $this->assertTrue(PluginManager::events('Shops'));
 
         $this->assertEquals([
             'Shops.ShopsNodesEventHandler',
@@ -413,11 +412,11 @@ class PluginTest extends TestCase
 
     public function testEventsAllPlugins()
     {
-        Plugin::load('Shops', [
+        PluginManager::load('Shops', [
             'events' => true
         ]);
 
-        $this->assertTrue(Plugin::events());
+        $this->assertTrue(PluginManager::events());
 
         $this->assertContains('Shops.ShopsNodesEventHandler', Configure::read('EventHandlers'));
     }
@@ -426,10 +425,10 @@ class PluginTest extends TestCase
     {
         return [
             // Internal Croogo plugins based on Croogo/Core path
-            ['Croogo/Core', CROOGO_INCLUDE_PATH  . 'Core' . DS],
+            ['Croogo/Core', CROOGO_INCLUDE_PATH . 'Core' . DS],
             ['Croogo/Nodes', CROOGO_INCLUDE_PATH . 'Nodes' . DS],
             // Plugin paths from the 'plugins' Configure key
-            ['BootstrapUI', VENDOR .  'friendsofcake' . DS . 'bootstrap-ui' . DS],
+            ['BootstrapUI', VENDOR . 'friendsofcake' . DS . 'bootstrap-ui' . DS],
             // Plugin path from the plugins directory
             ['Shops', App::path('Plugin')[0] . 'Shops'],
             // A non existing plugin

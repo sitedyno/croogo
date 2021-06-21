@@ -16,19 +16,19 @@ echo $this->Form->create(false, [
     <?=
         $this->Form->input('q', [
             'label' => false,
-            'default' => $this->request->query('q'),
+            'default' => $this->getRequest()->getQuery('q'),
             'templates' => [
                 'inputContainer' => '{{content}}',
             ],
         ]);
-    ?>
+?>
 
     <span class="input-group-btn">
         <?=
             $this->Form->button(__d('croogo', 'Search'), [
                 'class' => 'btn btn-secondary',
             ])
-        ?>
+?>
     </span>
 </div>
 <?= $this->Form->end(); ?>

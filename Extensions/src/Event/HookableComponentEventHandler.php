@@ -6,11 +6,13 @@ use Cake\Controller\Controller;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
 use Cake\Utility\Hash;
-use Cake\Utility\Inflector;
-use Croogo\Core\Croogo;
 use Croogo\Core\Controller\HookableComponentInterface;
+use Croogo\Core\Croogo;
 use Croogo\Extensions\Exception\ControllerNotHookableException;
 
+/**
+ * Class HookableComponentEventHandler
+ */
 class HookableComponentEventHandler implements EventListenerInterface
 {
 
@@ -24,10 +26,14 @@ class HookableComponentEventHandler implements EventListenerInterface
         ];
     }
 
+    /**
+     * @param Event $event
+     * @return void
+     */
     public function initialize(Event $event)
     {
         /* @var \Cake\Controller\Controller|\Croogo\Core\Controller\HookableComponentInterface $controller */
-        $controller = $event->subject();
+        $controller = $event->getSubject();
 
         if (!$controller instanceof HookableComponentInterface) {
             throw new ControllerNotHookableException([get_class($controller)]);
@@ -64,6 +70,12 @@ class HookableComponentEventHandler implements EventListenerInterface
         }
     }
 
+    /**
+     * @param $name
+     * @param array $config
+     *
+     * @return mixed
+     */
     public function loadComponent($name, array $config = [])
     {
         list(, $prop) = pluginSplit($name);
@@ -72,9 +84,15 @@ class HookableComponentEventHandler implements EventListenerInterface
         if ($prop !== $modelProp) {
             $this->{$prop} = $component;
         }
+
         return $component;
     }
 
+    /**
+     * @param Controller $controller
+     *
+     * @return array
+     */
     private function _getComponents(Controller $controller)
     {
         $properties = Croogo::options('Hook.controller_properties', $controller->request);

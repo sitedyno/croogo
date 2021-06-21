@@ -5,16 +5,16 @@ $this->assign('title', __d('croogo', 'Create content'));
 <?php
 $this->Breadcrumbs
     ->add(__d('croogo', 'Content'), ['action' => 'index'])
-    ->add(__d('croogo', 'Create'), $this->request->getRequestTarget());
+    ->add(__d('croogo', 'Create'), $this->getRequest()->getRequestTarget());
 
 ?>
 <div class="<?= $this->Theme->getCssClass('row') ?>">
     <div class="<?= $this->Theme->getCssClass('columnFull') ?>">
         <p class="lead"><?= __d('croogo', 'Select the type of content you wish to create from the list below') ?></p>
         <div class="list-group">
-            <?php foreach ($types as $type): ?>
+            <?php foreach ($types as $type) : ?>
                 <?php
-                if (!empty($type->plugin)):
+                if (!empty($type->plugin)) :
                     continue;
                 endif;
                 ?>

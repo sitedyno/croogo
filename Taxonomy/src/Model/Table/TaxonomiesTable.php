@@ -7,25 +7,26 @@ use Croogo\Core\Model\Table\CroogoTable;
 class TaxonomiesTable extends CroogoTable
 {
 
+    protected $_displayField = 'title';
+
     public function initialize(array $config)
     {
         $this->belongsTo('Croogo/Taxonomy.Terms');
         $this->belongsTo('Croogo/Taxonomy.Vocabularies');
+        $this->addBehavior('Search.Search');
         $this->addBehavior('Tree');
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always'
-                ]
-            ]
+        $this->addBehavior('Timestamp');
+        $this->addBehavior('Croogo/Core.Cached', [
+            'groups' => [
+                'nodes',
+                'taxonomy',
+            ],
         ]);
-		$this->addBehavior('Croogo/Core.Cached', [
-			'groups' => [
-				'nodes',
-				'taxonomy',
-			],
-		]);
+
+        $this->searchManager()
+            ->add('vocab', 'Search.Value', [
+                'field' => $this->Vocabularies->aliasField('alias'),
+            ]);
     }
 
     /**
@@ -67,7 +68,7 @@ class TaxonomiesTable extends CroogoTable
             return false;
         }
 
-        $this->behaviors()->get('Tree')->config([
+        $this->behaviors()->get('Tree')->setConfig([
             'scope' => [
                 $this->aliasField('vocabulary_id') => $vocabulary->id,
             ]
@@ -88,7 +89,7 @@ class TaxonomiesTable extends CroogoTable
             'valueField' => $options['value'],
             'groupField' => 'id',
         ])->where([
-            $this->Terms->aliasField('id') .' IN' => $termsIds,
+            $this->Terms->aliasField('id') . ' IN' => $termsIds,
         ])->toArray();
 
         $termsTree = [];
@@ -120,16 +121,16 @@ class TaxonomiesTable extends CroogoTable
         return $termsTree;
     }
 
-/**
- * Check if Term HABTM Vocabulary.
- *
- * If yes, return Taxonomy ID
- * otherwise, return false
- *
- * @param int $termId
- * @param int $vocabularyId
- * @return boolean
- */
+    /**
+     * Check if Term HABTM Vocabulary.
+     *
+     * If yes, return Taxonomy ID
+     * otherwise, return false
+     *
+     * @param int $termId
+     * @param int $vocabularyId
+     * @return bool
+     */
     public function termInVocabulary($termId, $vocabularyId)
     {
         $taxonomy = $this->find()->where([
@@ -139,6 +140,7 @@ class TaxonomiesTable extends CroogoTable
         if ($taxonomy) {
             return $taxonomy->id;
         }
+
         return false;
     }
 }

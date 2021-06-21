@@ -1,33 +1,31 @@
 <?php
+
 use Cake\Core\Configure;
 
 $this->assign('title', __d('croogo', 'Login'));
 
-echo $this->Form->create(false, ['url' => ['action' => 'login']]);
-$this->Form->templates([
-    'label' => false,
-    'textContainer' => '<div class="input-prepend {{type}}"><span class="add-on"><i class="icon-user"></i></span>{{content}}</div>',
-    'passwordContainer' => '<div class="input-prepend {{type}}"><span class="add-on"><i class="icon-key"></i></span>{{content}}</div>',
-]);
-echo $this->Form->input('username', [
+$formStart = $this->Form->create(false, ['url' => ['action' => 'login']]);
+$body = $this->Form->input('username', [
     'placeholder' => __d('croogo', 'Username'),
     'label' => false,
     'prepend' => $this->Html->icon('user', ['class' => 'fa-fw']),
+    'required' => true,
 ]);
-echo $this->Form->input('password', [
+$body .= $this->Form->input('password', [
     'placeholder' => __d('croogo', 'Password'),
     'label' => false,
     'prepend' => $this->Html->icon('key', ['class' => 'fa-fw']),
+    'required' => true,
 ]);
-if (Configure::read('Access Control.autoLoginDuration')):
-    echo $this->Form->input('remember', [
+if (Configure::read('Access Control.autoLoginDuration')) :
+    $body .= $this->Form->input('remember', [
         'label' => __d('croogo', 'Remember me?'),
         'type' => 'checkbox',
         'default' => false,
     ]);
 endif;
-echo $this->Form->button(__d('croogo', 'Log In'), ['class' => 'btn btn-primary']);
-echo $this->Html->link(__d('croogo', 'Forgot password?'), [
+
+$footer = $this->Html->link(__d('croogo', 'Forgot password?'), [
     'prefix' => 'admin',
     'plugin' => 'Croogo/Users',
     'controller' => 'Users',
@@ -35,4 +33,23 @@ echo $this->Html->link(__d('croogo', 'Forgot password?'), [
 ], [
     'class' => 'forgot',
 ]);
-echo $this->Form->end();
+$footer .= $this->Form->button(__d('croogo', 'Log In'), ['class' => 'btn btn-primary']);
+$formEnd = $this->Form->end();
+
+?>
+<div class="card rounded-plus bg-faded">
+    <div class="card-header">
+        <h5 class="card-title"><?= $this->fetch('title') ?></h5>
+    </div>
+    <?= $formStart ?>
+    <div class="card-body">
+        <?php
+        echo $this->Layout->sessionFlash();
+        echo $body;
+        ?>
+    </div>
+    <div class="card-footer text-right">
+        <?= $footer ?>
+    </div>
+    <?= $formEnd ?>
+</div>

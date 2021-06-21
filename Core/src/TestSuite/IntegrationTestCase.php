@@ -2,15 +2,15 @@
 
 namespace Croogo\Core\TestSuite;
 
-use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\Datasource\EntityInterface;
 use Cake\Network\Request;
 use Cake\ORM\Query;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\IntegrationTestCase as CakeIntegrationTestCase;
-use Croogo\Core\Plugin;
 use Croogo\Core\Event\EventManager;
+use Croogo\Core\PluginManager;
 use Croogo\Core\TestSuite\Constraint\EntityHasProperty;
 use PHPUnit_Util_InvalidArgumentHelper;
 
@@ -39,11 +39,11 @@ class IntegrationTestCase extends CakeIntegrationTestCase
         Configure::write('Config.language', Configure::read('Site.locale'));
     }
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -51,12 +51,11 @@ class IntegrationTestCase extends CakeIntegrationTestCase
         EventManager::instance(new EventManager);
         Configure::write('EventHandlers', []);
 
-        Plugin::unload('Croogo/Install');
-        Plugin::load('Croogo/Example', ['autoload' => true, 'path' => '../Example/']);
+        PluginManager::unload('Croogo/Install');
+        PluginManager::load('Croogo/Example', ['autoload' => true, 'path' => '../Example/']);
         Configure::write('Acl.database', 'test');
 
-        Plugin::routes();
-        Plugin::events();
+        PluginManager::events();
         EventManager::loadListeners();
 
         $this->previousPlugins = Plugin::loaded();
@@ -67,12 +66,12 @@ class IntegrationTestCase extends CakeIntegrationTestCase
         parent::tearDown();
 
         // Unload all plugins that were loaded while running tests
-        Plugin::unload(array_diff(Plugin::loaded(), $this->previousPlugins));
+        PluginManager::unload(array_diff(Plugin::loaded(), $this->previousPlugins));
     }
 
-/**
- * Helper method to create an test API request (with the appropriate detector)
- */
+    /**
+     * Helper method to create an test API request (with the appropriate detector)
+     */
     protected function _apiRequest($params)
     {
         $request = new Request();
@@ -80,6 +79,7 @@ class IntegrationTestCase extends CakeIntegrationTestCase
         $request->addDetector('api', [
             'callback' => ['Croogo\\Core\\Router', 'isApiRequest'],
         ]);
+
         return $request;
     }
 
@@ -113,7 +113,11 @@ class IntegrationTestCase extends CakeIntegrationTestCase
      */
     public function assertFlash($expected, $key = 'flash', $index = 0, $message = '')
     {
-        $this->assertSession($expected, 'Flash.' . $key . '.' . $index . '.message', 'Flash message did not match. ' . $message);
+        $this->assertSession(
+            $expected,
+            'Flash.' . $key . '.' . $index . '.message',
+            'Flash message did not match. ' . $message
+        );
     }
 
     public function assertEntityHasProperty($propertyName, EntityInterface $entity, $message = '')

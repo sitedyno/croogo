@@ -1,16 +1,17 @@
 <?php
+
 namespace Croogo\Core\Test\TestCase\Event;
 
 use Cake\Cache\Cache;
 use Cake\Controller\Component\AuthComponent;
 use Cake\Core\Configure;
-use Cake\Network\Request;
-use Cake\Network\Response;
+use Cake\Core\Plugin;
+use Cake\Http\Response;
+use Cake\Http\ServerRequest;
 use Cake\View\View;
 use Croogo\Core\Croogo;
 use Croogo\Core\Event\EventManager;
-use Croogo\Core\Plugin;
-use Croogo\Core\TestSuite\CroogoTestCase;
+use Croogo\Core\PluginManager;
 use Croogo\Core\TestSuite\TestCase;
 use Croogo\Nodes\Controller\Admin\NodesController;
 use Croogo\Users\Controller\Admin\UsersController;
@@ -27,58 +28,58 @@ class EventManagerTest extends TestCase
 {
 
     public $fixtures = [
-        'plugin.croogo/core.settings',
+        'plugin.Croogo/Core.Settings',
     ];
 
     public function setUp()
     {
         parent::setUp();
 
-        Plugin::unload('Example');
-        Plugin::load('Shops', ['events' => true, 'autoload' => true]);
-        Plugin::events();
+        PluginManager::unload('Example');
+        PluginManager::load('Shops', ['events' => true, 'autoload' => true]);
+        PluginManager::events();
         EventManager::loadListeners();
-        $request = new Request();
+        $request = new ServerRequest();
         $response = new Response();
         $this->Users = new TestUsersEventController($request, $response);
         $this->Nodes = new TestNodesEventController($request, $response);
     }
 
-/**
- * tearDown
- *
- * @return void
- */
+    /**
+     * tearDown
+     *
+     * @return void
+     */
     public function tearDown()
     {
         parent::tearDown();
 
-        Plugin::unload('Shops');
+        PluginManager::unload('Shops');
     }
 
-/**
- * Indirectly test EventManager::detachPluginSubscribers()
- * triggerred by calling Plugin::unload(null)
- */
+    /**
+     * Indirectly test EventManager::detachPluginSubscribers()
+     * triggerred by calling PluginManager::unload(null)
+     */
     public function testDetachPluginSubscribers()
     {
-        $loaded = Plugin::loaded('Shops');
+        $loaded = Plugin::isLoaded('Shops');
         $this->assertNotEmpty($loaded);
 
         $eventName = 'Controller.Users.activationFailure';
         $event = Croogo::dispatchEvent($eventName, $this->Users);
         $this->assertTrue($event->result, sprintf('Event: %s', $eventName));
 
-        Plugin::unload('Shops');
+        PluginManager::unload('Shops');
 
         $eventName = 'Controller.Users.activationFailure';
         $event = Croogo::dispatchEvent($eventName, $this->Users);
         $this->assertNull($event->result, sprintf('Event: %s', $eventName));
     }
 
-/**
- * Test Reuse the same Event Listener class
- */
+    /**
+     * Test Reuse the same Event Listener class
+     */
     public function testAliasingEventListener()
     {
         $eventManager = EventManager::instance();
@@ -104,9 +105,9 @@ class EventManagerTest extends TestCase
         }
     }
 
-/**
- * testDispatchUsersEvents
- */
+    /**
+     * testDispatchUsersEvents
+     */
     public function testDispatchUsersEvents()
     {
         $eventNames = [
@@ -137,13 +138,16 @@ class EventManagerTest extends TestCase
         foreach ($eventNames as $name) {
             $event = Croogo::dispatchEvent($name, $this->Users);
             $this->assertTrue($event->result, sprintf('Event: %s', $name));
-            $this->assertInstanceOf('\\Croogo\\Core\\Test\\TestCase\\Event\\TestUsersEventController', $event->subject());
+            $this->assertInstanceOf(
+                '\\Croogo\\Core\\Test\\TestCase\\Event\\TestUsersEventController',
+                $event->getSubject()
+            );
         }
     }
 
-/**
- * testDispatchNodesEvents
- */
+    /**
+     * testDispatchNodesEvents
+     */
     public function testDispatchNodesEvents()
     {
         $eventNames = [
@@ -158,24 +162,27 @@ class EventManagerTest extends TestCase
         foreach ($eventNames as $name) {
             $event = Croogo::dispatchEvent($name, $this->Nodes);
             $this->assertTrue($event->result, sprintf('Event: %s', $name));
-            $this->assertInstanceOf('\\Croogo\\Core\\Test\\TestCase\\Event\\TestNodesEventController', $event->subject());
+            $this->assertInstanceOf(
+                '\\Croogo\\Core\\Test\\TestCase\\Event\\TestNodesEventController',
+                $event->getSubject()
+            );
         }
     }
 
-/**
- * testDispatchHelperEvents
- */
+    /**
+     * testDispatchHelperEvents
+     */
     public function testDispatchHelperEvents()
     {
         $eventNames = [
             'Helper.Layout.afterFilter',
             'Helper.Layout.beforeFilter',
         ];
-                $View = new View();
+        $View = new View();
         foreach ($eventNames as $name) {
             $event = Croogo::dispatchEvent($name, $View);
             $this->assertTrue($event->result, sprintf('Event: %s', $name));
-            $this->assertInstanceOf('\\Cake\\View\\View', $event->subject());
+            $this->assertInstanceOf('\\Cake\\View\\View', $event->getSubject());
         }
     }
 }

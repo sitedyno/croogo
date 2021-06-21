@@ -7,12 +7,13 @@ namespace Croogo\Core\View\Widget;
 
 use Cake\Core\Configure;
 use Cake\Database\Type;
-use Cake\I18n\I18n;
 use Cake\I18n\FrozenTime;
-use Cake\I18n\Time;
+use Cake\I18n\I18n;
 use Cake\Routing\Router;
+use Cake\Utility\Hash;
 use Cake\View\Form\ContextInterface;
 use Cake\View\Widget\DateTimeWidget as CakeDateTimeWidget;
+use Croogo\Extensions\CroogoTheme;
 use DateTimeInterface;
 
 class DateTimeWidget extends CakeDateTimeWidget
@@ -60,15 +61,12 @@ class DateTimeWidget extends CakeDateTimeWidget
 
         if ($val instanceof DateTimeInterface) {
             $val = new FrozenTime($val);
-        }
-
-        if (!empty($val)) {
             $timestamp = $val->format('U');
             $val = $val->format('m/d/Y g:i:s A');
         }
 
         $request = Router::getRequest();
-        $timezone = $request->session()->read('Auth.User.timezone');
+        $timezone = $request->getSession()->read('Auth.User.timezone');
         if (!$timezone) {
             $timezone = Configure::read('App.defaultTimezone');
         }
@@ -78,19 +76,13 @@ class DateTimeWidget extends CakeDateTimeWidget
         }
 
         $widget = <<<html
-            <input
-                type="hidden"
-                name="${name}"
-                value="$val"
-                id="$id"
-            />
             <div class="input-group $type $class">
                 <input
                     type="text"
                     class="form-control"
-                    name="${name}_dp"
-                    value="$val"
-                    id="${id}_dp"
+                    name="${name}"
+                    value="{$val}"
+                    id="${id}"
                     role="$role"
                     data-related="{$id}"
                     data-timestamp="$timestamp"
@@ -105,10 +97,14 @@ html;
 
         $addon = isset($data['addon']) ? $data['addon'] : true;
         if ($addon) {
+            $themeData = CroogoTheme::config(Configure::read('Site.admin_theme'));
+            $iconSet = Hash::extract($themeData, 'settings.iconDefaults.iconSet')[0];
             $widget .= <<<html
-                <label for="$id" class="input-group-addon">
-                    <span class="fa fa-calendar"></span>
-                </label>
+                <div class="input-group-append">
+                    <span class="input-group-text">
+                    <i class="$iconSet fa-calendar"></i>
+                    </span>
+                </div>
 html;
         }
 
@@ -186,6 +182,6 @@ html;
             return [];
         }
 
-        return [$data['name'], $data['name'] . '_dp'];
+        return [$data['name']];
     }
 }

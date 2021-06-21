@@ -4,7 +4,6 @@ namespace Croogo\Core\Panel;
 
 use Cake\Controller\ComponentRegistry;
 use Cake\Core\Configure;
-use Cake\Core\Plugin;
 use Cake\Event\Event;
 use DebugKit\DebugPanel;
 
@@ -18,11 +17,11 @@ class ComponentsPanel extends DebugPanel
     public function afterFilter(Event $event)
     {
         /* @var ComponentRegistry $componentRegistry */
-        if (!isset($event->subject()->View)) {
+        if (!isset($event->getSubject()->View)) {
             return;
         }
 
-        $componentRegistry = $event->subject()->components();
+        $componentRegistry = $event->getSubject()->components();
 
         $loadedComponents = $componentRegistry->loaded();
 

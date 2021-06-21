@@ -1,30 +1,28 @@
 <?php
 
-use Croogo\Core\Status;
-
 $this->extend('Croogo/Core./Common/admin_edit');
 $this->Croogo->adminScript('Croogo/Menus.admin');
 
 $this->Breadcrumbs->add(__d('croogo', 'Menus'), ['controller' => 'Menus', 'action' => 'index']);
 
-if ($this->request->params['action'] == 'add') {
+if ($this->getRequest()->getParam('action') == 'add') {
     $this->Breadcrumbs->add(h($menu->title), [
                 'action' => 'index',
                 '?' => ['menu_id' => $menu->id],
             ])
-        ->add(__d('croogo', 'Add'), $this->request->getRequestTarget());
+        ->add(__d('croogo', 'Add'), $this->getRequest()->getRequestTarget());
     $formUrl = [
         'action' => 'add',
         $menu->id,
     ];
 }
 
-if ($this->request->params['action'] == 'edit') {
+if ($this->getRequest()->getParam('action') == 'edit') {
     $this->Breadcrumbs->add(h($menu->title), [
             'action' => 'index',
             '?' => ['menu_id' => $menu->id],
         ])
-        ->add($link->title, $this->request->getRequestTarget());
+        ->add($link->title, $this->getRequest()->getRequestTarget());
     $formUrl = [
         'action' => 'edit',
         '?' => [
@@ -38,8 +36,8 @@ $this->append('form-start', $this->Form->create($link, [
     'class' => 'protected-form',
 ]));
 
-$inputDefaults = $this->Form->templates();
-$inputClass = isset($inputDefaults['class']) ? $inputDefaults['class'] : null;
+//$inputDefaults = $this->Form->getTemplates();
+//$inputClass = isset($inputDefaults['class']) ? $inputDefaults['class'] : null;
 
 $this->append('tab-heading');
     echo $this->Croogo->adminTab(__d('croogo', 'Link'), '#link-basic');
@@ -65,9 +63,9 @@ $this->append('tab-content');
 
         $linkString = (string)$link->link;
         $linkOptions = [];
-        if (preg_match('/(plugin:)|(controller:)|(action:)/', $linkString)):
+        if (preg_match('/(plugin:)|(controller:)|(action:)/', $linkString)) :
             $linkKeys = explode('/', $linkString);
-            foreach ($linkKeys as $linkKey):
+            foreach ($linkKeys as $linkKey) :
                 $linkOptions[] = [
                     'value' => $linkKey,
                     'text' => urldecode($linkKey),
@@ -75,11 +73,11 @@ $this->append('tab-content');
                     'data-select2-tag' => "true",
                 ];
             endforeach;
-        else:
-            if (!$link->isNew() && $linkString):
+        else :
+            if (!$link->isNew() && $linkString) :
                 $linkOptions[] = [
                     'value' => $linkString,
-                    'text' => $linkString,
+                    'text' => urldecode($linkString),
                     'selected' => true,
                     'data-select2-tag' => "true",
                 ];
@@ -95,9 +93,9 @@ $this->append('tab-content');
             'options' => $linkOptions,
         ]);
 
-    echo $this->Html->tabEnd();
+        echo $this->Html->tabEnd();
 
-    echo $this->Html->tabStart('link-misc');
+        echo $this->Html->tabStart('link-misc');
         echo $this->Form->input('description', [
             'label' => __d('croogo', 'Description'),
         ]);
@@ -112,23 +110,30 @@ $this->append('tab-content');
         ]);
         echo $this->Form->input('params', [
             'label' => __d('croogo', 'Params'),
+            'type' => 'stringlist',
         ]);
-    echo $this->Html->tabEnd();
+        echo $this->Html->tabEnd();
 
-$this->end();
+        $this->end();
 
-$this->start('panels');
-    echo $this->Html->beginBox(__d('croogo', 'Publishing'));
-        echo $this->element('Croogo/Core.admin/buttons', ['type' => 'link']);
+        $this->start('panels');
+        echo $this->Html->beginBox(__d('croogo', 'Publishing'));
+        echo $this->element('Croogo/Core.admin/buttons', [
+            'type' => 'link',
+            'cancelUrl' => [
+                'action' => 'index',
+                'menu_id' => $menu->id,
+            ],
+        ]);
         echo $this->element('Croogo/Core.admin/publishable');
-    echo $this->Html->endBox();
+        echo $this->Html->endBox();
 
-    echo $this->Html->beginBox(__d('croogo', 'Access control'));
+        echo $this->Html->beginBox(__d('croogo', 'Access control'));
         echo $this->Form->input('visibility_roles', [
             'class' => 'c-select',
             'options' => $roles,
             'multiple' => true,
             'label' => false,
         ]);
-    echo $this->Html->endBox();
-$this->end();
+        echo $this->Html->endBox();
+        $this->end();

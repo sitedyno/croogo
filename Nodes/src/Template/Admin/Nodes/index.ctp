@@ -10,10 +10,24 @@ $this->extend('Croogo/Core./Common/admin_index');
 $this->Croogo->adminScript('Croogo/Nodes.admin');
 
 $this->Breadcrumbs
-    ->add(__d('croogo', 'Content'), $this->request->getUri()->getPath());
+    ->add(__d('croogo', 'Content'), $this->getRequest()->getUri()->getPath());
+
+if ($this->getRequest()->getQuery('type')):
+    $this->Breadcrumbs->add($type->title, [
+        'action' => 'index',
+        'type' => $type->alias,
+    ]);
+endif;
 
 $this->append('action-buttons');
-echo $this->Croogo->adminAction(__d('croogo', 'Create content'), ['action' => 'create'], ['button' => 'success']);
+    if (isset($type)):
+        echo $this->Croogo->adminAction(__d('croogo', 'New %s', $type->title), [
+            'action' => 'create',
+            $type->alias,
+        ]);
+    else:
+        echo $this->Croogo->adminAction(__d('croogo', 'Create content'), ['action' => 'create']);
+    endif;
 $this->end();
 
 $this->append('search', $this->element('admin/nodes_search'));
@@ -29,7 +43,7 @@ echo $this->Html->tableHeaders([
     $this->Paginator->sort('title', __d('croogo', 'Title')),
     $this->Paginator->sort('type', __d('croogo', 'Type')),
     $this->Paginator->sort('user_id', __d('croogo', 'User')),
-    $this->Paginator->sort('updated', __d('croogo', 'Updated')),
+    $this->Paginator->sort('modified', __d('croogo', 'Modified')),
     $this->Paginator->sort('status', __d('croogo', 'Status')),
     '',
 ]);
@@ -75,7 +89,7 @@ $this->append('table-body');
                 <?= $node->user->username ?>
             </td>
             <td>
-                <?= $this->Time->i18nFormat($node->updated) ?>
+                <?= $this->Time->i18nFormat($node->modified) ?>
             </td>
             <td>
                 <?php
@@ -90,30 +104,35 @@ $this->append('table-body');
                     <?php
                     echo $this->Croogo->adminRowActions($node->id);
 
-                    if ($this->request->query('type')):
+                    if ($this->getRequest()->getQuery('type')):
                         echo ' ' . $this->Croogo->adminRowAction('', ['action' => 'move', $node->id, 'up'], [
                                 'method' => 'post',
                                 'icon' => $this->Theme->getIcon('move-up'),
+                                'escapeTitle' => false,
                                 'tooltip' => __d('croogo', 'Move up'),
                             ]);
                         echo ' ' . $this->Croogo->adminRowAction('', ['action' => 'move', $node->id, 'down'], [
                                 'method' => 'post',
                                 'icon' => $this->Theme->getIcon('move-down'),
+                                'escapeTitle' => false,
                                 'tooltip' => __d('croogo', 'Move down'),
                             ]);
                     endif;
 
                     echo ' ' . $this->Croogo->adminRowAction('', ['action' => 'edit', $node->id], [
                             'icon' => $this->Theme->getIcon('update'),
+                            'escapeTitle' => false,
                             'tooltip' => __d('croogo', 'Edit this item'),
                         ]);
                     echo ' ' . $this->Croogo->adminRowAction('', '#Nodes' . $node->id . 'Id', [
                             'icon' => $this->Theme->getIcon('copy'),
+                            'escapeTitle' => false,
                             'tooltip' => __d('croogo', 'Create a copy'),
                             'rowAction' => 'copy',
                         ]);
                     echo ' ' . $this->Croogo->adminRowAction('', '#Nodes' . $node->id . 'Id', [
                             'icon' => $this->Theme->getIcon('delete'),
+                            'escapeTitle' => false,
                             'class' => 'delete',
                             'tooltip' => __d('croogo', 'Remove this item'),
                             'rowAction' => 'delete',

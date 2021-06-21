@@ -23,24 +23,6 @@ class Croogo
 {
 
     /**
-     * Loads plugin's routes.php from app/config/routes.php.
-     *
-     * Plugin name is added to Hook.routes key of Configure object.
-     *
-     * @param string $pluginName plugin name
-     * @deprecated Will be removed in the future.
-     */
-    public static function hookRoutes($pluginName)
-    {
-        $hooks = Configure::read('Hook.routes');
-        if (!$hooks || !is_array($hooks)) {
-            $hooks = [];
-        }
-        $hooks[] = $pluginName;
-        Configure::write('Hook.routes', $hooks);
-    }
-
-    /**
      * Loads as a normal component from controller.
      *
      * @param string $controllerName Controller Name
@@ -279,16 +261,16 @@ class Croogo
         } elseif ($object instanceof Request) {
             $pluginPath = $controller = null;
             $namespace = 'Controller';
-            if (!empty($object->params['plugin'])) {
-                $pluginPath = $object->params['plugin'] . '.';
+            if (!empty($object->getParam('plugin'))) {
+                $pluginPath = $object->getParam('plugin') . '.';
             }
-            if (!empty($object->params['controller'])) {
-                $controller = $object->params['controller'];
+            if (!empty($object->getParam('controller'))) {
+                $controller = $object->getParam('controller');
             }
-            if (!empty($object->params['prefix'])) {
+            if (!empty($object->getParam('prefix'))) {
                 $prefixes = array_map(
                     'Cake\Utility\Inflector::camelize',
-                    explode('/', $object->params['prefix'])
+                    explode('/', $object->getParam('prefix'))
                 );
                 $namespace .= '/' . implode('/', $prefixes);
             }
@@ -360,10 +342,11 @@ class Croogo
     {
         $event = new Event($name, $subject, $data);
         if ($subject) {
-            $event = $subject->eventManager()->dispatch($event);
+            $event = $subject->getEventManager()->dispatch($event);
         } else {
             $event = EventManager::instance()->dispatch($event);
         }
+
         return $event;
     }
 
@@ -382,6 +365,7 @@ class Croogo
             $absoluteUrl = Router::url('/' . $url, true);
         }
         $path = '/' . str_replace(Router::url('/', true), '', $absoluteUrl);
+
         return $path;
     }
 
@@ -405,6 +389,7 @@ class Croogo
         }
         $values = Hash::merge((array)$values, $config);
         Configure::write($key, $values);
+
         return $values;
     }
 
@@ -414,5 +399,4 @@ class Croogo
             $model => $config
         ], true);
     }
-
 }

@@ -18,22 +18,22 @@ use Cake\View\Helper;
  * @license  http://www.opensource.org/licenses/mit-license.php The MIT License
  * @link     http://www.croogo.org
  *
- * @property \Croogo\Core\View\Helper\CroogoHtmlHelper $Html
+ * @property \Croogo\Core\View\Helper\HtmlHelper $Html
  */
 class MetaHelper extends Helper
 {
 
-/**
- * Helpers
- */
+    /**
+     * Helpers
+     */
     public $helpers = [
         'Croogo/Core.Layout',
         'Croogo/Core.Croogo',
         'Html' => [
-            'className' => 'Croogo/Core.CroogoHtml'
+            'className' => 'Croogo/Core.Html'
         ],
         'Form' => [
-            'className' => 'Croogo/Core.CroogoForm'
+            'className' => 'Croogo/Core.Form'
         ],
     ];
 
@@ -44,9 +44,9 @@ class MetaHelper extends Helper
         ],
     ];
 
-/**
- * beforeRender
- */
+    /**
+     * beforeRender
+     */
     public function beforeRender($viewFile)
     {
         if ($this->Layout->isLoggedIn()) {
@@ -54,11 +54,11 @@ class MetaHelper extends Helper
         }
     }
 
-/**
- * Meta tags
- *
- * @return string
- */
+    /**
+     * Meta tags
+     *
+     * @return string
+     */
     public function meta($metaForLayout = [])
     {
         $_metaForLayout = [];
@@ -100,15 +100,15 @@ class MetaHelper extends Helper
         return $output;
     }
 
-/**
- * Meta field: with key/value fields
- *
- * @param string $key (optional) key
- * @param string $value (optional) value
- * @param int $id (optional) ID of Meta
- * @param array $options (optional) options
- * @return string
- */
+    /**
+     * Meta field: with key/value fields
+     *
+     * @param string $key (optional) key
+     * @param string $value (optional) value
+     * @param int $id (optional) ID of Meta
+     * @param array $options (optional) options
+     * @return string
+     */
     public function field($key = '', $value = null, $id = null, $options = [])
     {
         $_options = [
@@ -155,12 +155,13 @@ class MetaHelper extends Helper
             $actions = $this->Html->link(
                 __d('croogo', 'Remove'),
                 $deleteUrl,
-                ['class' => 'btn btn-danger-outline remove-meta', 'rel' => $id]
+                ['class' => 'btn btn-outline-danger remove-meta', 'rel' => $id]
             );
-            $actions = $this->Html->tag('div', $actions, ['class' => 'actions']);
+            $actions = $this->Html->tag('div', $actions, ['class' => 'actions my-3']);
         }
 
-        $output = $this->Html->tag('div',  $fields . $actions, ['class' => 'meta']);
+        $output = $this->Html->tag('div', $fields . $actions, ['class' => 'meta']);
+
         return $output;
     }
 }

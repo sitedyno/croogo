@@ -4,7 +4,6 @@ namespace Croogo\Core\Controller\Api;
 
 use Cake\Controller\Component\AuthComponent;
 use Cake\Controller\Controller;
-use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Event\Event;
@@ -34,7 +33,7 @@ class AppController extends Controller
                         'Users.status' => true,
                     ],
                 ],
-                'Form',
+                'Croogo/Acl.ApiForm',
             ],
             'authorize' => [
                 AuthComponent::ALL => [
@@ -51,7 +50,7 @@ class AppController extends Controller
             'loginAction' => false,
         ];
 
-        if (Plugin::loaded('ADmad/JwtAuth')) {
+        if (Plugin::isLoaded('ADmad/JwtAuth')) {
             $authConfig['authenticate']['ADmad/JwtAuth.Jwt'] = [
                 'fields' => [
                     'username' => 'id',
@@ -59,17 +58,16 @@ class AppController extends Controller
                 'parameter' => 'token',
                 'queryDatasource' => true,
             ];
-
         }
 
         return $authConfig;
     }
 
-/**
- * Initialize
- *
- * @return void
- */
+    /**
+     * Initialize
+     *
+     * @return void
+     */
     public function initialize()
     {
         parent::initialize();
@@ -102,12 +100,11 @@ class AppController extends Controller
             'listeners' => [
                 'Crud.Search',
                 'Crud.RelatedModels',
-                'Crud.Api',
+                'CrudJsonApi.JsonApi',
             ]
         ]);
 
         Configure::write('debug', false);
-
     }
 
     /**
@@ -122,10 +119,9 @@ class AppController extends Controller
         if (Configure::read('Site.status') == 0 &&
             $this->Auth->user('role_id') != 1
         ) {
-            if (!$this->request->is('whitelisted')) {
+            if (!$this->getRequest()->is('whitelisted')) {
                 $this->response->statusCode(503);
             }
         }
     }
-
 }

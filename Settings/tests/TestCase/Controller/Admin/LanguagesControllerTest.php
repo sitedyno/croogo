@@ -8,17 +8,17 @@ use Croogo\Core\TestSuite\IntegrationTestCase;
 class LanguagesControllerTest extends IntegrationTestCase
 {
     public $fixtures = [
-        'plugin.croogo/blocks.block',
-        'plugin.croogo/comments.comment',
-        'plugin.croogo/core.settings',
-        'plugin.croogo/settings.language',
-        'plugin.croogo/menus.menu',
-        'plugin.croogo/meta.meta',
-        'plugin.croogo/nodes.node',
-        'plugin.croogo/users.user',
-        'plugin.croogo/users.role',
-        'plugin.croogo/taxonomy.type',
-        'plugin.croogo/taxonomy.vocabulary',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Core.Settings',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
     public function setUp()
@@ -98,11 +98,11 @@ class LanguagesControllerTest extends IntegrationTestCase
         $this->assertFalse($language);
     }
 
-/**
- * testAdminMoveUp
- *
- * @return void
- */
+    /**
+     * testAdminMoveUp
+     *
+     * @return void
+     */
     public function testAdminMoveUp()
     {
         $id = $this->_addLanguages();
@@ -171,11 +171,11 @@ class LanguagesControllerTest extends IntegrationTestCase
         ], $list);
     }
 
-/**
- * testAdminSelect
- *
- * @return void
- */
+    /**
+     * testAdminSelect
+     *
+     * @return void
+     */
     public function testAdminSelect()
     {
         $this->markTestIncomplete('Still being ported');
@@ -211,6 +211,7 @@ class LanguagesControllerTest extends IntegrationTestCase
         ]);
 
         $languages->save($german);
+
         return $german->id;
     }
 }

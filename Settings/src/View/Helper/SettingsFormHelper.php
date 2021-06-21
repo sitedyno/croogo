@@ -2,8 +2,8 @@
 
 namespace Croogo\Settings\View\Helper;
 
-use Cake\View\Helper;
 use Cake\Utility\Hash;
+use Cake\View\Helper;
 use Croogo\Settings\Model\Entity\Setting;
 
 /**
@@ -21,16 +21,16 @@ class SettingsFormHelper extends Helper
 
     public $helpers = [
         'Form' => [
-            'className' => 'Croogo/Core.CroogoForm'
+            'className' => 'Croogo/Core.Form'
         ],
         'Croogo/Core.Croogo',
     ];
 
-/**
- * _inputCheckbox
- *
- * @see SettingsFormHelper::input()
- */
+    /**
+     * _inputCheckbox
+     *
+     * @see SettingsFormHelper::input()
+     */
     protected function _inputCheckbox(Setting $setting, $label)
     {
         $tooltip = [
@@ -52,16 +52,17 @@ class SettingsFormHelper extends Helper
                 'label' => $label
             ]);
         }
+
         return $output;
     }
 
-/**
- * Renders input setting according to its type
- *
- * @param Setting $setting setting data
- * @param string $label Input label
- * @return string
- */
+    /**
+     * Renders input setting according to its type
+     *
+     * @param Setting $setting setting data
+     * @param string $label Input label
+     * @return string
+     */
     public function input(Setting $setting, $label)
     {
         $output = '';
@@ -98,13 +99,19 @@ class SettingsFormHelper extends Helper
             if (!empty($setting->value)) {
                 $output .= $this->_View->Html->link(
                     $this->_View->Html->image($setting->value, [
-                        'class' => 'img-thumbnail',
+                        'class' => 'img-fluid',
                         'style' => 'max-width: 400px',
                     ]),
-                    $setting->value, [
+                    $setting->value,
+                    [
                         'data-toggle' => 'lightbox',
+                        'escape' => false,
                     ]
                 );
+                $output .= $this->_View->Form->input('_clearbackground', [
+                    'type' => 'checkbox',
+                    'label' => 'Delete Theme Background Image',
+                ]);
             }
         } else {
             $options = [
@@ -128,6 +135,7 @@ class SettingsFormHelper extends Helper
 
             $output = $this->Form->input('setting-' . $setting->id, $options);
         }
+
         return $output;
     }
 }

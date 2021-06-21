@@ -3,7 +3,6 @@
 namespace Croogo\Settings\Controller\Admin;
 
 use Cake\Cache\Cache;
-use Croogo\Core\Event\EventManager;
 
 /**
  * Caches Controller
@@ -22,9 +21,9 @@ class CachesController extends AppController
     {
         $caches = [];
         $configured = Cache::configured();
-        if ($this->request->query('sort') === 'title') {
+        if ($this->getRequest()->getquery('sort') === 'title') {
             sort($configured);
-            if ($this->request->query('direction') !== 'asc') {
+            if ($this->getRequest()->getQuery('direction') !== 'asc') {
                 $configured = array_reverse($configured);
             }
         }
@@ -37,7 +36,7 @@ class CachesController extends AppController
 
     public function clear()
     {
-        $config = $this->request->query('config') ?: 'all';
+        $config = $this->getRequest()->getQuery('config') ?: 'all';
         if ($config === 'all') {
             $result = Cache::clearAll();
         } else {
@@ -48,7 +47,7 @@ class CachesController extends AppController
         } else {
             $this->Flash->warning(__d('croogo', 'Failed clearing cache'));
         }
-        return $this->redirect($this->request->referer());
-    }
 
+        return $this->redirect($this->getRequest()->referer());
+    }
 }

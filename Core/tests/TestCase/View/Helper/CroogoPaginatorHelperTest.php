@@ -1,8 +1,7 @@
 <?php
 namespace Croogo\Core\Test\TestCase\View\Helper;
 
-use Cake\Controller\Controller;
-use Cake\Network\Request;
+use Cake\Http\ServerRequest;
 use Cake\View\Helper\HtmlHelper;
 use Cake\View\View;
 use Croogo\Core\TestSuite\CroogoTestCase;
@@ -12,7 +11,7 @@ class CroogoPaginatorHelperTest extends CroogoTestCase
 {
 
     public $fixtures = [
-//		'plugin.taxonomy.type',
+//      'plugin.Croogo/Taxonomy.Type',
     ];
 
     public function setUp()
@@ -20,7 +19,7 @@ class CroogoPaginatorHelperTest extends CroogoTestCase
         $controller = null;
         $this->View = new View($controller);
         $this->Paginator = new CroogoPaginatorHelper($this->View);
-        $this->Paginator->request = new Request();
+        $this->Paginator->getView()->setRequest(new ServerRequest());
         $this->Paginator->Html = new HtmlHelper($this->View);
     }
 

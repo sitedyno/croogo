@@ -6,7 +6,6 @@ use Cake\Cache\Cache;
 use Cake\Core\Plugin;
 use Cake\Event\EventListenerInterface;
 use Cake\ORM\TableRegistry;
-use Croogo\Comments\Model\Comment;
 use Croogo\Core\Croogo;
 use Croogo\Core\Nav;
 
@@ -59,7 +58,7 @@ class NodesEventHandler implements EventListenerInterface
      */
     public function onSetupAdminData($event)
     {
-        $View = $event->subject;
+        $View = $event->getSubject();
 
         if (!isset($View->viewVars['typesForAdminLayout'])) {
             return;
@@ -88,25 +87,24 @@ class NodesEventHandler implements EventListenerInterface
      */
     public function onBootstrapComplete($event)
     {
-        if (Plugin::loaded('Comments')) {
-            Croogo::hookBehavior('Croogo/Nodes.Nodes', 'Comments.Commentable');
-            Croogo::hookComponent('Croogo/Nodes.Nodes', 'Comments.Comments');
-            Croogo::hookModelProperty('Croogo/Comments.Comments', 'belongsTo', [
+        if (Plugin::isLoaded('Croogo/Comments')) {
+            Croogo::hookBehavior('Croogo/Nodes.Nodes', 'Croogo/Comments.Commentable');
+            Croogo::hookTableProperty('Croogo/Comments.Comments', 'belongsTo', [
                 'Nodes' => [
                     'className' => 'Croogo/Nodes.Nodes',
                     'foreignKey' => 'foreign_key',
                     'counterCache' => true,
                     'counterScope' => [
-                        'Comment.model' => 'Croogo/Nodes.Nodes',
-                        'Comment.status' => Comment::STATUS_APPROVED,
+                        'Comments.model' => 'Croogo/Nodes.Nodes',
+                        'Comments.status' => true,
                     ],
                 ],
             ]);
         }
-        if (Plugin::loaded('Croogo/Taxonomy')) {
+        if (Plugin::isLoaded('Croogo/Taxonomy')) {
             Croogo::hookBehavior('Croogo/Nodes.Nodes', 'Croogo/Taxonomy.Taxonomizable');
         }
-        if (Plugin::loaded('Croogo/Meta')) {
+        if (Plugin::isLoaded('Croogo/Meta')) {
             Croogo::hookBehavior('Croogo/Nodes.Nodes', 'Croogo/Meta.Meta');
         }
     }
@@ -124,7 +122,7 @@ class NodesEventHandler implements EventListenerInterface
         ]);
         $linkChoosers = [];
         foreach ($types as $type) {
-            $linkChoosers[$type->title ] = [
+            $linkChoosers[$type->title] = [
                 'title' => h($type->title),
                 'description' => $type->description,
                 'url' => [

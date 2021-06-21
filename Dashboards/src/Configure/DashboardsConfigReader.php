@@ -5,7 +5,7 @@ namespace Croogo\Dashboards\Configure;
 use Cake\Core\Configure\ConfigEngineInterface;
 use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Utility\Hash;
-use Cake\Utility\Inflector;
+use Cake\Utility\Text;
 
 /**
  * DashboardsConfigReader
@@ -21,12 +21,12 @@ class DashboardsConfigReader extends PhpConfig implements ConfigEngineInterface
 
     protected $_settingKey = 'Dashboards';
 
-/**
- * Reads a plugin dashboard setting and store them under $_settingKey
- *
- * @param string $key Configuration key name
- * @return array
- */
+    /**
+     * Reads a plugin dashboard setting and store them under $_settingKey
+     *
+     * @param string $key Configuration key name
+     * @return array
+     */
     public function read($key)
     {
         $config = parent::read($key);
@@ -42,11 +42,12 @@ class DashboardsConfigReader extends PhpConfig implements ConfigEngineInterface
         ];
         $settings = [];
         foreach ($config as $alias => $setting) {
-            $alias = Inflector::slug($alias, '-');
+            $alias = Text::slug($alias, '-');
             $setting = Hash::merge($defaults, $setting);
             $settings[$alias] = $setting;
         }
         $result = [$this->_settingKey => $settings];
+
         return $result;
     }
 
@@ -55,7 +56,7 @@ class DashboardsConfigReader extends PhpConfig implements ConfigEngineInterface
      *
      * @param string $key The identifier to write to.
      * @param array $data The data to dump.
-     * @return bool True on success or false on failure.
+     * @return void True on success or false on failure.
      */
     public function dump($key, array $data)
     {

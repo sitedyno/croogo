@@ -1,4 +1,5 @@
 <?php
+
 use Migrations\AbstractSeed;
 
 /**
@@ -26,10 +27,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '1',
                 'field' => 'title',
                 'content' => 'Halo Dunia',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '2',
@@ -38,10 +35,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '1',
                 'field' => 'excerpt',
                 'content' => '',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '3',
@@ -50,10 +43,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '1',
                 'field' => 'body',
                 'content' => '<p>Selamat Datang di Croogo. Ini adalah tulisan pertama anda. Anda dapat mengedit atau menghapusnya dari panel admin.</p>',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '4',
@@ -62,10 +51,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '2',
                 'field' => 'title',
                 'content' => 'Tentang',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '5',
@@ -74,10 +59,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '2',
                 'field' => 'excerpt',
                 'content' => '',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '6',
@@ -86,10 +67,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '2',
                 'field' => 'body',
                 'content' => '<p>Ini merupakan contoh halaman Croogo, Anda dapat menyunting ini untuk menaruh informasi tentang diri Anda atau situs Anda.</p>',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '7',
@@ -98,10 +75,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '8',
                 'field' => 'title',
                 'content' => 'Tentang',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '8',
@@ -110,10 +83,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '8',
                 'field' => 'description',
                 'content' => '',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '9',
@@ -122,10 +91,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '7',
                 'field' => 'title',
                 'content' => 'Depan',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '10',
@@ -134,10 +99,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '7',
                 'field' => 'description',
                 'content' => '',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '11',
@@ -146,10 +107,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '15',
                 'field' => 'title',
                 'content' => 'Kontak',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '12',
@@ -158,10 +115,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '15',
                 'field' => 'description',
                 'content' => '',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '13',
@@ -170,10 +123,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '7',
                 'field' => 'title',
                 'content' => 'Kategori',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '14',
@@ -182,10 +131,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '7',
                 'field' => 'body',
                 'content' => '[vocabulary:categories type="blog"]',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '15',
@@ -194,10 +139,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '3',
                 'field' => 'title',
                 'content' => 'Tentang',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '16',
@@ -206,10 +147,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '3',
                 'field' => 'body',
                 'content' => 'Ini adalah isi dari blok Anda. Dapat dimodifikasi di panel admin.',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
             [
                 'id' => '17',
@@ -218,10 +155,6 @@ class I18nSeed extends AbstractSeed
                 'foreign_key' => '9',
                 'field' => 'title',
                 'content' => 'Tulisan Baru',
-                'updated' => NULL,
-                'updated_by' => NULL,
-                'created' => NULL,
-                'created_by' => NULL,
             ],
         ];
 

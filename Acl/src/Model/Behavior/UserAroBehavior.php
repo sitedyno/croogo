@@ -23,19 +23,17 @@ use Cake\ORM\TableRegistry;
 class UserAroBehavior extends Behavior
 {
 
-/**
- * Setup
- */
+    /**
+     * Setup
+     */
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->_setupMultirole($this->_table);
     }
 
-/**
- * Enable Multiple Role, dynamically bind User Habtm Role
- */
+    /**
+     * Enable Multiple Role, dynamically bind User Habtm Role
+     */
     protected function _setupMultirole(Table $model)
     {
         if (!Configure::read('Access Control.multiRole')) {
@@ -50,18 +48,18 @@ class UserAroBehavior extends Behavior
     /**
      * afterSave
      *
-     * @param Model $model
-     * @param bool $created
+     * @param Model $event
+     * @param bool $entity
      * @return void
      */
     public function afterSave(Event $event, Entity $entity)
     {
         // update ACO alias
         if (!empty($entity->username)) {
-            $model = $event->subject();
+            $model = $event->getSubject();
             $arosTable = TableRegistry::get('Aros');
 
-            $ref = ['model' => $model->alias(), 'foreign_key' => $entity->id];
+            $ref = ['model' => $model->getAlias(), 'foreign_key' => $entity->id];
             $node = $model->node($ref);
             $aro = $node->firstOrFail();
 
@@ -79,5 +77,4 @@ class UserAroBehavior extends Behavior
     {
         Cache::clearGroup('acl', 'permissions');
     }
-
 }

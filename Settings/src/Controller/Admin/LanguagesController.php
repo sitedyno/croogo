@@ -3,7 +3,6 @@
 namespace Croogo\Settings\Controller\Admin;
 
 use Cake\Event\Event;
-use Croogo\Core\Event\EventManager;
 
 /**
  * Languages Controller
@@ -21,13 +20,13 @@ class LanguagesController extends AppController
     {
         parent::initialize();
 
-        $this->Crud->config('actions.moveUp', [
+        $this->Crud->setConfig('actions.moveUp', [
             'className' => 'Croogo/Core.Admin/MoveUp'
         ]);
-        $this->Crud->config('actions.moveDown', [
+        $this->Crud->setConfig('actions.moveDown', [
             'className' => 'Croogo/Core.Admin/MoveDown'
         ]);
-        $this->Crud->config('actions.index', [
+        $this->Crud->setConfig('actions.index', [
             'searchFields' => [
                 'title',
                 'alias',
@@ -38,18 +37,18 @@ class LanguagesController extends AppController
         $this->_setupPrg();
     }
 
-/**
- * Admin select
- *
- * @param int $id
- * @param string $modelAlias
- * @return void
- * @access public
- */
+    /**
+     * Admin select
+     *
+     * @param int $id
+     * @param string $modelAlias
+     * @return void
+     * @access public
+     */
     public function select()
     {
-        $id = $this->request->query('id');
-        $modelAlias = $this->request->query('model');
+        $id = $this->getRequest()->getQuery('id');
+        $modelAlias = $this->getRequest()->getQuery('model');
         if ($id == null ||
             $modelAlias == null) {
             return $this->redirect(['action' => 'index']);
@@ -67,12 +66,13 @@ class LanguagesController extends AppController
 
     public function index()
     {
-        $this->Crud->on('beforePaginate', function(Event $e) {
-            if (empty($this->request->query('sort'))) {
-                $e->subject()->query
+        $this->Crud->on('beforePaginate', function (Event $e) {
+            if (empty($this->getRequest()->getQuery('sort'))) {
+                $e->getSubject()->query
                     ->orderDesc('status');
             }
         });
+
         return $this->Crud->execute();
     }
 }

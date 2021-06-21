@@ -4,21 +4,21 @@ $this->Croogo->adminScript('Croogo/Contacts.admin');
 
 $this->extend('Croogo/Core./Common/admin_index');
 
-$this->Breadcrumbs->add(__d('croogo', 'Contacts'), ['controller' => 'contacts', 'action' => 'index']);
+$this->Breadcrumbs->add(__d('croogo', 'Contacts'), ['controller' => 'Contacts', 'action' => 'index']);
 
-$status = $this->request->query('status');
+$status = $this->getRequest()->getQuery('status');
 
 if (isset($status)) {
     $this->Breadcrumbs->add(__d('croogo', 'Messages'), ['action' => 'index']);
     if ($status == '1') {
-        $this->Breadcrumbs->add(__d('croogo', 'Read'), $this->request->getUri()->getPath());
+        $this->Breadcrumbs->add(__d('croogo', 'Read'), $this->getRequest()->getUri()->getPath());
         $this->assign('title', __d('croogo', 'Messages: Read'));
     } else {
-        $this->Breadcrumbs->add(__d('croogo', 'Unread'), $this->request->getUri()->getPath());
+        $this->Breadcrumbs->add(__d('croogo', 'Unread'), $this->getRequest()->getUri()->getPath());
         $this->assign('title', __d('croogo', 'Messages: Unread'));
     }
 } else {
-    $this->Breadcrumbs->add(__d('croogo', 'Messages'), $this->request->getUri()->getPath());
+    $this->Breadcrumbs->add(__d('croogo', 'Messages'), $this->getRequest()->getUri()->getPath());
 }
 
 $this->append('table-footer', $this->element('admin/modal', [
@@ -55,7 +55,7 @@ $tableHeaders = $this->Html->tableHeaders([
     $this->Paginator->sort('created', __d('croogo', 'Created')),
     __d('croogo', 'Actions'),
 ]);
-echo $this->Html->tag('thead', $tableHeaders);
+echo $tableHeaders;
 $this->end();
 
 $this->append('table-body');
@@ -64,12 +64,19 @@ $rows = [];
 foreach ($messages as $message) {
     $actions = [];
 
-    $actions[] = $this->Croogo->adminRowAction('', ['action' => 'view', $message->id],
-        ['icon' => $this->Theme->geticon('read'), 'tooltip' => __d('croogo', 'View this item')]);
-    $actions[] = $this->Croogo->adminRowAction('', ['action' => 'edit', $message->id],
-        ['icon' => $this->Theme->getIcon('update'), 'tooltip' => __d('croogo', 'Edit this item')]);
+    $actions[] = $this->Croogo->adminRowAction('', ['action' => 'view', $message->id], [
+        'icon' => $this->Theme->geticon('read'),
+        'escapeTitle' => false,
+        'tooltip' => __d('croogo', 'View this item'),
+    ]);
+    $actions[] = $this->Croogo->adminRowAction('', ['action' => 'edit', $message->id], [
+        'icon' => $this->Theme->getIcon('update'),
+        'escapeTitle' => false,
+        'tooltip' => __d('croogo', 'Edit this item'),
+    ]);
     $actions[] = $this->Croogo->adminRowAction('', '#Message' . $message->id . 'Id', [
         'icon' => $this->Theme->getIcon('delete'),
+        'escapeTitle' => false,
         'class' => 'delete',
         'tooltip' => __d('croogo', 'Remove this item'),
         'rowAction' => 'delete',

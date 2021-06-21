@@ -14,7 +14,7 @@ var Vocabularies = {};
  */
 Vocabularies.documentReady = function () {
 
-}
+};
 
 /**
  * document ready
@@ -22,7 +22,7 @@ Vocabularies.documentReady = function () {
  * @return void
  */
 $(document).ready(function () {
-    if (Croogo.params.controller == 'Vocabularies') {
-        Vocabularies.documentReady();
-    }
+  if (Croogo.params.controller == 'Vocabularies') {
+    Vocabularies.documentReady();
+  }
 });

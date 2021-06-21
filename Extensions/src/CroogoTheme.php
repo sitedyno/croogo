@@ -3,14 +3,17 @@
 namespace Croogo\Extensions;
 
 use Cake\Cache\Cache;
-use Cake\Core\Configure;
+use Cake\Core\App;
 use Cake\Core\Exception\MissingPluginException;
 use Cake\Core\Plugin;
 use Cake\Filesystem\Folder;
 use Cake\ORM\TableRegistry;
 use Cake\Routing\Router;
 use Cake\Utility\Hash;
+use Croogo\Core\PluginManager;
 use Croogo\Extensions\Exception\MissingThemeException;
+
+use UnexpectedValueException;
 
 /**
  * CroogoTheme class
@@ -40,7 +43,7 @@ class CroogoTheme
      */
     public function getThemes()
     {
-        return CroogoPlugin::instance()
+        return PluginManager::instance()
             ->getPlugins('theme');
     }
 
@@ -54,6 +57,8 @@ class CroogoTheme
     {
         $themeData = [
             'name' => $theme,
+            'isFrontendTheme' => true,
+            'isBackendTheme' => false,
             'regions' => [],
             'screenshot' => null,
             'settings' => [
@@ -66,8 +71,8 @@ class CroogoTheme
                 ],
                 'css' => [
                     'columnFull' => 'col-12',
-                    'columnLeft' => 'col-md-8',
-                    'columnRight' => 'col-md-4',
+                    'columnLeft' => 'col-lg-8',
+                    'columnRight' => 'col-lg-4',
                     'container' => 'container',
                     'containerFluid' => 'container-fluid',
                     'dashboardFull' => 'col-12',
@@ -75,15 +80,21 @@ class CroogoTheme
                     'dashboardRight' => 'col-sm-6',
                     'dashboardClass' => 'sortable-column',
                     'formInput' => 'input-block-level',
-                    'imageClass' => '',
+                    'imageClass' => 'img-fluid',
                     'row' => 'row',
+                    'tableHeaderClass' => 'thead-light',
                     'tableClass' => 'table table-striped',
+                    'tableContainerClass' => 'table-responsive',
                     'thumbnailClass' => 'img-thumbnail',
+                    'tabContentClass' => 'tab-content',
+                    'boxContainerClass' => 'card',
+                    'boxHeaderClass' => 'card-header',
+                    'boxBodyClass' => 'card-body',
                 ],
                 'iconDefaults' => [
-                    'iconSet' => 'fa',
-                    'largeIconClass' => 'fa-xl',
-                    'smallIconClass' => 'fa-sm',
+                    'iconSet' => 'fas',
+                    'prefix' => 'fa',
+                    'size' => 'sm',
                 ],
                 'icons' => [
                     'attach' => 'paperclip',
@@ -95,7 +106,7 @@ class CroogoTheme
                     'error-sign' => 'exclamation-sign',
                     'home' => 'home',
                     'info-sign' => 'info-circle',
-                    'inspect' => 'zoom-in',
+                    'inspect' => 'search',
                     'link' => 'link',
                     'move-down' => 'chevron-down',
                     'move-up' => 'chevron-up',
@@ -103,15 +114,15 @@ class CroogoTheme
                     'power-on' => 'bolt',
                     'question-sign' => 'question-sign',
                     'read' => 'eye',
-                    'refresh' => 'refresh',
+                    'refresh' => 'sync',
                     'resize' => 'arrows-alt',
                     'search' => 'search',
                     'success-sign' => 'ok-sign',
                     'translate' => 'flag',
-                    'update' => 'pencil',
+                    'update' => 'edit',
                     'upload' => 'upload',
                     'warning-sign' => 'warning-sign',
-                    'x-mark' => 'remove',
+                    'x-mark' => 'times',
                     'user' => 'user',
                     'key' => 'key',
                     'view' => 'eye'
@@ -120,26 +131,26 @@ class CroogoTheme
                     '' => [
                         'helpers' => [
                             'Html' => [
-                                'className' => 'Croogo/Core.CroogoHtml',
+                                'className' => 'Croogo/Core.Html',
                             ],
                             'Form' => [
-                                'className' => 'Croogo/Core.CroogoForm',
+                                'className' => 'Croogo/Core.Form',
                             ],
                             'Paginator' => [
-                                'className' => 'Croogo/Core.CroogoPaginator',
+                                'className' => 'Croogo/Core.Paginator',
                             ],
                         ],
                     ],
                     'admin' => [
                         'helpers' => [
                             'Html' => [
-                                'className' => 'Croogo/Core.CroogoHtml',
+                                'className' => 'Croogo/Core.Html',
                             ],
                             'Form' => [
-                                'className' => 'Croogo/Core.CroogoForm',
+                                'className' => 'Croogo/Core.Form',
                             ],
                             'Paginator' => [
-                                'className' => 'Croogo/Core.CroogoPaginator',
+                                'className' => 'Croogo/Core.Paginator',
                             ],
                             'Breadcrumbs'
                         ],
@@ -204,41 +215,33 @@ class CroogoTheme
     }
 
     /**
-     * Get the content of theme.json file from a theme
-     *
-     * @param string $alias theme folder name
-     * @return array
-     * @deprecated use getData()
-     */
-    public function getThemeData($alias = null)
-    {
-        return $this->getData($alias);
-    }
-
-    /**
      * Activate theme $alias
      *
      * @param $theme theme alias
      * @return mixed On success Setting::$data or true, false on failure
      */
-    public function activate($theme)
+    public function activate($theme, $type = 'theme')
     {
+        if (!in_array($type, ['theme', 'admin_theme'])) {
+            throw new BadRequestException('Invalid theme type');
+        }
         $themes = $this->getThemes();
         if (!$this->getData($theme, isset($themes[$theme]) ? $themes[$theme] : null)) {
             return false;
         }
 
-        Cache::delete('file_map', '_cake_core_');
+        Cache::clearAll();
+        (new PluginManager())->activate($theme);
         $settings = TableRegistry::get('Croogo/Settings.Settings');
 
-        return $settings->write('Site.theme', $theme);
+        return $settings->write('Site.' . $type, $theme);
     }
 
     /**
      * Delete theme
      *
      * @param string $alias Theme alias
-     * @return boolean true when successful, false or array or error messages when failed
+     * @return bool true when successful, false or array or error messages when failed
      * @throws InvalidArgumentException
      * @throws UnexpectedValueException
      */
@@ -247,15 +250,22 @@ class CroogoTheme
         if (empty($alias)) {
             throw new InvalidArgumentException(__d('croogo', 'Invalid theme'));
         }
-        $paths = [
-            APP . 'webroot' . DS . 'theme' . DS . $alias,
-            APP . 'View' . DS . 'Themed' . DS . $alias,
-        ];
+        $paths = App::path('Plugin', $alias);
+        $paths = array_map(function ($path) use ($alias) {
+            return $path . $alias;
+        }, $paths);
         $folder = new Folder;
+
         foreach ($paths as $path) {
             if (!file_exists($path)) {
                 continue;
             }
+
+            $themeManifest = $path . '/config/theme.json';
+            if (!file_exists($themeManifest)) {
+                continue;
+            }
+
             if (is_link($path)) {
                 return unlink($path);
             } elseif (is_dir($path)) {
@@ -287,10 +297,12 @@ class CroogoTheme
             $data = $croogoTheme->getData($theme);
             $request = Router::getRequest();
             if ($request) {
-                $prefix = $request->param('prefix');
+                $prefix = $request->getParam('prefix');
                 if (isset($data['settings']['prefixes'][$prefix]['css'])) {
-                    $data['settings']['css'] = Hash::merge($data['settings']['prefixes'][$prefix]['css'],
-                        $data['settings']['css']);
+                    $data['settings']['css'] = Hash::merge(
+                        $data['settings']['prefixes'][$prefix]['css'],
+                        $data['settings']['css']
+                    );
                 }
             }
             $themeData[$theme] = $data;

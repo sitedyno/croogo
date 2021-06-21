@@ -17,17 +17,17 @@ use Cake\Event\Event;
 class SettingsComponent extends Component
 {
 
-/**
- * @var Controller
- */
+    /**
+     * @var Controller
+     */
     protected $_controller;
 
-/**
- * startup
- */
+    /**
+     * startup
+     */
     public function startup(Event $event)
     {
-        $this->_controller = $event->subject();
+        $this->_controller = $event->getSubject();
         $this->_controller->loadModel('Croogo/Settings.Settings');
     }
 }

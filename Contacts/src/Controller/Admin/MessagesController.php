@@ -24,19 +24,19 @@ class MessagesController extends AppController
 
         $this->_loadCroogoComponents(['BulkProcess']);
 
-        $this->Crud->config('actions.index', [
+        $this->Crud->setConfig('actions.index', [
             'searchFields' => [
                 'search', 'created' => ['type' => 'date'],
             ],
         ]);
     }
 
-/**
- * Admin process
- *
- * @return void
- * @access public
- */
+    /**
+     * Admin process
+     *
+     * @return \Cake\Http\Response|void
+     * @access public
+     */
     public function process()
     {
         $Messages = $this->Messages;
@@ -47,6 +47,7 @@ class MessagesController extends AppController
             'read' => __d('croogo', 'Messages marked as read'),
             'unread' => __d('croogo', 'Messages marked as unread'),
         ];
+
         return $this->BulkProcess->process($Messages, $action, $ids, [
             'messageMap' => $messageMap,
         ]);
@@ -54,7 +55,7 @@ class MessagesController extends AppController
 
     public function beforePaginate(Event $event)
     {
-        $query = $event->subject()->query;
+        $query = $event->getSubject()->query;
 
         $query->contain([
             'Contacts'
@@ -78,15 +79,15 @@ class MessagesController extends AppController
 
     public function index()
     {
-        $this->Crud->on('beforePaginate', function(Event $event) {
-            $query = $event->subject()->query;
-            if (empty($this->request->query('sort'))) {
+        $this->Crud->on('beforePaginate', function (Event $event) {
+            $query = $event->getSubject()->query;
+            if (empty($this->getRequest()->getQuery('sort'))) {
                 $query->order([
                     $this->Messages->aliasField('created') => 'desc',
                 ]);
             }
         });
+
         return $this->Crud->execute();
     }
-
 }

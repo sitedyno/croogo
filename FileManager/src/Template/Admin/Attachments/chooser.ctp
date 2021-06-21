@@ -1,54 +1,61 @@
-<div class="navbar navbar-light bg-light">
-    <div class="d-flex justify-content-between">
-        <div>
-        <?php
+<div class="<?php echo $this->Theme->getCssClass('row'); ?>">
+    <div class="<?php echo $this->Theme->getCssClass('columnFull'); ?>">
+    <?php
         echo __d('croogo', 'Sort by:');
+        echo ' ' . $this->Paginator->sort('id', __d('croogo', 'Id'), ['class' => 'sort']);
         echo ', ' . $this->Paginator->sort('title', __d('croogo', 'Title'), ['class' => 'sort']);
         echo ', ' . $this->Paginator->sort('created', __d('croogo', 'Created'), ['class' => 'sort']);
-        ?>
-        </div>
-        <button type="button" class="btn btn-primary add-image">Add images</button>
-        <?= $this->element('Croogo/Nodes.admin/nodes_search') ?>
+    ?>
     </div>
 </div>
 
-<div class="card-columns" id="dropzone-previews">
-    <?php
-    $rows = [];
-    foreach ($attachments as $attachment):
-        list($mimeType, $imageType) = explode('/', $attachment->mime_type);
-        $imagecreatefrom = ['gif', 'jpeg', 'png', 'string', 'wbmp', 'webp', 'xbm', 'xpm'];
-        if ($mimeType == 'image' && in_array($imageType, $imagecreatefrom)) {
-            $thumbnail = $this->Image->resize($attachment->path, 500, 500, [], ['class' => 'card-img-bottom img-fluid']);
-        } else {
-            $thumbnail = $this->Html->image(
-                '/croogo/img/icons/page_white.png',
-                ['class' => 'card-img-bottom img-fluid']
-            );
-        }
-
-        $headerText = $this->Html->div('', h($attachment->title));
-        $cardHeader = $this->Html->div('card-header', $headerText);
-        $card = $this->Html->div(
-            'card text-xs-center selector item-choose',
-            $cardHeader . $thumbnail,
-            [
-                'data-slug' => $attachment->slug,
-                'data-chooser-type' => 'Node',
-                'data-chooser-id' => $attachment->id,
-                'data-chooser-title' => h($attachment->title),
-                'rel' => $attachment->path,
-            ]
-        );
-        echo $card;
-    endforeach;
-    ?>
+<div class="<?php echo $this->Theme->getCssClass('row'); ?>">
+    <div class="<?php echo $this->Theme->getCssClass('columnFull'); ?>">
+        <?php //echo $this->element('FileManager.admin/attachments_search'); ?>
+        <hr />
+    </div>
 </div>
-<?= $this->element('Croogo/Core.admin/pagination') ?>
+<div class="<?php echo $this->Theme->getCssClass('row'); ?>">
+    <div class="<?php echo $this->Theme->getCssClass('columnFull'); ?>">
+        <div id="attachments-for-links" class="card-deck">
+        <?php foreach ($attachments as $attachment) : ?>
+            <div class="card">
+                <?php
+                if (preg_match('/^image/', $attachment->asset->mime_type)) :
+                    echo $this->Html->image($attachment->asset->path, [
+                        'class' => 'card-img-top',
+                    ]);
+                endif;
+                ?>
 
-<?php
-echo $this->Html->script([
-    'Croogo/FileManager.lib/dropzone',
-    'Croogo/FileManager.attachments/chooser'
-]);
-echo $this->element('Croogo/FileManager.admin/dropzone_setup', ['type' => 'card']);
+                <div class="card-body">
+                <?php
+
+                echo $this->Html->para(
+                    null,
+                    $this->Html->link(
+                        $attachment->asset->filename,
+                        $attachment->asset->path,
+                        [
+                            'class' => 'item-choose',
+                            'data-chooser_type' => 'Attachment',
+                            'data-chooser_id' => $attachment->asset->id,
+                            'data-chooser_title' => $attachment->asset->filename,
+                            'rel' => $attachment->asset->path,
+                        ]
+                    )
+                );
+
+                echo $this->Html->para(
+                    null,
+                    __d('croogo', 'Created') . ': ' .
+                    $this->Time->nice($attachment->asset->created)
+                );
+                ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+        </div>
+        <?php echo $this->element('admin/pagination'); ?>
+    </div>
+</div>

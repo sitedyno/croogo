@@ -1,4 +1,5 @@
 <?php
+
 use Migrations\AbstractMigration;
 
 class DashboardsInitialMigration extends AbstractMigration
@@ -37,21 +38,16 @@ class DashboardsInitialMigration extends AbstractMigration
                 'limit' => null,
                 'null' => false,
             ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
-            ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
+            ->addTimestamps('created', 'updated')
+            ->addForeignKey('user_id', 'users', ['id'], [
+                'constraint' => 'fk_dashboards2users',
+                'delete' => 'RESTRICT',
             ])
             ->create();
     }
 
     public function down()
     {
-        $this->dropTable('dashboards');
+        $this->table('dashboards')->drop()->save();
     }
 }

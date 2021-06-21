@@ -9,36 +9,36 @@ class ContactsControllerTest extends CroogoControllerTestCase
 {
 
     public $fixtures = [
-        'plugin.users.aco',
-        'plugin.users.aro',
-        'plugin.users.aros_aco',
-        'plugin.blocks.block',
-        'plugin.comments.comment',
-        'plugin.contacts.contact',
-        'plugin.translate.i18n',
-        'plugin.settings.language',
-        'plugin.menus.link',
-        'plugin.menus.menu',
-        'plugin.contacts.message',
-        'plugin.meta.meta',
-        'plugin.nodes.node',
-        'plugin.taxonomy.model_taxonomy',
-        'plugin.blocks.region',
-        'plugin.users.role',
-        'plugin.settings.setting',
-        'plugin.taxonomy.taxonomy',
-        'plugin.taxonomy.term',
-        'plugin.taxonomy.type',
-        'plugin.taxonomy.types_vocabulary',
-        'plugin.users.user',
-        'plugin.taxonomy.vocabulary',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Contacts.Contact',
+        'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Menus.Link',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Contacts.Message',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Taxonomy.ModelTaxonomy',
+        'plugin.Croogo/Blocks.Region',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Settings.Setting',
+        'plugin.Croogo/Taxonomy.Taxonomy',
+        'plugin.Croogo/Taxonomy.Term',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -59,33 +59,33 @@ class ContactsControllerTest extends CroogoControllerTestCase
             ->will($this->returnCallback([$this, 'authUserCallback']));
     }
 
-/**
- * tearDown
- *
- * @return void
- */
+    /**
+     * tearDown
+     *
+     * @return void
+     */
     public function tearDown()
     {
         parent::tearDown();
         unset($this->ContactsController);
     }
 
-/**
- * testAdminIndex
- *
- * @return void
- */
+    /**
+     * testAdminIndex
+     *
+     * @return void
+     */
     public function testAdminIndex()
     {
         $this->testAction('/admin/contacts/contacts/index');
         $this->assertNotEmpty($this->vars['contacts']);
     }
 
-/**
- * testAdminAdd
- *
- * @return void
- */
+    /**
+     * testAdminAdd
+     *
+     * @return void
+     */
     public function testAdminAdd()
     {
         $this->expectFlashAndRedirect('The Contact has been saved');
@@ -101,11 +101,11 @@ class ContactsControllerTest extends CroogoControllerTestCase
         $this->assertEqual($newContact['Contact']['title'], 'New contact');
     }
 
-/**
- * testAdminEdit
- *
- * @return void
- */
+    /**
+     * testAdminEdit
+     *
+     * @return void
+     */
     public function testAdminEdit()
     {
         $this->expectFlashAndRedirect('The Contact has been saved');
@@ -121,11 +121,11 @@ class ContactsControllerTest extends CroogoControllerTestCase
         $this->assertEquals('Contact [modified]', $result['Contact']['title']);
     }
 
-/**
- * testAdminDelete
- *
- * @return void
- */
+    /**
+     * testAdminDelete
+     *
+     * @return void
+     */
     public function testAdminDelete()
     {
         $this->expectFlashAndRedirect('Contact deleted');
@@ -136,9 +136,9 @@ class ContactsControllerTest extends CroogoControllerTestCase
         $this->assertFalse($hasAny);
     }
 
-/**
- * testView
- */
+    /**
+     * testView
+     */
     public function testView()
     {
         $Contacts = $this->generate('Contacts', [

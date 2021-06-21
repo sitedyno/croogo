@@ -15,7 +15,7 @@ Meta._spinner = '<i class="' + Admin.spinnerClass() + '"></i> ';
 Meta.documentReady = function () {
   Meta.addMeta();
   Meta.removeMeta();
-}
+};
 
 /**
  * add meta field
@@ -30,7 +30,7 @@ Meta.addMeta = function () {
       .addClass('disabled')
       .prepend(Meta._spinner);
     $.get(aAddMeta.attr('href'), function (data) {
-      aAddMeta.closest('.card-body').find('.meta-fields').append(data);
+      aAddMeta.closest('.' + Croogo.themeSettings.css.boxBodyClass).find('.meta-fields').append(data);
       $('div.meta a.remove-meta').unbind();
       Meta.removeMeta();
       aAddMeta
@@ -40,7 +40,7 @@ Meta.addMeta = function () {
     });
     e.preventDefault();
   });
-}
+};
 
 /**
  * remove meta field
@@ -78,7 +78,7 @@ Meta.removeMeta = function () {
     e.preventDefault();
     return false;
   });
-}
+};
 
 /**
  * document ready

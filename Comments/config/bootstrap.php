@@ -1,10 +1,10 @@
 <?php
 
-use Cake\Core\Configure;
 use Cake\Cache\Cache;
+use Cake\Core\Configure;
 use Croogo\Core\Croogo;
 
-Cache::config('croogo_comments', array_merge(
+Cache::setConfig('croogo_comments', array_merge(
     Configure::read('Croogo.Cache.defaultConfig'),
     ['groups' => ['comments']]
 ));

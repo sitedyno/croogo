@@ -1,7 +1,6 @@
 <?php
 namespace Croogo\Nodes\Test\TestCase\Model\Table;
 
-
 use Cake\Event\Event;
 use Cake\ORM\TableRegistry;
 use Croogo\Core\Event\EventManager;
@@ -14,29 +13,29 @@ class NodesTableTest extends TestCase
     public $testBody = 'body set from event';
 
     public $fixtures = [
-        'plugin.croogo/users.role',
-        'plugin.croogo/users.user',
-        'plugin.croogo/users.aco',
-        'plugin.croogo/users.aro',
-        'plugin.croogo/users.aros_aco',
-        'plugin.croogo/blocks.block',
-        'plugin.croogo/comments.comment',
-        'plugin.croogo/contacts.contact',
-        'plugin.croogo/translate.i18n',
-        'plugin.croogo/settings.language',
-        'plugin.croogo/menus.link',
-        'plugin.croogo/menus.menu',
-        'plugin.croogo/contacts.message',
-        'plugin.croogo/meta.meta',
-        'plugin.croogo/nodes.node',
-        'plugin.croogo/taxonomy.model_taxonomy',
-        'plugin.croogo/blocks.region',
-        'plugin.croogo/core.settings',
-        'plugin.croogo/taxonomy.taxonomy',
-        'plugin.croogo/taxonomy.term',
-        'plugin.croogo/taxonomy.type',
-        'plugin.croogo/taxonomy.types_vocabulary',
-        'plugin.croogo/taxonomy.vocabulary',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Contacts.Contact',
+        'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Menus.Link',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Contacts.Message',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Taxonomy.ModelTaxonomy',
+        'plugin.Croogo/Blocks.Region',
+        'plugin.Croogo/Core.Settings',
+        'plugin.Croogo/Taxonomy.Taxonomy',
+        'plugin.Croogo/Taxonomy.Term',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
     /**
@@ -48,7 +47,20 @@ class NodesTableTest extends TestCase
     {
         parent::setUp();
 
+        $cache = [
+            'nodes_view' => [
+                'engine' => 'File',
+                'groups' => ['nodes']
+            ]
+        ];
+        \Cake\Cache\Cache::setConfig($cache);
+
         $this->Nodes = TableRegistry::get('Croogo/Nodes.Nodes');
+    }
+
+    public function tearDown()
+    {
+        \Cake\Cache\Cache::drop('nodes_view');
     }
 
     public function testBeforeSave()

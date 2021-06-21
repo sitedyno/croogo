@@ -2,7 +2,6 @@
 
 namespace Croogo\Core\Action\Admin;
 
-use Cake\Event\Event;
 use Crud\Action\AddAction as CrudAddAction;
 
 class AddAction extends CrudAddAction
@@ -12,7 +11,7 @@ class AddAction extends CrudAddAction
         parent::_get();
 
         $this->_controller()->set([
-            'editFields' => $this->config('editFields'),
+            'editFields' => $this->getConfig('editFields'),
         ]);
     }
 }

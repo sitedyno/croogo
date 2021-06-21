@@ -4,8 +4,6 @@ namespace Croogo\Core\Controller;
 
 use Cake\Core\Configure;
 use Cake\Event\Event;
-use Cake\Network\Request;
-use Cake\Network\Response;
 use Cake\Routing\Router;
 
 /**
@@ -35,7 +33,7 @@ class ErrorController extends \Cake\Controller\ErrorController implements Hookab
             $this->loadComponent('RequestHandler');
         }
 
-        $eventManager = $this->eventManager();
+        $eventManager = $this->getEventManager();
         if (isset($this->Auth)) {
             $eventManager->off($this->Auth);
         }
@@ -54,17 +52,17 @@ class ErrorController extends \Cake\Controller\ErrorController implements Hookab
     public function beforeFilter(Event $event)
     {
         parent::beforeFilter($event);
-        if ($this->request->is('json')) {
+        if ($this->getRequest()->is('json')) {
             return;
         }
         $viewBuilder = $this->viewBuilder();
-        $viewBuilder->className('Croogo/Core.Croogo');
-        if ($this->request->param('prefix') === 'admin') {
+        $viewBuilder->setClassName('Croogo/Core.Croogo');
+        if ($this->getRequest()->getParam('prefix') === 'admin') {
             $adminTheme = Configure::read('Site.admin_theme');
             if ($adminTheme) {
                 $viewBuilder->setTheme($adminTheme);
             }
-            if (!$this->request->is('ajax')) {
+            if (!$this->getRequest()->is('ajax')) {
                 $viewBuilder->setLayout('admin_full');
             }
         } elseif (Configure::read('Site.theme')) {

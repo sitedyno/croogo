@@ -19,43 +19,42 @@ use Croogo\Extensions\CroogoTheme;
 class MenuComponent extends Component
 {
 
-/**
- * Other components used by this component
- *
- * @var array
- * @access public
- */
+    /**
+     * Other components used by this component
+     *
+     * @var array
+     * @access public
+     */
     public $components = [
         'Croogo.Croogo',
     ];
 
-/**
- * Menus for layout
- *
- * @var string
- * @access public
- */
+    /**
+     * Menus for layout
+     *
+     * @var string
+     * @access public
+     */
     public $menusForLayout = [];
 
-/**
- * Startup
- *
- * @param object $controller instance of controller
- * @return void
- */
+    /**
+     * Startup
+     *
+     * @param object $event instance of controller
+     * @return void
+     */
     public function startup(Event $event)
     {
-        $this->controller = $event->subject();
+        $this->controller = $event->getSubject();
         if (isset($this->controller->Link)) {
             $this->Links = $this->controller->Links;
         } else {
             $this->Links = TableRegistry::get('Croogo/Menus.Links');
         }
 
-        $controller = $event->subject();
-        if (($controller->request->param('prefix') !== 'admin') && !isset($controller->request->params['requested'])) {
+        $controller = $event->getSubject();
+        if (($controller->request->getParam('prefix') !== 'admin') && !$controller->request->getParam('requested')) {
             $this->menus();
-
         } else {
             $this->_adminData();
         }
@@ -79,16 +78,16 @@ class MenuComponent extends Component
      */
     public function beforeRender(Event $event)
     {
-        $event->subject()->set('menusForLayout', $this->menusForLayout);
+        $event->getSubject()->set('menusForLayout', $this->menusForLayout);
     }
 
-/**
- * Menus
- *
- * Menus will be available in this variable in views: $menusForLayout
- *
- * @return void
- */
+    /**
+     * Menus
+     *
+     * Menus will be available in this variable in views: $menusForLayout
+     *
+     * @return void
+     */
     public function menus()
     {
         $menus = ['main'];

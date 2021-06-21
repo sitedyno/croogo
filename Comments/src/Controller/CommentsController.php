@@ -4,10 +4,9 @@ namespace Croogo\Comments\Controller;
 
 use App\Network\Email\Email;
 use Cake\Core\Configure;
-use Cake\Event\Event;
 use Cake\Routing\Router;
-use Croogo\Comments\Model\Entity\Comment;
 use Croogo\Core\Status;
+use Exception;
 use UnexpectedValueException;
 
 /**
@@ -23,10 +22,10 @@ use UnexpectedValueException;
 class CommentsController extends AppController
 {
 
-/**
- * Preset Variable Search
- * @var array
- */
+    /**
+     * Preset Variable Search
+     * @var array
+     */
     public $presetVars = true;
 
     public function initialize()
@@ -39,18 +38,17 @@ class CommentsController extends AppController
         $this->_setupPrg();
     }
 
-/**
- * index
- *
- * @return void
- * @access public
- */
+    /**
+     * index
+     *
+     * @return \Cake\Http\Response|void
+     * @access public
+     */
     public function index()
     {
         $this->set('title_for_layout', __d('croogo', 'Comments'));
 
-        if (!isset($this->request['_ext']) ||
-            $this->request['_ext'] != 'rss') {
+        if ($this->request->getParam('_ext') != 'rss') {
             return $this->redirect('/');
         }
 
@@ -58,7 +56,7 @@ class CommentsController extends AppController
         $this->paginate = [
             'contain' => ['Nodes', 'Users'],
             'conditions' => [
-                $this->Comments->aliasField('status') .' IN' => $this->Comments->status($roleId, 'approval'),
+                $this->Comments->aliasField('status') . ' IN' => $this->Comments->status($roleId, 'approval'),
             ],
             'order' => [
                 'weight' => 'DESC',
@@ -69,19 +67,20 @@ class CommentsController extends AppController
         $this->set('comments', $this->paginate());
     }
 
-/**
- * add
- *
- * @param int $foreignKey
- * @param int $parentId
- * @return \Cake\Network\Response|null
- * @access public
- * @throws UnexpectedValueException
- */
+    /**
+     * add
+     *
+     * @param int $model
+     * @param int $foreignKey
+     * @return \Cake\Network\Response|null
+     * @access public
+     * @throws UnexpectedValueException
+     */
     public function add($model, $foreignKey = null, $parentId = null)
     {
         if (!$foreignKey) {
             $this->Flash->error(__d('croogo', 'Invalid id'));
+
             return $this->redirect('/');
         }
 
@@ -108,6 +107,7 @@ class CommentsController extends AppController
 
         if (!is_null($parentId) && !$this->Comments->isValidLevel($parentId)) {
             $this->Flash->error(__d('croogo', 'Maximum level reached. You cannot reply to that comment.'));
+
             return $this->redirect($redirectUrl);
         }
 
@@ -122,6 +122,7 @@ class CommentsController extends AppController
 
         if (!$continue) {
             $this->Flash->error(__d('croogo', 'Comments are not allowed.'));
+
             return $this->redirect($redirectUrl);
         }
 
@@ -130,9 +131,9 @@ class CommentsController extends AppController
         $continue = $this->_captcha($continue, $captchaProtection, $entity);
         $success = false;
         $comment = null;
-        if (!empty($this->request->data) && $continue === true) {
-            $comment = $this->Comments->newEntity($this->request->data);
-            $comment->ip = $this->request->clientIp();
+        if (!empty($this->getRequest()->data) && $continue === true) {
+            $comment = $this->Comments->newEntity($this->getRequest()->data);
+            $comment->ip = $this->getRequest()->clientIp();
             $comment->status = $autoApprove ? Status::APPROVED : Status::PENDING;
 
             $userData = [];
@@ -144,7 +145,13 @@ class CommentsController extends AppController
                 'parentId' => $parentId,
                 'userData' => $userData,
             ];
-            $success = $this->Comments->add($comment, $model, $foreignKey, $options);
+            try {
+                $success = $this->Comments->add($comment, $model, $foreignKey, $options);
+            } catch (Exception $e) {
+                $success = false;
+                $this->log('Error when adding comments: ' . $e);
+                $this->Flash->error(__d('croogo', 'There was an error when posting your comment'));
+            }
             if ($success) {
                 if ($autoApprove) {
                     $messageFlash = __d('croogo', 'Your comment has been added successfully.');
@@ -157,28 +164,37 @@ class CommentsController extends AppController
             }
         }
 
-        $this->set(compact('success', 'entity', 'type', 'model', 'foreignKey', 'parentId', 'comment'));
+        if ($parentId) {
+            $parentComment = $this->Comments->get($parentId);
+        }
+
+        $this->set(compact('success', 'entity', 'type', 'model', 'foreignKey', 'parentId', 'comment', 'parentComment'));
     }
 
-/**
- * Spam Protection
- *
- * @param bool $continue
- * @param bool $spamProtection
- * @param array $node
- * @return boolean
- * @access protected
- * @deprecated This method will be renamed to _spamProtection() in the future
- */
+    /**
+     * Spam Protection
+     *
+     * @param bool $continue
+     * @param bool $spamProtection
+     * @param array $node
+     * @return bool
+     * @access protected
+     * @deprecated This method will be renamed to _spamProtection() in the future
+     */
     protected function _spamProtection($continue, $spamProtection, $node)
     {
-        if (!empty($this->request->data) &&
+        $request = $this->getRequest();
+        $name = $request->getData('name');
+        $email = $request->getData('email');
+        $website = $request->getData('website');
+        $body = $request->getData('body');
+        if (!empty($body) &&
             $spamProtection &&
             $continue === true) {
-            $this->Akismet->setCommentAuthor($this->request->data['Comment']['name']);
-            $this->Akismet->setCommentAuthorEmail($this->request->data['Comment']['email']);
-            $this->Akismet->setCommentAuthorURL($this->request->data['Comment']['website']);
-            $this->Akismet->setCommentContent($this->request->data['Comment']['body']);
+            $this->Akismet->setCommentAuthor($name);
+            $this->Akismet->setCommentAuthorEmail($email);
+            $this->Akismet->setCommentAuthorURL($website);
+            $this->Akismet->setCommentContent($body);
             if ($this->Akismet->isCommentSpam()) {
                 $continue = false;
                 $this->Flash->error(__d('croogo', 'Sorry, the comment appears to be spam.'));
@@ -188,18 +204,18 @@ class CommentsController extends AppController
         return $continue;
     }
 
-/**
- * Captcha
- *
- * @param bool $continue
- * @param bool $captchaProtection
- * @param array $node
- * @return boolean
- * @access protected
- */
+    /**
+     * Captcha
+     *
+     * @param bool $continue
+     * @param bool $captchaProtection
+     * @param array $node
+     * @return bool
+     * @access protected
+     */
     protected function _captcha($continue, $captchaProtection, $node)
     {
-        if (!empty($this->request->data) &&
+        if (!empty($this->getRequest()->data) &&
             $captchaProtection &&
             $continue === true &&
             !$this->Recaptcha->verify($this->request)) {
@@ -210,13 +226,13 @@ class CommentsController extends AppController
         return $continue;
     }
 
-/**
- * delete
- *
- * @param int $id
- * @return void
- * @access public
- */
+    /**
+     * delete
+     *
+     * @param int $id
+     * @return void
+     * @access public
+     */
     public function delete($id)
     {
         $success = 0;

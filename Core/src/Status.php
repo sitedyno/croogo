@@ -2,9 +2,8 @@
 
 namespace Croogo\Core;
 
-use App\Model\Permission;
 use ArrayAccess;
-use Cake\Controller\Component\AuthComponent;
+use Cake\Core\Exception\Exception;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 
@@ -106,8 +105,8 @@ class Status implements ArrayAccess
         $values = $this->_defaultStatus($roleId, $statusType);
         $data = compact('statusType', 'accessType', 'values');
         $event = Croogo::dispatchEvent('Croogo.Status.status', null, $data);
-        if (array_key_exists('values', $event->data)) {
-            return $event->data['values'];
+        if (array_key_exists('values', $event->getData())) {
+            return $event->getData('values');
         } else {
             return $values;
         }
@@ -116,7 +115,7 @@ class Status implements ArrayAccess
     /**
      * Default status
      */
-    protected function _defaultStatus($roleId = null, $statusType)
+    protected function _defaultStatus($roleId, $statusType)
     {
         $status[$statusType] = [self::PUBLISHED];
         $allow = false;
@@ -125,7 +124,7 @@ class Status implements ArrayAccess
             $Permission = TableRegistry::get('Acl.Permissions');
             try {
                 $allow = $Permission->check(['model' => 'Roles', 'foreign_key' => $roleId], 'controllers/Croogo\Nodes/Admin/Nodes/edit');
-            } catch (CakeException $e) {
+            } catch (Exception $e) {
                 Log::error($e->getMessage());
             }
         }

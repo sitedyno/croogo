@@ -9,42 +9,42 @@ use Croogo\Core\TestSuite\CroogoControllerTestCase;
 class UsersControllerTest extends CroogoControllerTestCase
 {
 
-/**
- * fixtures
- *
- * @var array
- */
+    /**
+     * fixtures
+     *
+     * @var array
+     */
     public $fixtures = [
-        'plugin.users.aco',
-        'plugin.users.aro',
-        'plugin.users.aros_aco',
-        'plugin.blocks.block',
-        'plugin.comments.comment',
-        'plugin.contacts.contact',
-        'plugin.translate.i18n',
-        'plugin.settings.language',
-        'plugin.menus.link',
-        'plugin.menus.menu',
-        'plugin.contacts.message',
-        'plugin.meta.meta',
-        'plugin.nodes.node',
-        'plugin.taxonomy.model_taxonomy',
-        'plugin.blocks.region',
-        'plugin.users.role',
-        'plugin.settings.setting',
-        'plugin.taxonomy.taxonomy',
-        'plugin.taxonomy.term',
-        'plugin.taxonomy.type',
-        'plugin.taxonomy.types_vocabulary',
-        'plugin.users.user',
-        'plugin.taxonomy.vocabulary',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Contacts.Contact',
+        'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Menus.Link',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Contacts.Message',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Taxonomy.ModelTaxonomy',
+        'plugin.Croogo/Blocks.Region',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Settings.Setting',
+        'plugin.Croogo/Taxonomy.Taxonomy',
+        'plugin.Croogo/Taxonomy.Term',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -61,7 +61,7 @@ class UsersControllerTest extends CroogoControllerTestCase
         ]);
         $this->controller->helpers = [
             'Html' => [
-                'className' => 'Croogo.CroogoHtml',
+                'className' => 'Croogo/Core.Html',
             ],
         ];
 
@@ -89,22 +89,22 @@ class UsersControllerTest extends CroogoControllerTestCase
         return true;
     }
 
-/**
- * tearDown
- *
- * @return void
- */
+    /**
+     * tearDown
+     *
+     * @return void
+     */
     public function tearDown()
     {
         parent::tearDown();
         unset($this->UsersController);
     }
 
-/**
- * testAdminIndex
- *
- * @return void
- */
+    /**
+     * testAdminIndex
+     *
+     * @return void
+     */
     public function testAdminIndex()
     {
         $this->_setupAuthUser();
@@ -114,11 +114,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertEquals(3, count($this->vars['users']));
     }
 
-/**
- * testAdminIndexSearch
- *
- * @return void
- */
+    /**
+     * testAdminIndexSearch
+     *
+     * @return void
+     */
     public function testAdminIndexSearch()
     {
         $this->_setupAuthUser();
@@ -126,11 +126,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertEquals(1, count($this->vars['users']));
     }
 
-/**
- * testAddtestAddInvalidPassword
- *
- * @return void
- */
+    /**
+     * testAddtestAddInvalidPassword
+     *
+     * @return void
+     */
     public function testAddInvalidPassword()
     {
         $this->_setupAuthUser();
@@ -159,11 +159,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertContains('at least 6 characters', $errors);
     }
 
-/**
- * testAddtestAddOtherErrors
- *
- * @return void
- */
+    /**
+     * testAddtestAddOtherErrors
+     *
+     * @return void
+     */
     public function testAddtestAddOtherErrors()
     {
         $this->_setupAuthUser();
@@ -195,11 +195,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertContains('been taken', $errors);
     }
 
-/**
- * testAdminAdd
- *
- * @return void
- */
+    /**
+     * testAdminAdd
+     *
+     * @return void
+     */
     public function testAdminAdd()
     {
         $this->_setupAuthUser();
@@ -219,11 +219,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertEqual($newUser['User']['name'], 'New User');
     }
 
-/**
- * testAdminEdit
- *
- * @return void
- */
+    /**
+     * testAdminEdit
+     *
+     * @return void
+     */
     public function testAdminEdit()
     {
         $this->_setupAuthUser();
@@ -243,11 +243,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertEquals($expected, $result['User']['name']);
     }
 
-/**
- * testAdminResetPassword
- *
- * @return void
- */
+    /**
+     * testAdminResetPassword
+     *
+     * @return void
+     */
     public function testAdminResetPassword()
     {
         $this->_setupAuthUser();
@@ -263,11 +263,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         ]);
     }
 
-/**
- * testAdminResetPasswordValidationErrors
- *
- * @return void
- */
+    /**
+     * testAdminResetPasswordValidationErrors
+     *
+     * @return void
+     */
     public function testAdminResetPasswordValidationErrors()
     {
         $this->_setupAuthUser();
@@ -284,11 +284,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertContains('Passwords must be at least 6 characters long.', $result);
     }
 
-/**
- * testAdminDelete
- *
- * @return void
- */
+    /**
+     * testAdminDelete
+     *
+     * @return void
+     */
     public function testAdminDelete()
     {
         $this->_setupAuthUser();
@@ -300,11 +300,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertFalse($hasAny);
     }
 
-/**
- * testAdminDeleteCurrentUser
- *
- * @return void
- */
+    /**
+     * testAdminDeleteCurrentUser
+     *
+     * @return void
+     */
     public function testAdminDeleteCurrentUser()
     {
         $this->_setupAuthUser();
@@ -325,11 +325,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertTrue($hasAny);
     }
 
-/**
- * testResetPasswordWithValidInfo
- *
- * @return void
- */
+    /**
+     * testResetPasswordWithValidInfo
+     *
+     * @return void
+     */
     public function testResetPasswordWithValidInfo()
     {
         $this->_setupAuthUser();
@@ -339,11 +339,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertTrue(isset($this->vars['key']));
     }
 
-/**
- * testResetPasswordWithInvalidInfo
- *
- * @return void
- */
+    /**
+     * testResetPasswordWithInvalidInfo
+     *
+     * @return void
+     */
     public function testResetPasswordWithInvalidInfo()
     {
         $this->_setupAuthUser();
@@ -363,11 +363,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         );
     }
 
-/**
- * testResetPasswordUpdatesPassword
- *
- * @return void
- */
+    /**
+     * testResetPasswordUpdatesPassword
+     *
+     * @return void
+     */
     public function testResetPasswordUpdatesPassword()
     {
         $this->_setupAuthUser();
@@ -388,11 +388,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertEqual($expected, $user['User']['password'], sprintf("%s to be %s", $user['User']['password'], $expected));
     }
 
-/**
- * testResetPasswordWithMismatchValues
- *
- * @return void
- */
+    /**
+     * testResetPasswordWithMismatchValues
+     *
+     * @return void
+     */
     public function testResetPasswordWithMismatchValues()
     {
         $this->_setupAuthUser();
@@ -412,11 +412,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         $this->assertContains('Passwords do not match', $this->contents);
     }
 
-/**
- * testAdminLoginFailureEvent
- *
- * @return void
- */
+    /**
+     * testAdminLoginFailureEvent
+     *
+     * @return void
+     */
     public function testAdminLoginFailureEvent()
     {
         $this->controller->Auth->request = $this->controller->request;
@@ -441,11 +441,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         );
     }
 
-/**
- * Test correct redirection after login in frontend
- *
- * @return void
- */
+    /**
+     * Test correct redirection after login in frontend
+     *
+     * @return void
+     */
     public function testRedirectAfterAdminLogin()
     {
         $controller = $this->generate('Users.Users', [
@@ -471,11 +471,11 @@ class UsersControllerTest extends CroogoControllerTestCase
         );
     }
 
-/**
- * Test correct redirection after login in /admin
- *
- * @return void
- */
+    /**
+     * Test correct redirection after login in /admin
+     *
+     * @return void
+     */
     public function testRedirectAfterLogin()
     {
         $controller = $this->generate('Users.Users', [

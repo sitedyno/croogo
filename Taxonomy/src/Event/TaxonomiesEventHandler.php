@@ -18,9 +18,9 @@ use Croogo\Core\Nav;
 class TaxonomiesEventHandler implements EventListenerInterface
 {
 
-/**
- * implementedEvents
- */
+    /**
+     * implementedEvents
+     */
     public function implementedEvents()
     {
         return [
@@ -33,12 +33,12 @@ class TaxonomiesEventHandler implements EventListenerInterface
         ];
     }
 
-/**
- * Setup admin data
- */
+    /**
+     * Setup admin data
+     */
     public function onSetupAdminData($event)
     {
-        $View = $event->subject;
+        $View = $event->getSubject();
 
         if (empty($View->viewVars['vocabulariesForAdminLayout'])) {
             $vocabularies = [];
@@ -52,7 +52,7 @@ class TaxonomiesEventHandler implements EventListenerInterface
                 'url' => [
                     'prefix' => 'admin',
                     'plugin' => 'Croogo/Taxonomy',
-                    'controller' => 'Terms',
+                    'controller' => 'Taxonomies',
                     'action' => 'index',
                     '?' => [
                         'vocabulary_id' => $v->id,
@@ -63,11 +63,11 @@ class TaxonomiesEventHandler implements EventListenerInterface
         };
     }
 
-/**
- * Setup Link chooser values
- *
- * @return void
- */
+    /**
+     * Setup Link chooser values
+     *
+     * @return void
+     */
     public function onSetupLinkChooser($event)
     {
         $vocabulariesTable = TableRegistry::get('Croogo/Taxonomy.Vocabularies');
@@ -84,7 +84,7 @@ class TaxonomiesEventHandler implements EventListenerInterface
                     'url' => [
                         'prefix' => 'admin',
                         'plugin' => 'Croogo/Taxonomy',
-                        'controller' => 'Terms',
+                        'controller' => 'Taxonomies',
                         'action' => 'index',
                         $vocabulary->id,
                         '?' => [

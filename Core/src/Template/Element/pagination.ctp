@@ -1,6 +1,6 @@
 <ul class="pagination justify-content-center my-5">
 <?php
-    $requestAttributes = $this->request->getAttributes();
+    $requestAttributes = $this->getRequest()->getAttributes();
     $options = [
         'url' => array_intersect_key($requestAttributes['params'], [
             'slug' => null,
@@ -9,8 +9,9 @@
             'controller' => null,
             'action' => null,
             'type' => null,
+            'term' => null,
         ]),
     ];
-	echo $this->Paginator->numbers($options);
-?>
+    echo $this->Paginator->numbers($options);
+    ?>
 </ul>

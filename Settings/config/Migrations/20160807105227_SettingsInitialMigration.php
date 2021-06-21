@@ -1,4 +1,5 @@
 <?php
+
 use Migrations\AbstractMigration;
 
 class SettingsInitialMigration extends AbstractMigration
@@ -24,7 +25,7 @@ class SettingsInitialMigration extends AbstractMigration
             ])
             ->addColumn('locale', 'string', [
                 'default' => null,
-                'limit' => 5,
+                'limit' => 15,
                 'null' => false,
             ])
             ->addColumn('status', 'boolean', [
@@ -37,25 +38,20 @@ class SettingsInitialMigration extends AbstractMigration
                 'limit' => 11,
                 'null' => true,
             ])
-            ->addColumn('updated', 'datetime', [
+            ->addTimestamps('created', 'updated')
+            ->addColumn('created_by', 'integer', [
                 'default' => null,
-                'limit' => null,
-                'null' => true,
+                'limit' => 20,
+                'null' => false,
             ])
             ->addColumn('updated_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
                 'null' => true,
             ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
-            ])
-            ->addColumn('created_by', 'integer', [
-                'default' => null,
-                'limit' => 20,
-                'null' => true,
+            ->addIndex(['locale'], [
+                'name' => 'ix_languages_locale',
+                'unique' => true,
             ])
             ->create();
 
@@ -100,20 +96,11 @@ class SettingsInitialMigration extends AbstractMigration
                 'limit' => null,
                 'null' => false,
             ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
-            ])
+            ->addTimestamps('created', 'updated')
             ->addColumn('created_by', 'integer', [
                 'default' => null,
                 'limit' => 20,
-                'null' => true,
-            ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => true,
+                'null' => false,
             ])
             ->addColumn('updated_by', 'integer', [
                 'default' => null,
@@ -131,7 +118,7 @@ class SettingsInitialMigration extends AbstractMigration
 
     public function down()
     {
-        $this->dropTable('languages');
-        $this->dropTable('settings');
+        $this->table('languages')->drop()->save();
+        $this->table('settings')->drop()->save();
     }
 }

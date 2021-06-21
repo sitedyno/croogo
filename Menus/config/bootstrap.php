@@ -1,10 +1,10 @@
 <?php
 
-use Cake\Core\Configure;
 use Cake\Cache\Cache;
+use Cake\Core\Configure;
 use Croogo\Core\Croogo;
 
-Cache::config('croogo_menus', array_merge(
+Cache::setConfig('croogo_menus', array_merge(
     Configure::read('Croogo.Cache.defaultConfig'),
     ['groups' => ['menus']]
 ));

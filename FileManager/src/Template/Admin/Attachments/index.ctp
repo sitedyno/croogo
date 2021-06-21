@@ -1,113 +1,196 @@
 <?php
-/**
- * @var \Croogo\Core\View\CroogoView $this
- */
-
-$this->assign('title', __d('croogo', 'Attachments'));
-$this->extend('Croogo/Core./Common/admin_index');
-
-$this->Breadcrumbs->add(__d('croogo', 'Attachments'), $this->request->getUri()->getPath());
 
 $this->Croogo->adminScript('Croogo/FileManager.admin');
-$this->Html->script([
-    'Croogo/FileManager.lib/dropzone',
-    'Croogo/FileManager.attachments/index'
-], ['block' => 'scriptBottom']);
+$this->Croogo->adminScript('Croogo/FileManager.assets');
 
-$this->start('body-footer');
-    echo $this->element('Croogo/FileManager.admin/dropzone_setup', ['type' => 'table']);
+$this->extend('Croogo/Core./Common/admin_index');
+
+$this->Breadcrumbs
+    ->add(__d('croogo', 'Attachments'), $this->getRequest()->getUri()->getPath());
+
+$query = (array)$this->getRequest()->getQuery();
+
+$this->append('action-buttons');
+
+echo $this->Croogo->adminAction(
+    __d('croogo', 'New ' . __d('croogo', 'Attachment')),
+    array_merge(['?' => $query], ['action' => 'add'])
+);
+
 $this->end();
+
+$detailUrl = [
+    'plugin' => 'Croogo/FileManager',
+    'controller' => 'Attachments',
+    'action' => 'browse',
+    '?' => [
+        'manage' => true,
+    ],
+];
 
 $this->append('form-start', $this->Form->create(null, [
     'url' => ['action' => 'process'],
     'align' => 'inline',
 ]));
 
-$this->start('table-heading');
-$tableHeaders = $this->Html->tableHeaders([
-    $this->Form->checkbox('checkAll', ['id' => 'AttachmentsCheckAll']),
-    $this->Paginator->sort('id', __d('croogo', 'Id')),
-    '&nbsp;',
-    $this->Paginator->sort('title', __d('croogo', 'Title')),
-    __d('croogo', 'URL'),
-    __d('croogo', 'Actions'),
-]);
-echo $tableHeaders;
-$this->end();
+$this->append('table-heading');
+    $tableHeaders = $this->Html->tableHeaders([
+        $this->Form->checkbox('checkAll', ['id' => 'AttachmentsCheckAll']),
+        $this->Paginator->sort('id', __d('croogo', 'Id')),
+        '&nbsp;',
+        $this->Paginator->sort('title', __d('croogo', 'Title')),
+        __d('croogo', 'Versions'),
+        __d('croogo', 'Actions'),
+    ]);
 
-$this->append('table-body');
-$rows = [];
-foreach ($attachments as $attachment) {
-    $actions = [];
-    $actions[] = $this->Croogo->adminRowActions($attachment->id);
-    $actions[] = $this->Croogo->adminRowAction('', ['controller' => 'Attachments', 'action' => 'edit', $attachment->id],
-        ['icon' => $this->Theme->getIcon('update'), 'tooltip' => __d('croogo', 'Edit this item')]);
-    $actions[] = $this->Croogo->adminRowAction('',
-        ['controller' => 'attachments', 'action' => 'delete', $attachment->id],
-        [
-            'icon' => $this->Theme->getIcon('delete'),
-            'tooltip' => __d('croogo', 'Remove this item'),
-            'method' => 'post',
-        ],
-        __d('croogo', 'Are you sure?'));
+    echo $tableHeaders;
+    $this->end();
 
-    $mimeType = explode('/', $attachment->mime_type);
-    $imageType = $mimeType['1'];
-    $mimeType = $mimeType['0'];
-    $imagecreatefrom = ['gif', 'jpeg', 'png', 'string', 'wbmp', 'webp', 'xbm', 'xpm'];
-    if ($mimeType == 'image' && in_array($imageType, $imagecreatefrom)) {
-        $imgUrl = $this->Image->resize('/uploads/' . $attachment->slug, 200, 100, true, ['alt' => $attachment->title]);
-        $thumbnail = $this->Html->link($imgUrl, $attachment->path, [
-            'escape' => false,
-            'class' => 'img-thumbnail',
-            'title' => $attachment->title,
-            'data-toggle' => 'lightbox',
+    $this->append('search', $this->element('Croogo/Core.admin/search'));
+
+    $this->append('table-body');
+    $rows = [];
+    foreach ($attachments as $attachment) {
+        $actions = [];
+
+        $mimeType = explode('/', $attachment->asset->mime_type);
+        $mimeType = $mimeType['0'];
+        $assetCount = $attachment->asset_count . '&nbsp;';
+        if ($mimeType == 'image') {
+            $detailUrl['?']['id'] = $attachment->id;
+            $actions[] = $this->Croogo->adminRowAction('', $detailUrl, [
+                'icon' => 'suitcase',
+                'escapeTitle' => false,
+                'data-toggle' => 'browse',
+                'tooltip' => __d('assets', 'View other sizes'),
+            ]);
+
+            $actions[] = $this->Croogo->adminRowActions($attachment->id);
+            $resizeUrl = array_merge(
+                [
+                    'action' => 'resize',
+                    $attachment->id,
+                    '_ext' => 'json'
+                ],
+                ['?' => $query]
+            );
+
+            $actions[] = $this->Croogo->adminRowAction('', $resizeUrl, [
+                'icon' => $this->Theme->getIcon('resize'),
+                'escapeTitle' => false,
+                'tooltip' => __d('croogo', 'Resize this item'),
+                'data-toggle' => 'resize-asset'
+            ]);
+        }
+
+        $editUrl = array_merge(
+            ['action' => 'edit', $attachment->id],
+            ['?' => $query]
+        );
+        $actions[] = $this->Croogo->adminRowAction('', $editUrl, [
+            'icon' => 'update',
+            'escapeTitle' => false,
+            'tooltip' => __d('croogo', 'Edit this item'),
         ]);
-    } else {
-        $thumbnail = $this->Html->thumbnail('/croogo/core/img/icons/page_white.png', ['alt' => $attachment->mime_type]) .
-            ' ' .
-            $attachment->mime_type .
-            ' (' .
-            $this->Filemanager->filename2ext($attachment->slug) .
-            ')';
+        $deleteUrl = ['action' => 'delete', $attachment->id];
+        $deleteUrl = array_merge(['?' => $query], $deleteUrl);
+        $actions[] = $this->Croogo->adminRowAction('', $deleteUrl, [
+            'icon' => 'delete',
+            'escapeTitle' => false,
+            'tooltip' => __d('croogo', 'Remove this item'),
+            'escapeTitle' => false,
+        ], __d('croogo', 'Are you sure?'));
+
+        $path = $attachment->asset->path;
+        switch ($mimeType) {
+            case 'image':
+                $imgUrl = $this->AssetsImage->resize($path, 100, 200, [
+                    'adapter' => $attachment->asset->adapter,
+                ], [
+                    'alt' => $attachment->title
+                ]);
+                $thumbnail = $this->Html->link($imgUrl, $path, [
+                    'escape' => false,
+                    'data-toggle' => 'lightbox',
+                    'title' => $attachment['AssetsAttachment']['title'],
+                ]);
+                break;
+            case 'video':
+                $thumbnail = $this->Html->media($attachment->asset->path, [
+                    'width' => 200,
+                    'controls' => true,
+                ]);
+                break;
+            default:
+                $thumbnail = sprintf(
+                    '%s %s (%s)',
+                    $this->Html->image('Croogo/Core./img/icons/page_white.png', [
+                        'alt' => $mimeType,
+                    ]),
+                    $mimeType,
+                    $this->FileManager->filename2ext($attachment->asset->path)
+                );
+                break;
+        }
+
+        $actions = $this->Html->div('item-actions', implode(' ', $actions));
+
+        $rows[] = [
+            $this->Form->checkbox('Attachments.' . $attachment->id . '.id', ['class' => 'row-select']),
+            $attachment->id,
+            $thumbnail,
+            [
+                $this->Html->div(null, h($attachment->title)) .
+                $this->Html->link(
+                    $this->Url->build($path, true),
+                    $path,
+                    [
+                        'target' => '_blank',
+                    ]
+                ),
+                ['class' => 'title']
+            ],
+            $assetCount,
+            $actions,
+        ];
     }
 
-    $actions = $this->Html->div('item-actions', implode(' ', $actions));
+    echo $this->Html->tableCells($rows);
+    $this->end();
 
-    $rows[] = [
-        $this->Form->checkbox('Attachments.' . $attachment->id . '.id', ['class' => 'row-select']),
-        $attachment->id,
-        $thumbnail,
-        $this->Html->tag('div', h($attachment->title), ['class' => 'ellipsis']),
-        $this->Html->tag('div',
-            $this->Html->link($this->Url->build($attachment->path, true), $attachment->path, ['target' => '_blank']),
-            ['class' => 'ellipsis']),
-        $actions,
-    ];
-}
-echo $this->Html->tableCells($rows);
-$this->end();
-
-$this->start('bulk-action');
-echo $this->Form->input('action', [
-    'label' => __d('croogo', 'Bulk actions'),
+    $this->start('bulk-action');
+    echo $this->Form->input('action', [
+    'label' => __d('croogo', 'Bulk action'),
     'class' => 'c-select',
     'options' => [
         'delete' => __d('croogo', 'Delete'),
     ],
-    'empty' => 'Bulk actions',
-]);
-
-$jsVarName = uniqid('confirmMessage_');
-echo $this->Form->button(__d('croogo', 'Apply'), [
-    'type' => 'button',
+    'empty' => __d('croogo', 'Bulk action'),
+    ]);
+    echo $this->Form->button(__d('croogo', 'Apply'), [
+    'type' => 'submit',
+    'value' => 'submit',
     'class' => 'bulk-process btn-outline-primary',
-    'data-relatedElement' => '#action',
-    'data-confirmMessage' => $jsVarName,
-    'escape' => true,
-]);
+    ]);
+    $this->end();
 
-$this->Js->set($jsVarName, __d('croogo', '%s selected items?'));
-$this->Js->buffer("$('.bulk-process').on('click', Attachments.confirmProcess);");
-
+    $this->append('page-footer');
+    ?>
+<style>
+    td.title {
+        text-overflow: ellipsis;
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+</style>
+<?php
 $this->end();
+
+if (!$this->getRequest()->is('ajax')) :
+    $script = <<< EOF
+        Assets.init();
+        Attachments.init();
+EOF;
+    $this->Js->buffer($script);
+endif;

@@ -2,20 +2,14 @@
 
 namespace Croogo\Core\Controller;
 
-use Cake\Controller\ErrorController;
 use Cake\Controller\Exception\MissingActionException;
 use Cake\Controller\Exception\MissingComponentException;
-use Cake\Core\App;
 use Cake\Core\Configure;
-use Cake\Core\Plugin;
 use Cake\Event\Event;
-use Cake\Network\Request;
-use Cake\Network\Response;
-use Cake\Utility\Hash;
-
+use Cake\Http\Response;
+use Cake\Http\ServerRequest;
 use Cake\View\Exception\MissingTemplateException;
 use Croogo\Core\Croogo;
-use Croogo\Extensions\CroogoTheme;
 
 /**
  * Croogo App Controller
@@ -63,7 +57,7 @@ class AppController extends \App\Controller\AppController implements HookableCom
      * @param Response $response
      * @param null $name
      */
-    public function __construct(Request $request = null, Response $response = null, $name = null)
+    public function __construct(ServerRequest $request = null, Response $response = null, $name = null)
     {
         parent::__construct($request, $response, $name);
         if ($request) {
@@ -71,11 +65,15 @@ class AppController extends \App\Controller\AppController implements HookableCom
                 'callback' => ['Croogo\\Core\\Router', 'isApiRequest'],
             ]);
             $request->addDetector('whitelisted', [
-                'Croogo\\Core\\Router', 'isWhitelistedRequest',
+                'Croogo\\Core\\Router',
+                'isWhitelistedRequest',
             ]);
         }
     }
 
+    /**
+     * @return void
+     */
     public function initialize()
     {
         $this->_dispatchBeforeInitialize();
@@ -92,9 +90,9 @@ class AppController extends \App\Controller\AppController implements HookableCom
     {
         parent::beforeRender($event);
 
-        if (empty($this->viewBuilder()->className()) || $this->viewBuilder()->className() === 'App\View\AjaxView') {
+        if (empty($this->viewBuilder()->getClassName()) || $this->viewBuilder()->getClassName() === 'App\View\AjaxView') {
             unset($this->viewClass);
-            $this->viewBuilder()->className('Croogo/Core.Croogo');
+            $this->viewBuilder()->setClassName('Croogo/Core.Croogo');
         }
     }
 
@@ -103,12 +101,12 @@ class AppController extends \App\Controller\AppController implements HookableCom
      */
     public function render($view = null, $layout = null)
     {
-        if ($this->request->param('prefix') === 'admin') {
+        if ($this->getRequest()->getParam('prefix') === 'admin') {
             Croogo::dispatchEvent('Croogo.setupAdminData', $this);
         }
 
         // Just render normal when we aren't in a edit or add action
-        if (!in_array($this->request->param('action'), ['edit', 'add'])) {
+        if (!in_array($this->getRequest()->getParam('action'), ['edit', 'add'])) {
             return parent::render($view, $layout);
         }
 
@@ -141,6 +139,7 @@ class AppController extends \App\Controller\AppController implements HookableCom
                 }
                 if ($this->{$component}->isValidAction($action)) {
                     $this->setRequest($request);
+
                     return $this->{$component}->{$action}($this);
                 }
             }
@@ -166,10 +165,10 @@ class AppController extends \App\Controller\AppController implements HookableCom
         if (Configure::read('Site.status') == 0 &&
             $this->Auth->user('role_id') != 1
         ) {
-            if (!$this->request->is('whitelisted') &&
+            if (!$this->getRequest()->is('whitelisted') &&
                 !(
-                    $this->request->param('prefix') == 'admin' &&
-                    $this->request->param('action') === 'login'
+                    $this->getRequest()->getParam('prefix') == 'admin' &&
+                    $this->getRequest()->getParam('action') === 'login'
                 )
             ) {
                 $this->viewBuilder()->setLayout('maintenance');
@@ -180,28 +179,28 @@ class AppController extends \App\Controller\AppController implements HookableCom
             }
         }
 
-        if (!$this->request->is('api')) {
+        if (!$this->getRequest()->is('api')) {
             $this->Security->blackHoleCallback = '_securityError';
-            if ($this->request->param('action') == 'delete' && $this->request->param('prefix') == 'admin') {
-                $this->request->allowMethod('post');
+            if ($this->getRequest()->getParam('action') == 'delete' && $this->getRequest()->getParam('prefix') == 'admin') {
+                $this->getRequest()->allowMethod('post');
             }
         }
 
-        if ($this->request->is('ajax')) {
+        if ($this->getRequest()->is('ajax')) {
             $this->viewBuilder()->setLayout('ajax');
         }
 
-        if (isset($this->request->params['locale'])) {
-            Configure::write('Config.language', $this->request->params['locale']);
+        if ($this->getRequest()->getParam('locale')) {
+            Configure::write('Config.language', $this->getRequest()->getParam('locale'));
         }
     }
 
     /**
      * blackHoleCallback for SecurityComponent
      *
-     * @return void
+     * @return bool
      */
-    public function _securityError($type)
+    protected function _securityError($type)
     {
         switch ($type) {
             case 'auth':
@@ -224,6 +223,7 @@ class AppController extends \App\Controller\AppController implements HookableCom
         $this->response->statusCode(400);
         $this->response->send();
         $this->_stop();
+
         return false;
     }
 
@@ -237,20 +237,30 @@ class AppController extends \App\Controller\AppController implements HookableCom
             if (strpos($config['models'], str_replace('/', '\/', $this->modelClass)) === false) {
                 return;
             }
-            if ($this->request->param('controller')) {
+            if ($this->getRequest()->getParam('controller')) {
                 $this->loadComponent('Croogo/Acl.RowLevelAcl');
             }
         }
     }
 
+    /**
+     * @return void
+     * @throws \Exception
+     */
     protected function _setupPrg()
     {
         $this->loadComponent('Search.Prg', [
+            'queryStringWhitelist' => ['sort', 'direction', 'limit', 'chooser'],
             'actions' => ['index']
         ]);
     }
 
-    public function _loadCroogoComponents(array $components)
+    /**
+     * @param array $components
+     * @return void
+     * @throws \Exception
+     */
+    protected function _loadCroogoComponents(array $components)
     {
         foreach ($components as $component => $options) {
             if (is_string($options)) {

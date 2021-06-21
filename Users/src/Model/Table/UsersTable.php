@@ -2,13 +2,10 @@
 
 namespace Croogo\Users\Model\Table;
 
-use Cake\Cache\Cache;
 use Cake\Core\Configure;
-use Cake\Core\Exception\Exception;
 use Cake\Mailer\MailerAwareTrait;
 use Cake\ORM\Query;
 use Cake\Utility\Security;
-use Cake\Utility\Text;
 use Cake\Validation\Validator;
 use Croogo\Core\Croogo;
 use Croogo\Core\Model\Table\CroogoTable;
@@ -43,8 +40,6 @@ class UsersTable extends CroogoTable
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $multiRole = Configure::read('Access Control.multiRole');
 
         if ($multiRole) {
@@ -62,19 +57,12 @@ class UsersTable extends CroogoTable
             'type' => 'requester'
         ]);
         $this->addBehavior('Search.Search');
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always'
-                ]
-            ]
-        ]);
+        $this->addBehavior('Timestamp');
         $this->addBehavior('Croogo/Core.Cached', [
             'groups' => ['users']
         ]);
 
-        $this->eventManager()->on($this->getMailer('Croogo/Users.User'));
+        $this->getEventManager()->on($this->getMailer('Croogo/Users.User'));
 
         $this->searchManager()
             ->add('name', 'Search.Like', [
@@ -114,7 +102,7 @@ class UsersTable extends CroogoTable
         ]);
 
         $user->set([
-            'role_id' => RolesTable::ROLE_REGISTERED,
+            'role_id' => $this->Roles->byAlias('registered'),
             'activation_key' => $this->generateActivationKey(),
         ]);
 
@@ -161,7 +149,9 @@ class UsersTable extends CroogoTable
         // Generate a unique activation key
         $user->activation_key = $this->generateActivationKey();
 
-        Croogo::dispatchEvent('Model.Users.beforeResetPassword', $this,
+        Croogo::dispatchEvent(
+            'Model.Users.beforeResetPassword',
+            $this,
             compact('user')
         );
         $user = $this->save($user);
@@ -178,9 +168,12 @@ class UsersTable extends CroogoTable
             return false;
         }
 
-        Croogo::dispatchEvent('Model.Users.afterResetPassword', $this,
+        Croogo::dispatchEvent(
+            'Model.Users.afterResetPassword',
+            $this,
             compact('email', 'user')
         );
+
         return true;
     }
 
@@ -190,7 +183,9 @@ class UsersTable extends CroogoTable
             ->viewVars(compact('user'))
             ->send('registrationActivation', [$user]);
 
-        Croogo::dispatchEvent('Model.Users.afterActivationEmail', $this,
+        Croogo::dispatchEvent(
+            'Model.Users.afterActivationEmail',
+            $this,
             compact('email', 'user')
         );
     }
@@ -270,7 +265,7 @@ class UsersTable extends CroogoTable
                     'last' => true
                 ],
                 'name' => [
-                    'rule' => ['custom', '/^[\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}-_\[\]\(\) ]+$/mu'],
+                    'rule' => ['custom', '/^[-\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{Nd}_\[\]\(\) ]+$/mu'],
                     'message' => 'This field must be alphanumeric',
                     'last' => true
                 ]
@@ -295,6 +290,7 @@ class UsersTable extends CroogoTable
             ->orWhere([
                 $this->Roles->aliasField('id') => $roleId,
             ]);
+
         return $query;
     }
 
@@ -303,7 +299,13 @@ class UsersTable extends CroogoTable
         if (!$length) {
             $length = Configure::read('Croogo.activationKeyLength', 20);
         }
+
         return bin2hex(Security::randomBytes($length));
     }
 
+    public function findAuthUser(Query $query, array $options)
+    {
+        return $query
+            ->where([$this->aliasField('status') => 1]);
+    }
 }

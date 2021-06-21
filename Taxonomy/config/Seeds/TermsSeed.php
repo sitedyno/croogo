@@ -13,24 +13,21 @@ class TermsSeed extends AbstractSeed
             'title' => 'Uncategorized',
             'slug' => 'uncategorized',
             'description' => '',
-            'updated' => '2009-07-22 03:38:43',
-            'created' => '2009-07-22 03:34:56'
+            'created_by' => 1,
         ],
         [
             'id' => '2',
             'title' => 'Announcements',
             'slug' => 'announcements',
             'description' => '',
-            'updated' => '2010-05-16 23:57:06',
-            'created' => '2009-07-22 03:45:37'
+            'created_by' => 1,
         ],
         [
             'id' => '3',
             'title' => 'mytag',
             'slug' => 'mytag',
             'description' => '',
-            'updated' => '2009-08-26 14:42:43',
-            'created' => '2009-08-26 14:42:43'
+            'created_by' => 1,
         ],
     ];
 
@@ -39,5 +36,4 @@ class TermsSeed extends AbstractSeed
         $Table = $this->table('terms');
         $Table->insert($this->records)->save();
     }
-
 }

@@ -3,10 +3,8 @@
 namespace Croogo\Translate\Controller\Admin;
 
 use Cake\Core\Configure;
-use Cake\Utility\Hash;
-use Cake\Utility\Inflector;
 use Cake\ORM\TableRegistry;
-use Croogo\Translate\Controller\Admin\AppController;
+use Cake\Utility\Inflector;
 
 /**
  * Translate Controller
@@ -28,19 +26,18 @@ class TranslateController extends AppController
         $this->loadModel('Croogo/Settings.Languages');
     }
 
-/**
- * index
- *
- * @param int $id
- * @param string $modelAlias
- * @return void
- */
+    /**
+     * index
+     *
+     * @return \Cake\Http\Response|void
+     */
     public function index()
     {
-        $id = $this->request->query('id');
-        $modelAlias = $this->request->query('model');
+        $id = $this->getRequest()->query('id');
+        $modelAlias = $this->getRequest()->query('model');
         if ($id == null) {
             $this->Flash->error(__d('croogo', 'Invalid ID.'));
+
             return $this->redirect([
                 'plugin' => null,
                 'controller' => Inflector::pluralize($modelAlias),
@@ -54,6 +51,7 @@ class TranslateController extends AppController
 
         if (!is_array($config)) {
             $this->Flash->error(__d('croogo', 'Invalid model.'));
+
             return $this->redirect([
                 'plugin' => $plugin,
                 'controller' => Inflector::pluralize($modelAlias),
@@ -66,6 +64,7 @@ class TranslateController extends AppController
         $record = $Model->get($id);
         if (!isset($record->id)) {
             $this->Flash->error(__d('croogo', 'Invalid record.'));
+
             return $this->redirect([
                 'plugin' => $plugin,
                 'controller' => $model,
@@ -81,7 +80,7 @@ class TranslateController extends AppController
 
         $languages = $this->Languages->find('list', [
             'keyField' => 'locale',
-            'valueField' => function($language) {
+            'valueField' => function ($language) {
                 return $language->get('label');
             },
             'conditions' => [
@@ -92,21 +91,20 @@ class TranslateController extends AppController
         $this->set(compact('translations', 'record', 'modelAlias', 'displayField', 'id', 'languages'));
     }
 
-/**
- * edit
- *
- * @param int $id
- * @param string $modelAlias
- * @return void
- */
+    /**
+     * edit
+     *
+     * @return \Cake\Http\Response|void
+     */
     public function edit($id = null)
     {
-        $id = $this->request->query('id');
-        $modelAlias = urldecode($this->request->query('model'));
-        $locale = $this->request->query('locale');
+        $id = $this->getRequest()->getQuery('id', $id);
+        $modelAlias = urldecode($this->getRequest()->query('model'));
+        $locale = $this->getRequest()->query('locale');
 
-        if (!$id && empty($this->request->data)) {
+        if (!$id && empty($this->getRequest()->getData())) {
             $this->Flash->error(__d('croogo', 'Invalid ID.'));
+
             return $this->redirect([
                 'plugin' => null,
                 'controller' => Inflector::pluralize($modelAlias),
@@ -114,8 +112,9 @@ class TranslateController extends AppController
             ]);
         }
 
-        if (!$this->request->query('locale')) {
+        if (!$this->getRequest()->query('locale')) {
             $this->Flash->error(__d('croogo', 'Invalid locale'));
+
             return $this->redirect([
                 'plugin' => null,
                 'controller' => Inflector::pluralize($modelAlias),
@@ -129,11 +128,12 @@ class TranslateController extends AppController
 
         $language = $this->Languages->find()
             ->where([
-                'locale' => $this->request->query('locale'),
+                'locale' => $this->getRequest()->query('locale'),
                 'status' => 1,
             ])->first();
         if (!$language->id) {
             $this->Flash->error(__d('croogo', 'Invalid Language'));
+
             return $this->redirect([
                 'plugin' => $plugin,
                 'controller' => $model,
@@ -146,6 +146,7 @@ class TranslateController extends AppController
         $record = $Model->get($id);
         if (!$record->id) {
             $this->Flash->error(__d('croogo', 'Invalid record.'));
+
             return $this->redirect([
                 'plugin' => $plugin,
                 'controller' => $model,
@@ -162,10 +163,10 @@ class TranslateController extends AppController
             ->where([$Model->aliasField('id') => $id])
             ->first();
 
-        if (!empty($this->request->data)) {
+        if (!empty($this->getRequest()->data)) {
             $entity->_locale = $locale;
             $entity->accessible('_translations', true);
-            $entity = $Model->patchEntity($entity, $this->request->getData(), [
+            $entity = $Model->patchEntity($entity, $this->getRequest()->getData(), [
                 'translations' => true,
             ]);
             if ($Model->save($entity)) {
@@ -174,37 +175,45 @@ class TranslateController extends AppController
                     'controller' => 'Translate',
                     'action' => 'index',
                     '?' => [
-                        'id'=> $id,
+                        'id' => $id,
                         'model' => $modelAlias,
                         'locale' => $locale,
                     ],
                 ];
-                if (isset($this->request->data['apply'])) {
+                if (isset($this->getRequest()->data['apply'])) {
                     $redirect['action'] = 'edit';
                 }
+
                 return $this->redirect($redirect);
             } else {
                 $this->Flash->error(__d('croogo', 'Record could not be translated. Please, try again.'));
             }
         }
         $this->set(compact(
-            'entity', 'fields', 'language', 'model', 'modelAlias',
-            'displayField', 'id', 'locale'
+            'entity',
+            'fields',
+            'language',
+            'model',
+            'modelAlias',
+            'displayField',
+            'id',
+            'locale'
         ));
     }
 
-/**
- * delete
- *
- * @param int $id
- * @param string $modelAlias
- * @param string $locale
- * @return void
- */
+    /**
+     * delete
+     *
+     * @param int $id
+     * @param string $modelAlias
+     * @param string $locale
+     * @return \Cake\Http\Response|void
+     */
     public function delete($id = null, $modelAlias = null, $locale = null)
     {
         if ($locale == null || $id == null) {
             $this->Flash->error(__d('croogo', 'Invalid Locale or ID'));
+
             return $this->redirect([
                 'plugin' => null,
                 'controller' => Inflector::pluralize($modelAlias),
@@ -218,6 +227,7 @@ class TranslateController extends AppController
 
         if (!is_array($config)) {
             $this->Flash->error(__d('croogo', 'Invalid model.'));
+
             return $this->redirect([
                 'plugin' => $plugin,
                 'controller' => $model,
@@ -229,6 +239,7 @@ class TranslateController extends AppController
         $record = $Model->get($id);
         if (!isset($record->id)) {
             $this->Flash->error(__d('croogo', 'Invalid record.'));
+
             return $this->redirect([
                 'plugin' => $plugin,
                 'controller' => $model,
@@ -236,13 +247,7 @@ class TranslateController extends AppController
             ]);
         }
 
-        $runtimeModel = $model->translateModel();
-        $runtimeModelAlias = $runtimeModel->alias;
-        if ($runtimeModel->deleteAll([
-                $runtimeModelAlias . '.model' => $modelAlias,
-                $runtimeModelAlias . '.foreign_key' => $id,
-                $runtimeModelAlias . '.locale' => $locale,
-            ])) {
+        if ($Model->deleteTranslation($record, $locale)) {
             $this->Flash->success(__d('croogo', 'Translation for the locale deleted successfully.'));
         } else {
             $this->Flash->error(__d('croogo', 'Translation for the locale could not be deleted.'));
@@ -250,8 +255,8 @@ class TranslateController extends AppController
 
         return $this->redirect([
             'action' => 'index',
-            $id,
-            $modelAlias,
+            'id' => $id,
+            'model' => $modelAlias,
         ]);
     }
 }

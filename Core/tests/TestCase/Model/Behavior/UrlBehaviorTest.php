@@ -10,14 +10,14 @@ class UrlBehaviorTest extends CroogoTestCase
 {
 
     public $fixtures = [
-        'plugin.croogo\core.things'
+        'plugin.Croogo/Core.Things'
     ];
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();

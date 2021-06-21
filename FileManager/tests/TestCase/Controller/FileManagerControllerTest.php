@@ -18,42 +18,42 @@ use FileManager\Controller\FileManagerController;
 class FileManagerControllerTest extends CroogoControllerTestCase
 {
 
-/**
- * fixtures
- *
- * @var array
- */
+    /**
+     * fixtures
+     *
+     * @var array
+     */
     public $fixtures = [
-        'plugin.users.aco',
-        'plugin.users.aro',
-        'plugin.users.aros_aco',
-        'plugin.settings.setting',
-        'plugin.users.role',
-        'plugin.blocks.block',
-        'plugin.nodes.node',
-        'plugin.menus.menu',
-        'plugin.menus.link',
-        'plugin.taxonomy.type',
-        'plugin.taxonomy.types_vocabulary',
-        'plugin.taxonomy.vocabulary',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Settings.Setting',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Menus.Link',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
-/**
- * tearDown
- *
- * @return void
- */
+    /**
+     * tearDown
+     *
+     * @return void
+     */
     public function tearDown()
     {
         parent::tearDown();
         unset($this->FileManager);
     }
 
-/**
- * testAdminBrowseRestricted
- *
- * @return void
- */
+    /**
+     * testAdminBrowseRestricted
+     *
+     * @return void
+     */
     public function testAdminBrowseRestricted()
     {
         $url = '/admin/file_manager/file_manager/browse?path=' . urlencode(APP . '../../..');
@@ -85,11 +85,11 @@ class FileManagerControllerTest extends CroogoControllerTestCase
         $this->assertContains('is restricted', $message);
     }
 
-/**
- * testAdminBrowse
- *
- * @return void
- */
+    /**
+     * testAdminBrowse
+     *
+     * @return void
+     */
     public function testAdminBrowse()
     {
         $url = '/admin/file_manager/file_manager/browse?path=' . urlencode(APP);
@@ -121,11 +121,11 @@ class FileManagerControllerTest extends CroogoControllerTestCase
         $this->assertEmpty($message);
     }
 
-/**
- * testAdminBrowseSubfolder
- *
- * @return void
- */
+    /**
+     * testAdminBrowseSubfolder
+     *
+     * @return void
+     */
     public function testAdminBrowseSubfolder()
     {
         $url = '/admin/file_manager/file_manager/browse?path=' . urlencode(APP) . 'webroot';
@@ -157,11 +157,11 @@ class FileManagerControllerTest extends CroogoControllerTestCase
         $this->assertEmpty($message);
     }
 
-/**
- * testAdminUploadRestricted
- *
- * @return void
- */
+    /**
+     * testAdminUploadRestricted
+     *
+     * @return void
+     */
     public function testAdminUploadRestricted()
     {
         $url = '/admin/file_manager/file_manager/upload?path=' . urlencode(APP . '../../..');
@@ -197,11 +197,11 @@ class FileManagerControllerTest extends CroogoControllerTestCase
         $this->assertContains('is restricted', $message);
     }
 
-/**
- * testAdminCreateFileRestricted
- *
- * @return void
- */
+    /**
+     * testAdminCreateFileRestricted
+     *
+     * @return void
+     */
     public function testAdminCreateFileRestricted()
     {
         $url = '/admin/file_manager/file_manager/create_file?path=' . urlencode(APP . '../../..');
@@ -237,11 +237,11 @@ class FileManagerControllerTest extends CroogoControllerTestCase
         $this->assertContains('is restricted', $message);
     }
 
-/**
- * testAdminCreateDirectoryRestricted
- *
- * @return void
- */
+    /**
+     * testAdminCreateDirectoryRestricted
+     *
+     * @return void
+     */
     public function testAdminCreateDirectoryRestricted()
     {
         $url = '/admin/file_manager/file_manager/create_directory?path=' . urlencode(APP . '../../..');
@@ -277,11 +277,11 @@ class FileManagerControllerTest extends CroogoControllerTestCase
         $this->assertContains('is restricted', $message);
     }
 
-/**
- * testAdminDeleteDirectoryRestricted
- *
- * @return void
- */
+    /**
+     * testAdminDeleteDirectoryRestricted
+     *
+     * @return void
+     */
     public function testAdminDeleteDirectoryRestricted()
     {
         $url = '/admin/file_manager/file_manager/delete_directory';

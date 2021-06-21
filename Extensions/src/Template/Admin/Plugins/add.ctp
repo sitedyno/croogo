@@ -2,10 +2,12 @@
 
 $this->extend('/Common/admin_edit');
 
-$this->Breadcrumbs->add(__d('croogo', 'Extensions'), $this->request->getRequestTarget())
-    ->add(__d('croogo', 'Plugins'),
-        ['plugin' => 'Croogo/Extensions', 'controller' => 'Plugins', 'action' => 'index'])
-    ->add(__d('croogo', 'Upload'), $this->request->getRequestTarget());
+$this->Breadcrumbs->add(__d('croogo', 'Extensions'), $this->getRequest()->getRequestTarget())
+    ->add(
+        __d('croogo', 'Plugins'),
+        ['plugin' => 'Croogo/Extensions', 'controller' => 'Plugins', 'action' => 'index']
+    )
+    ->add(__d('croogo', 'Upload'), $this->getRequest()->getRequestTarget());
 
 $this->append('form-start', $this->Form->create(null, [
     'url' => [
@@ -23,18 +25,30 @@ $this->end();
 $this->append('tab-content');
 echo $this->Html->tabStart('plugins-upload') . $this->Form->input('Plugin.file', [
         'type' => 'file',
-        'class' => 'c-file'
+        'class' => 'c-file',
+        'required' => true,
     ]);
 echo $this->Html->tabEnd();
 $this->end();
 
 $this->append('panels');
-echo $this->Html->beginBox(__d('croogo', 'Publishing')) .
-    '<div class="clearfix"><div class="float-left">' .
-    $this->Form->button(__d('croogo', 'Upload'), ['button' => 'success']) .
-    '</div><div class="float-right">' .
-    $this->Html->link(__d('croogo', 'Cancel'), ['action' => 'index'], ['button' => 'danger']) .
-    '</div></div>';
+echo $this->Html->beginBox(__d('croogo', 'Publishing'));
+?>
+<div class="clearfix">
+    <div class="card-buttons d-flex justify-content-center">
+    <?php
+        echo $this->Form->button(__d('croogo', 'Upload'), [
+            'class' => 'btn btn-outline-primary',
+        ]);
+        echo $this->Html->link(__d('croogo', 'Cancel'), [
+            'action' => 'index',
+        ], [
+            'button' => 'outline-danger',
+        ]);
+    ?>
+    </div>
+</div>
+<?php
 echo $this->Html->endBox();
 $this->end();
 

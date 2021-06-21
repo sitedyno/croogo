@@ -10,10 +10,10 @@ class CommentableBehaviorTest extends CroogoTestCase
     public $setupSettings = false;
 
     public $fixtures = [
-        'plugin.comments.comment',
-        'plugin.nodes.node',
-        'plugin.users.user',
-        'plugin.taxonomy.type',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Taxonomy.Type',
     ];
 
     public function setUp()
@@ -39,9 +39,9 @@ class CommentableBehaviorTest extends CroogoTestCase
         ClassRegistry::flush();
     }
 
-/**
- * Test Commentable Add
- */
+    /**
+     * Test Commentable Add
+     */
     public function testCommentableAdd()
     {
         $count = $this->Comment->find('count', ['recursive' => -1]);
@@ -63,18 +63,18 @@ class CommentableBehaviorTest extends CroogoTestCase
         $this->assertEquals($count + 1, $result);
     }
 
-/**
- * @expectedException UnexpectedValueException
- */
+    /**
+     * @expectedException UnexpectedValueException
+     */
     public function testCommentableAddWithMissingId()
     {
         unset($this->Comment->Node->id);
         $this->Comment->Node->addComment([]);
     }
 
-/**
- * Test Get Type Setting
- */
+    /**
+     * Test Get Type Setting
+     */
     public function testGetTypeSetting()
     {
         $result = $this->Comment->Node->getTypeSetting([

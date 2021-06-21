@@ -23,25 +23,27 @@ class ContactsTable extends CroogoTable
     {
         $validator
             ->notBlank('title', __d('croogo', 'Title cannot be empty.'))
-            ->notBlank('alias',  __d('croogo', 'Alias cannot be empty.'))
+            ->notBlank('alias', __d('croogo', 'Alias cannot be empty.'))
             ->email('email', __d('croogo', 'Not a valid email address.'));
+
         return $validator;
     }
 
     public function buildRules(RulesChecker $rules)
     {
         $rules
-            ->add($rules->isUnique( ['alias'],
+            ->add($rules->isUnique(
+                ['alias'],
                 __d('croogo', 'That alias is already taken')
             ));
+
         return $rules;
     }
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-        $this->displayField('title');
-        $this->entityClass('Croogo/Contacts.Contact');
+        $this->setDisplayField('title');
+        $this->setEntityClass('Croogo/Contacts.Contact');
         $this->hasMany('Messages', [
             'className' => 'Croogo/Contacts.Messages',
             'foreignKey' => 'contact_id',
@@ -52,14 +54,7 @@ class ContactsTable extends CroogoTable
             'groups' => ['contacts']
         ]);
         $this->addBehavior('Croogo/Core.Trackable');
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always',
-                ],
-            ],
-        ]);
+        $this->addBehavior('Timestamp');
         $this->addBehavior('Search.Search');
     }
 

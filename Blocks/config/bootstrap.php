@@ -1,11 +1,10 @@
 <?php
 
-use Cake\Core\Configure;
 use Cake\Cache\Cache;
 use Croogo\Core\Croogo;
 
-Cache::config('croogo_blocks', array_merge(
-    Cache::config('default'),
+Cache::setConfig('croogo_blocks', array_merge(
+    Cache::getConfig('default'),
     ['groups' => ['blocks']]
 ));
 

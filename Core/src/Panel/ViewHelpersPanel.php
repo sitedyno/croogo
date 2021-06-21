@@ -2,7 +2,6 @@
 
 namespace Croogo\Core\Panel;
 
-use Cake\Core\Plugin;
 use Cake\Event\Event;
 use Cake\View\HelperRegistry;
 use DebugKit\DebugPanel;
@@ -17,11 +16,11 @@ class ViewHelpersPanel extends DebugPanel
     public function afterFilter(Event $event)
     {
         /* @var HelperRegistry $helperRegistry */
-        if (!isset($event->subject()->View)) {
+        if (!isset($event->getSubject()->View)) {
             return;
         }
 
-        $helperRegistry = $event->subject()->View->helpers();
+        $helperRegistry = $event->getSubject()->View->helpers();
 
         $viewHelperNames = $helperRegistry->loaded();
 

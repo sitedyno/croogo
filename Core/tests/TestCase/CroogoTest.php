@@ -6,6 +6,7 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\ORM\TableRegistry;
 use Croogo\Core\Croogo;
+use Croogo\Core\PluginManager;
 use Croogo\Core\TestSuite\CroogoTestCase;
 use Croogo\Core\TestSuite\TestCase;
 
@@ -13,12 +14,12 @@ class CroogoTest extends TestCase
 {
 
     public $fixtures = [
-//		'plugin.croogo/settings.setting',
+//      'plugin.Croogo/Settings.Setting',
     ];
 
     public function testCrossPluginHooks()
     {
-        Plugin::load(['Shops', 'Suppliers'], [
+        PluginManager::load(['Shops', 'Suppliers'], [
             'bootstrap' => true,
         ]);
 
@@ -26,9 +27,9 @@ class CroogoTest extends TestCase
         $this->assertTrue($Orders->monitored);
     }
 
-/**
- * test Croogo::hookApiComponent
- */
+    /**
+     * test Croogo::hookApiComponent
+     */
     public function testHookApiComponent()
     {
         $hooks = Configure::read('Hook.controller_properties');

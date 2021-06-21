@@ -17,12 +17,12 @@ use Croogo\Meta\Controller\AppController;
 class MetaController extends AppController
 {
 
-/**
- * Preset Variable Search
- *
- * @var array
- * @access public
- */
+    /**
+     * Preset Variable Search
+     *
+     * @var array
+     * @access public
+     */
     public $presetVars = true;
 
     public function initialize()
@@ -33,16 +33,16 @@ class MetaController extends AppController
         unset($this->Meta);
         $this->loadModel('Croogo/Meta.Meta');
 
-        $this->Crud->config('actions.index', [
+        $this->Crud->setConfig('actions.index', [
             'displayFields' => $this->Meta->displayFields(),
             'searchFields' => ['key', 'value'],
             'relatedModels' => false
         ]);
-        $this->Crud->config('actions.edit', [
+        $this->Crud->setConfig('actions.edit', [
             'editFields' => $this->Meta->editFields(),
             'relatedModels' => false
         ]);
-        $this->Crud->config('actions.add', [
+        $this->Crud->setConfig('actions.add', [
             'editFields' => $this->Meta->editFields(),
             'relatedModels' => false
         ]);
@@ -55,10 +55,10 @@ class MetaController extends AppController
         parent::beforeFilter($event);
 
         $this->Crud->on('Crud.beforePaginate', function (Event $event) {
-           $event->subject()->query->where(['model' => '']);
+            $event->getSubject()->query->where(['model' => '']);
         });
         $this->Crud->on('Crud.beforeSave', function (Event $event) {
-            $entity = $event->subject()->entity;
+            $entity = $event->getSubject()->entity;
             if (empty($entity->model)) {
                 $entity->model = '';
             }
@@ -66,12 +66,12 @@ class MetaController extends AppController
     }
 
     /**
- * Admin delete meta
- *
- * @param int $id
- * @return void
- * @access public
- */
+     * Admin delete meta
+     *
+     * @param int $id
+     * @return void
+     * @access public
+     */
     public function deleteMeta($id = null)
     {
         $Meta = TableRegistry::get('Croogo/Meta.Meta');
@@ -88,12 +88,12 @@ class MetaController extends AppController
         $this->set('_serialize', 'success');
     }
 
-/**
- * Admin add meta
- *
- * @return void
- * @access public
- */
+    /**
+     * Admin add meta
+     *
+     * @return void
+     * @access public
+     */
     public function addMeta()
     {
         $this->viewBuilder()->setLayout('ajax');

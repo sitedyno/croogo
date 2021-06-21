@@ -3,8 +3,6 @@
 namespace Croogo\Nodes\Controller\Component;
 
 use Cake\Controller\Component;
-use Cake\Core\App;
-use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -22,22 +20,22 @@ use Cake\Utility\Hash;
 class NodesComponent extends Component
 {
 
-/**
- * Nodes for layout
- *
- * @var string
- * @access public
- */
+    /**
+     * Nodes for layout
+     *
+     * @var string
+     * @access public
+     */
     public $nodesForLayout = [];
 
-/**
- * beforeFilter
- *
- * @param Event $event instance of controller
- */
+    /**
+     * beforeFilter
+     *
+     * @param Event $event instance of controller
+     */
     public function beforeFilter(Event $event)
     {
-        $this->controller = $event->subject;
+        $this->controller = $event->getSubject();
         if (isset($this->controller->Nodes)) {
             $this->Nodes = $this->controller->Nodes;
         } else {
@@ -45,27 +43,27 @@ class NodesComponent extends Component
         }
     }
 
-/**
- * Startup
- *
- * @param Controller $controller instance of controller
- * @return void
- */
+    /**
+     * Startup
+     *
+     * @param Controller $event instance of controller
+     * @return void
+     */
     public function startup(Event $event)
     {
-        $controller = $event->subject();
-        if (($controller->request->param('prefix') !== 'admin') && !isset($controller->request->params['requested'])) {
+        $controller = $event->getSubject();
+        if (($controller->request->getParam('prefix') !== 'admin') && !$controller->request->getParam('requested')) {
             $this->nodes();
         }
     }
 
-/**
- * Nodes
- *
- * Nodes will be available in this variable in views: $nodesForLayout
- *
- * @return void
- */
+    /**
+     * Nodes
+     *
+     * Nodes will be available in this variable in views: $nodesForLayout
+     *
+     * @return void
+     */
     public function nodes()
     {
         $roleId = $this->controller->Croogo->roleId();
@@ -97,14 +95,14 @@ class NodesComponent extends Component
         }
     }
 
-/**
- * beforeRender
- *
- * @param object $controller instance of controller
- * @return void
- */
+    /**
+     * beforeRender
+     *
+     * @param object $event instance of controller
+     * @return void
+     */
     public function beforeRender(Event $event)
     {
-        $event->subject()->set('nodesForLayout', $this->nodesForLayout);
+        $event->getSubject()->set('nodesForLayout', $this->nodesForLayout);
     }
 }

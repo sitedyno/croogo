@@ -4,7 +4,6 @@ namespace Croogo\Acl\Controller\Admin;
 
 use Cake\Cache\Cache;
 use Cake\Event\Event;
-use Cake\ORM\TableRegistry;
 use Croogo\Core\Croogo;
 
 /**
@@ -38,21 +37,21 @@ class PermissionsController extends AppController
     public function beforeFilter(Event $event)
     {
         parent::beforeFilter($event);
-        if ($this->request->action == 'toggle') {
+        if ($this->getRequest()->getParam('action') == 'toggle') {
             $this->Croogo->protectToggleAction();
         }
     }
 
-/**
- * admin_index
- *
- * @param id integer aco id, when null, the root ACO is used
- * @return void
- */
+    /**
+     * admin_index
+     *
+     * @param id integer aco id, when null, the root ACO is used
+     * @return void
+     */
     public function index($id = null, $level = null)
     {
-        if (isset($this->request->query['root'])) {
-            $query = strtolower($this->request->query('root'));
+        if ($this->getRequest()->getQuery('root')) {
+            $query = strtolower($this->getRequest()->getQuery('root'));
         }
 
         if ($id == null) {
@@ -77,7 +76,7 @@ class PermissionsController extends AppController
         $aros = $this->Aros->getRoles($roles);
         if ($root && $this->RequestHandler->ext == 'json') {
             $options = array_intersect_key(
-                $this->request->query,
+                $this->getRequest()->getQuery(),
                 ['perms' => null, 'urls' => null]
             );
             $cacheName = 'permissions_aco_' . $root->id;
@@ -92,7 +91,7 @@ class PermissionsController extends AppController
 
         $this->set(compact('aros', 'permissions'));
 
-        if ($this->request->is('ajax') && isset($query)) {
+        if ($this->getRequest()->is('ajax') && isset($query)) {
             $this->render('Croogo/Acl.acl_permissions_table');
         } else {
             $this->_setPermissionRoots();
@@ -117,16 +116,16 @@ class PermissionsController extends AppController
         $this->set(compact('roots'));
     }
 
-/**
- * toggle
- *
- * @param int $acoId
- * @param int $aroId
- * @return void
- */
+    /**
+     * toggle
+     *
+     * @param int $acoId
+     * @param int $aroId
+     * @return \Cake\Http\Response|void
+     */
     public function toggle($acoId, $aroId)
     {
-        if (!$this->request->is('ajax')) {
+        if (!$this->getRequest()->is('ajax')) {
             return $this->redirect(['action' => 'index']);
         }
 
@@ -148,5 +147,4 @@ class PermissionsController extends AppController
 
         $this->set(compact('acoId', 'aroId', 'data', 'success', 'permitted'));
     }
-
 }

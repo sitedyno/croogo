@@ -8,12 +8,12 @@ $this->Breadcrumbs
         'action' => 'index',
     ]);
 
-if ($this->request->param('action') == 'edit') {
-    $this->Breadcrumbs->add(h($setting->key), $this->request->getRequestTarget());
+if ($this->getRequest()->getParam('action') == 'edit') {
+    $this->Breadcrumbs->add(h($setting->key), $this->getRequest()->getRequestTarget());
 }
 
-if ($this->request->param('action') == 'add') {
-    $this->Breadcrumbs->add(__d('croogo', 'Add'), $this->request->getRequestTarget());
+if ($this->getRequest()->getParam('action') == 'add') {
+    $this->Breadcrumbs->add(__d('croogo', 'Add'), $this->getRequest()->getRequestTarget());
 }
 
 $this->append('form-start', $this->Form->create($setting, [
@@ -46,4 +46,4 @@ echo $this->Html->tabStart('setting-misc') . $this->Form->input('title', [
         'label' => __d('croogo', 'Params'),
     ]) . $this->Html->tabEnd();
 
-$this->end();
+    $this->end();

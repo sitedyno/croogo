@@ -5,6 +5,7 @@ namespace Croogo\Menus\Model\Table;
 use Cake\Database\Schema\TableSchema;
 use Cake\Event\Event;
 use Cake\ORM\Entity;
+use Cake\ORM\Query;
 use Cake\Validation\Validator;
 use Croogo\Core\Model\Table\CroogoTable;
 
@@ -28,7 +29,7 @@ class LinksTable extends CroogoTable
 
         $validator
             ->add('link', 'custom', [
-                'rule' => function($value, $context) {
+                'rule' => function ($value, $context) {
                     return !empty($value);
                 },
                 'message' => __d('croogo', 'Link cannot be empty.')
@@ -39,8 +40,6 @@ class LinksTable extends CroogoTable
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->addBehavior('Tree');
         $this->addBehavior('Croogo/Core.Cached', [
             'groups' => ['menus']
@@ -52,14 +51,7 @@ class LinksTable extends CroogoTable
             'Menus' => ['link_count'],
         ]);
 
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always',
-                ],
-            ],
-        ]);
+        $this->addBehavior('Timestamp');
 
         $this->addBehavior('Croogo/Core.Publishable');
         $this->addBehavior('Croogo/Core.Visibility');
@@ -68,13 +60,22 @@ class LinksTable extends CroogoTable
         $this->searchManager()
             ->add('menu_id', 'Search.Value', [
                 'field' => 'menu_id'
+            ])
+            ->add('menuAlias', 'Search.Finder', [
+                'finder' => 'filterByMenuAlias',
+            ])
+            ->add('title', 'Search.Like', [
+                'field' => 'title',
+                'before' => true,
+                'after' => true
             ]);
     }
 
     protected function _initializeSchema(TableSchema $table)
     {
-        $table->columnType('visibility_roles', 'encoded');
-        $table->columnType('link', 'link');
+        $table->setColumnType('visibility_roles', 'encoded');
+        $table->setColumnType('link', 'link');
+        $table->setColumnType('params', 'params');
 
         return parent::_initializeSchema($table);
     }
@@ -93,7 +94,7 @@ class LinksTable extends CroogoTable
         if ($this->hasBehavior('Tree')) {
             $this->behaviors()
                 ->get('Tree')
-                ->config($settings);
+                ->setConfig($settings);
         } else {
             $this->addBehavior('Tree', $settings);
         }
@@ -107,11 +108,25 @@ class LinksTable extends CroogoTable
         if ($entity->isNew()) {
             return;
         }
-        if ($entity->dirty('menu_id')) {
+        if ($entity->isDirty('menu_id')) {
             $this->setTreeScope($entity->menu_id);
             $this->recover();
             $this->setTreeScope($entity->getOriginal('menu_id'));
             $this->recover();
         }
     }
+
+    /**
+     * Filters active links based on menu.alias
+     */
+    public function findFilterByMenuAlias(Query $query, array $options = [])
+    {
+        return $query
+            ->innerJoinWith('Menus')
+            ->where([
+                $this->Menus->aliasField('alias') => $options['menuAlias'],
+                $this->aliasField('status') => 1,
+            ]);
+    }
+
 }

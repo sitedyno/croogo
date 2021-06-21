@@ -4,13 +4,13 @@ namespace Croogo\Core;
 
 use Cake\Core\Configure;
 use Cake\Database\Exception\MissingConnectionException;
+use Cake\Http\ServerRequest;
 use Cake\Log\Log;
-use Cake\Network\Request;
 use Cake\ORM\TableRegistry;
 use Cake\Routing\RouteBuilder;
 use Cake\Routing\Router as CakeRouter;
-use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
+use Croogo\Core\Utility\StringConverter;
 
 /**
  * Router
@@ -27,12 +27,12 @@ use Cake\Utility\Inflector;
 class Router extends CakeRouter
 {
 
-/**
- * Helper method to setup both default and localized route
- */
+    /**
+     * Helper method to setup both default and localized route
+     */
     public static function build(RouteBuilder $builder, $path, $defaults, $options = [])
     {
-        if (Plugin::loaded('Croogo/Translate')) {
+        if (PluginManager::isLoaded('Croogo/Translate')) {
             $languages = Configure::read('I18n.languages');
             $i18nPath = '/:lang' . $path;
             $i18nOptions = array_merge($options, ['lang' => implode('|', $languages)]);
@@ -41,14 +41,14 @@ class Router extends CakeRouter
         $builder->connect($path, $defaults, $options);
     }
 
-/**
- * Check wether request is a API call.
- *
- * @see Request::addDetector()
- * @param $request Request Request object
- * @return bool True when request contains the necessary route parameters
- */
-    public static function isApiRequest(Request $request)
+    /**
+     * Check wether request is a API call.
+     *
+     * @see Request::addDetector()
+     * @param $request Request Request object
+     * @return bool True when request contains the necessary route parameters
+     */
+    public static function isApiRequest(ServerRequest $request)
     {
         if (!$request) {
             return false;
@@ -59,17 +59,18 @@ class Router extends CakeRouter
         if ($request['api'] !== Configure::read('Croogo.Api.path')) {
             return false;
         }
+
         return true;
     }
 
-/**
- * Check wether request is from a whitelisted IP address
- *
- * @see Request::addDetector()
- * @param $request Request Request object
- * @return boolean True when request is from a whitelisted IP Address
- */
-    public static function isWhitelistedRequest(Request $request)
+    /**
+     * Check wether request is from a whitelisted IP address
+     *
+     * @see Request::addDetector()
+     * @param $request Request Request object
+     * @return bool True when request is from a whitelisted IP Address
+     */
+    public static function isWhitelistedRequest(ServerRequest $request)
     {
         if (!$request) {
             return false;
@@ -80,16 +81,17 @@ class Router extends CakeRouter
             'trim',
             (array)explode(',', Configure::read('Site.ipWhitelist'))
         );
+
         return in_array($clientIp, $whitelist);
     }
 
-/**
- * Creates REST resource routes for the given controller(s).
- *
- * @param string|array $controller string or array of controller names
- * @return array Array of mapped resources
- * @see Router::mapResources()
- */
+    /**
+     * Creates REST resource routes for the given controller(s).
+     *
+     * @param string|array $controller string or array of controller names
+     * @return array Array of mapped resources
+     * @see Router::mapResources()
+     */
     public static function mapResources($controller, $options = [])
     {
         $options = array_merge([
@@ -101,51 +103,66 @@ class Router extends CakeRouter
         return static::mapResources($controller, $options);
     }
 
-/**
- * If you want your non-routed controler actions (like /users/add) to support locale based urls,
- * this method must be called AFTER all the routes.
- *
- * @return void
- */
+    /**
+     * If you want your non-routed controler actions (like /users/add) to support locale based urls,
+     * this method must be called AFTER all the routes.
+     *
+     * @return void
+     */
     public static function localize()
     {
-        if (Plugin::loaded('Croogo/Translate')) {
+        if (PluginManager::isLoaded('Croogo/Translate')) {
             static::connect('/:locale/:plugin/:controller/:action/*', [], ['locale' => '[a-z]{3}']);
             static::connect('/:locale/:controller/:action/*', [], ['locale' => '[a-z]{3}']);
         }
     }
 
-/**
- * Routes for content types
- *
- * @param string $alias
- * @return void
- */
-    public static function contentType($alias, $routeBuilder)
+    /**
+     * Routes for content types
+     *
+     * @param string $aliasRegex
+     * @return void
+     */
+    public static function contentType($aliasRegex, $routeBuilder)
     {
-        static::build($routeBuilder, '/' . $alias, [
+        static::build($routeBuilder, '/:type', [
             'plugin' => 'Croogo/Nodes', 'controller' => 'Nodes',
-            'action' => 'index', 'type' => $alias
+            'action' => 'index',
+        ], [
+            'type' => $aliasRegex,
         ]);
-        static::build($routeBuilder, '/' . $alias . '/archives/*', [
+        static::build($routeBuilder, '/:type/archives/*', [
             'plugin' => 'Croogo/Nodes', 'controller' => 'Nodes',
-            'action' => 'index', 'type' => $alias
+            'action' => 'index',
+        ], [
+            'type' => $aliasRegex,
         ]);
-        static::build($routeBuilder, '/' . $alias . '/:slug', [
+        static::build($routeBuilder, '/:type/:slug', [
             'plugin' => 'Croogo/Nodes', 'controller' => 'Nodes',
-            'action' => 'view', 'type' => $alias
+            'action' => 'view',
+        ], [
+            'type' => $aliasRegex,
+            'slug' => '[a-z0-9-_]+',
         ]);
-        static::build($routeBuilder, '/' . $alias . '/term/:slug/*', [
+        static::build($routeBuilder, '/:type/term/:term/*', [
             'plugin' => 'Croogo/Nodes', 'controller' => 'Nodes',
-            'action' => 'term', 'type' => $alias
+            'action' => 'term',
+        ], [
+            'type' => $aliasRegex,
+        ]);
+        static::build($routeBuilder, '/:type/:vocab/:term/*', [
+            'plugin' => 'Croogo/Nodes', 'controller' => 'Nodes',
+            'action' => 'term',
+        ], [
+            'type' => $aliasRegex,
         ]);
     }
 
-/**
- * Apply routes for content types with routes enabled
- *
- * @return void
- */
+    /**
+     * Apply routes for content types with routes enabled
+     *
+     * @return void
+     */
     public static function routableContentTypes($routeBuilder)
     {
         try {
@@ -155,11 +172,14 @@ class Router extends CakeRouter
                     'config' => 'croogo_types',
                 ],
             ]);
+            $aliases = [];
             foreach ($types as $type) {
                 if (isset($type->params['routes']) && $type->params['routes']) {
-                    static::contentType($type->alias, $routeBuilder);
+                    $aliases[] = $type->alias;
                 }
             }
+            $aliasRegex = implode('|', $aliases);
+            static::contentType($aliasRegex, $routeBuilder);
         } catch (MissingConnectionException $e) {
             Log::write('critical', __d('croogo', 'Unable to get routeable content types: %s', $e->getMessage()));
         }
@@ -174,32 +194,32 @@ class Router extends CakeRouter
         return parent::url($url, $full);
     }
 
-    public static function getActionPath(Request $request, $encode = false)
+    public static function getActionPath(ServerRequest $request, $encode = false)
     {
-        $plugin = $request->param('plugin');
-        $prefix = $request->param('prefix');
-        $val  = $plugin ? $plugin . '.' : null;
+        $plugin = $request->getParam('plugin');
+        $prefix = $request->getParam('prefix');
+        $val = $plugin ? $plugin . '.' : null;
         $val .= $prefix ? Inflector::camelize($prefix) . '/' : null;
-        $val .= $request->param('controller') . '/' . $request->param('action');
+        $val .= $request->getParam('controller') . '/' . $request->getParam('action');
         if ($encode) {
             $val = base64_encode($val);
         }
+
         return $val;
     }
 
     /**
- * Setup Site.home_url
- *
- * @return void
- */
-//    public static function routes()
-//    {
-//        $homeUrl = Configure::read('Site.home_url');
-//        if ($homeUrl && strpos($homeUrl, ':') !== false) {
-//            $converter = new StringConverter();
-//            $url = $converter->linkStringToArray($homeUrl);
-//            Router::connect('/', $url, [], ['promote' => true]);
-//        }
-//        Plugin::routes();
-//    }
+     * Setup Site.home_url
+     *
+     * @return void
+     */
+    public static function homepage()
+    {
+        $homeUrl = Configure::read('Site.home_url');
+        if ($homeUrl && strpos($homeUrl, ':') !== false) {
+            $converter = new StringConverter();
+            $url = $converter->linkStringToArray($homeUrl);
+            Router::connect('/', $url);
+        }
+    }
 }

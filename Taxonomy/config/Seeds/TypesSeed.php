@@ -21,8 +21,7 @@ class TypesSeed extends AbstractSeed
             'comment_captcha' => '0',
             'params' => 'routes=true',
             'plugin' => null,
-            'updated' => '2009-09-09 00:23:24',
-            'created' => '2009-09-02 18:06:27'
+            'created_by' => 1,
         ],
         [
             'id' => '2',
@@ -37,13 +36,12 @@ class TypesSeed extends AbstractSeed
             'comment_captcha' => '0',
             'params' => 'routes=true',
             'plugin' => null,
-            'updated' => '2009-09-15 12:15:43',
-            'created' => '2009-09-02 18:20:44'
+            'created_by' => 1,
         ],
         [
             'id' => '4',
-            'title' => 'Node',
-            'alias' => 'node',
+            'title' => 'Post',
+            'alias' => 'post',
             'description' => 'Default content type.',
             'format_show_author' => '1',
             'format_show_date' => '1',
@@ -53,8 +51,7 @@ class TypesSeed extends AbstractSeed
             'comment_captcha' => '0',
             'params' => 'routes=true',
             'plugin' => null,
-            'updated' => '2009-10-06 21:53:15',
-            'created' => '2009-09-05 23:51:56'
+            'created_by' => 1,
         ],
     ];
 
@@ -63,5 +60,4 @@ class TypesSeed extends AbstractSeed
         $Table = $this->table('types');
         $Table->insert($this->records)->save();
     }
-
 }

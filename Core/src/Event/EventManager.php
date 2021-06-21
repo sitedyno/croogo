@@ -4,8 +4,8 @@ namespace Croogo\Core\Event;
 
 use Cake\Cache\Cache;
 use Cake\Core\App;
-use Cake\Core\Plugin;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\Event\EventManager as CakeEventManager;
 use Cake\Log\Log;
 
@@ -24,41 +24,42 @@ use Cake\Log\Log;
 class EventManager extends CakeEventManager
 {
 
-/**
- * A map of registered event listeners
- */
+    /**
+     * A map of registered event listeners
+     */
     protected $_listenersMap = [];
 
-/**
- * Returns the globally available instance of a EventManager
- * @return EventManager the global event manager
- */
+    /**
+     * Returns the globally available instance of a EventManager
+     * @return EventManager the global event manager
+     */
     public static function instance($manager = null)
     {
         if (empty(self::$_generalManager)) {
             return parent::instance(new EventManager());
         }
+
         return parent::instance($manager);
     }
 
-/**
- * Load Event Handlers during bootstrap.
- *
- * Plugins can add their own custom EventHandler in Config/events.php
- * with the following format:
- *
- * return array(
- *     'EventHandlers' => array(
- *         'Example.ExampleEventHandler' => array(
- *             'eventKey' => null,
- *             'options' => array(
- *                 'priority' => 1,
- *                 'passParams' => false,
- *                 'className' => 'Plugin.ClassName',
- *      )));
- *
- * @return void
- */
+    /**
+     * Load Event Handlers during bootstrap.
+     *
+     * Plugins can add their own custom EventHandler in Config/events.php
+     * with the following format:
+     *
+     * return array(
+     *     'EventHandlers' => array(
+     *         'Example.ExampleEventHandler' => array(
+     *             'eventKey' => null,
+     *             'options' => array(
+     *                 'priority' => 1,
+     *                 'passParams' => false,
+     *                 'className' => 'Plugin.ClassName',
+     *      )));
+     *
+     * @return void
+     */
     public static function loadListeners()
     {
         $eventManager = EventManager::instance();
@@ -93,34 +94,34 @@ class EventManager extends CakeEventManager
         }
         foreach ($cached as $cache) {
             extract($cache);
-            if (Plugin::loaded($plugin)) {
+            if (Plugin::isLoaded($plugin)) {
                 $class = App::className($class, 'Event');
                 $settings = isset($eventOptions['options']) ? $eventOptions['options'] : [];
                 $listener = new $class($settings);
-                $eventManager->attach($listener, $eventKey, $eventOptions);
+                $eventManager->on($listener, $eventKey, $eventOptions);
             }
         }
     }
 
-/**
- * Adds a new listener to an event.
- * @see EventManager::attach()
- * @return void
- */
+    /**
+     * Adds a new listener to an event.
+     * @see EventManager::attach()
+     * @return void
+     */
     public function attach($callable, $eventKey = null, array $options = [])
     {
-        parent::on($callable, $eventKey, $options);
+        parent::on($eventKey, $options, $callable);
         if (is_object($callable)) {
             $key = get_class($callable);
             $this->_listenersMap[$key] = $callable;
         }
     }
 
-/**
- * Removes a listener from the active listeners.
- * @see EventManager::detach()
- * @return void
- */
+    /**
+     * Removes a listener from the active listeners.
+     * @see EventManager::detach()
+     * @return void
+     */
     public function detach($callable, $eventKey = null)
     {
         if (is_object($callable)) {
@@ -130,11 +131,11 @@ class EventManager extends CakeEventManager
         parent::off($callable, $eventKey);
     }
 
-/**
- * Detach all listener objects belonging to a plugin
- * @param $plugin string
- * @return void
- */
+    /**
+     * Detach all listener objects belonging to a plugin
+     * @param $plugin string
+     * @return void
+     */
     public function detachPluginSubscribers($plugin)
     {
         $eventHandlers = Configure::read('EventHandlers');

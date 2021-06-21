@@ -30,7 +30,7 @@ class MetaTable extends CroogoTable
 
     public function initialize(array $config)
     {
-        $this->table('meta');
+        $this->setTable('meta');
         $this->addBehavior('Timestamp');
         $this->addBehavior('Croogo/Core.Trackable');
         $this->addBehavior('Croogo/Core.Cached', [
@@ -39,8 +39,6 @@ class MetaTable extends CroogoTable
             ],
         ]);
         $this->addBehavior('Search.Search');
-
-        parent::initialize($config);
     }
 
     /**
@@ -48,12 +46,12 @@ class MetaTable extends CroogoTable
      */
     public function beforeSave()
     {
-        $this->_quoted = $this->connection()
-            ->driver()
-            ->autoQuoting();
-        $this->connection()
-            ->driver()
-            ->autoQuoting(true);
+        $this->_quoted = $this->getConnection()
+            ->getDriver()
+            ->enableAutoQuoting();
+        $this->getConnection()
+            ->getDriver()
+            ->enableAutoQuoting();
     }
 
     /**
@@ -61,8 +59,8 @@ class MetaTable extends CroogoTable
      */
     public function afterSave()
     {
-        $this->connection()
-            ->driver()
-            ->autoQuoting($this->_quoted);
+        $this->getConnection()
+            ->getDriver()
+            ->enableAutoQuoting($this->_quoted);
     }
 }

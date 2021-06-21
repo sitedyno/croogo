@@ -5,21 +5,25 @@ use Croogo\Core\Router;
 
 Router::plugin('Croogo/Example', ['path' => '/'], function (RouteBuilder $routeBuilder) {
     $routeBuilder->prefix('admin', function (RouteBuilder $routeBuilder) {
-        $routeBuilder->extensions(['json']);
+        $routeBuilder->setExtensions(['json']);
+        $routeBuilder->applyMiddleware('csrf');
 
-        $routeBuilder->connect('/example/admin/route/here', [
+        $routeBuilder->connect('/route/here', [
             'plugin' => 'Croogo/Example',
             'controller' => 'Example',
             'action' => 'index',
         ]);
 
-        $routeBuilder->fallbacks();
+        $routeBuilder->connect('/example/:action/*', [
+            'prefix' => 'admin',
+            'plugin' => 'Croogo/Example',
+            'controller' => 'Example',
+        ]);
     });
 
-    Router::build($routeBuilder, '/example/route/here', [
+    $routeBuilder->connect('/example/:action/*', [
         'plugin' => 'Croogo/Example',
-        'controller' => 'example',
-        'action' => 'index',
+        'controller' => 'Example',
     ]);
 
     $routeBuilder->fallbacks();

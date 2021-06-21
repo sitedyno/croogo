@@ -27,54 +27,53 @@ class BulkProcessComponent extends Component
         'Flash'
     ];
 
-/**
- * controller
- *
- * @var Controller
- */
+    /**
+     * controller
+     *
+     * @var Controller
+     */
     protected $_controller = null;
 
-/**
- * beforeFilter
- */
+    /**
+     * beforeFilter
+     */
     public function beforeFilter(Event $event)
     {
-        $this->_controller = $event->subject();
-        if ($this->_controller->request->param('action') == 'process') {
-            $this->_controller->Security->config('validatePost', false);
-            $this->_controller->eventManager()->off($this->_controller->Csrf);
+        $this->_controller = $event->getSubject();
+        if ($this->_controller->request->getParam('action') == 'process') {
+            $this->_controller->Security->setConfig('validatePost', false);
         }
-
     }
 
-/**
- * Get variables used for bulk processing
- *
- * @param string $model Model alias
- * @param string $primaryKey Primary key
- * @return array Array with 2 elements. First element is action name, second is
- *               array of model IDs
- */
+    /**
+     * Get variables used for bulk processing
+     *
+     * @param string $model Model alias
+     * @param string $primaryKey Primary key
+     * @return array Array with 2 elements. First element is action name, second is
+     *               array of model IDs
+     */
     public function getRequestVars($model, $primaryKey = 'id')
     {
-        $data = $this->_controller->request->data($model);
-        $action = $this->_controller->request->data('action');
+        $data = $this->_controller->request->getData($model);
+        $action = $this->_controller->request->getData('action');
         $ids = [];
         foreach ($data as $id => $value) {
             if (is_array($value) && !empty($value[$primaryKey])) {
                 $ids[] = $id;
             }
         }
+
         return [$action, $ids];
     }
 
-/**
- * Convenience method to check for selection count and redirect request
- *
- * @param bool $condition True will redirect request to $options['redirect']
- * @param array $options Options array as passed to process()
- * @return bool True if selection is valid
- */
+    /**
+     * Convenience method to check for selection count and redirect request
+     *
+     * @param bool $condition True will redirect request to $options['redirect']
+     * @param array $options Options array as passed to process()
+     * @return bool True if selection is valid
+     */
     protected function _validateSelection($condition, $options, $messageName)
     {
         $messageMap = $options['messageMap'];
@@ -84,25 +83,26 @@ class BulkProcessComponent extends Component
             $this->Flash->error($message);
             $this->_controller->redirect($options['redirect']);
         }
+
         return !$condition;
     }
 
-/**
- * Process Bulk Request
- *
- * Operates on $Model object and assumes that bulk processing will be delegated
- * to BulkProcessBehavior
- *
- * Options:
- * - redirect URL to redirect in array format
- * - messageMap Map of error name and its message
- *
- * @param Table $table Table instance
- * @param string $action Action name to process
- * @param array $ids Array of IDs
- * @param array $options Options
- * @return void
- */
+    /**
+     * Process Bulk Request
+     *
+     * Operates on $Model object and assumes that bulk processing will be delegated
+     * to BulkProcessBehavior
+     *
+     * Options:
+     * - redirect URL to redirect in array format
+     * - messageMap Map of error name and its message
+     *
+     * @param Table $table Table instance
+     * @param string $action Action name to process
+     * @param array $ids Array of IDs
+     * @param array $options Options
+     * @return void
+     */
     public function process(Table $table, $action, $ids, $options = [])
     {
         $Controller = $this->_controller;
@@ -138,7 +138,7 @@ class BulkProcessComponent extends Component
         }
 
         $processed = $table->processAction($action, $ids);
-        $eventName = 'Controller.' . $Controller->name . '.after' . ucfirst($action);
+        $eventName = 'Controller.' . $Controller->getName() . '.after' . ucfirst($action);
 
         if ($processed) {
             if (!empty($messageMap[$action])) {

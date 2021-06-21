@@ -10,11 +10,11 @@ use Croogo\Core\Model\Table\CroogoTable;
 class TypesTable extends CroogoTable
 {
 
-/**
- * Display fields for this model
- *
- * @var array
- */
+    /**
+     * Display fields for this model
+     *
+     * @var array
+     */
     protected $_displayFields = [
         'title' => [
             'url' => [
@@ -32,15 +32,7 @@ class TypesTable extends CroogoTable
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always'
-                ]
-            ]
-        ]);
+        $this->addBehavior('Timestamp');
         $this->addBehavior('Croogo/Core.Url', [
             'url' => [
                 'plugin' => 'Croogo/Nodes',
@@ -57,7 +49,7 @@ class TypesTable extends CroogoTable
         ]);
         $this->addBehavior('Croogo/Core.Trackable');
         $this->belongsToMany('Croogo/Taxonomy.Vocabularies', [
-            'joinTable' => 'types_vocabularies',
+            'through' => 'Croogo/Taxonomy.TypesVocabularies',
         ]);
     }
 
@@ -69,6 +61,7 @@ class TypesTable extends CroogoTable
     {
         $validator->notBlank('title', __d('croogo', 'Title cannot be empty.'));
         $validator->notBlank('alias', __d('croogo', 'Alias cannot be empty.'));
+
         return $validator;
     }
 
@@ -78,6 +71,7 @@ class TypesTable extends CroogoTable
             ['alias'],
             __d('croogo', 'That alias is already taken.')
         ));
+
         return $rules;
     }
 
@@ -98,13 +92,14 @@ class TypesTable extends CroogoTable
                 ],
             ];
         }
+
         return $this->find('list', compact('conditions'));
     }
 
     protected function _initializeSchema(TableSchema $table)
     {
-        $table->columnType('params', 'params');
+        $table->setColumnType('params', 'params');
+
         return parent::_initializeSchema($table);
     }
-
 }

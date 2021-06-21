@@ -17,8 +17,11 @@ class ContactsController extends AppController
     {
         parent::initialize();
 
-        $this->loadComponent('Croogo/Core.Recaptcha', [
-            'actions' => ['view']
+        $this->_loadCroogoComponents([
+            'Akismet',
+            'Recaptcha' => [
+                'actions' => ['view']
+            ]
         ]);
     }
 
@@ -26,8 +29,7 @@ class ContactsController extends AppController
      * View
      *
      * @param string $alias
-     * @return void
-     * @access public
+     * @return \Cake\Http\Response|void
      * @throws NotFoundException
      */
     public function view($alias = null)
@@ -47,8 +49,8 @@ class ContactsController extends AppController
             $continue = false;
         }
         $message = $this->Contacts->Messages->newEntity();
-        if ($this->request->is('post') && $continue === true) {
-            $this->Contacts->Messages->patchEntity($message, $this->request->data);
+        if ($this->getRequest()->is('post') && $continue === true) {
+            $message = $this->Contacts->Messages->patchEntity($message, $this->getRequest()->data);
             $message->contact_id = $contact->id;
             Croogo::dispatchEvent('Controller.Contacts.beforeMessage', $this);
 
@@ -59,10 +61,11 @@ class ContactsController extends AppController
             $this->set(compact('continue'));
 
             if ($continue === true) {
+                $this->Contacts->Messages->save($message);
                 Croogo::dispatchEvent('Controller.Contacts.afterMessage', $this);
                 $this->Flash->success(__d('croogo', 'Your message has been received...'));
 
-                return $this->Croogo->redirect('/');
+                return $this->redirect($this->referer());
             }
         }
 
@@ -77,9 +80,9 @@ class ContactsController extends AppController
     /**
      * Validation
      *
-     * @param boolean $continue
+     * @param bool $continue
      * @param array $contact
-     * @return boolean
+     * @return bool
      * @access protected
      */
     protected function _validation($continue, $contact, Message $message)
@@ -98,9 +101,9 @@ class ContactsController extends AppController
     /**
      * Spam protection
      *
-     * @param boolean $continue
+     * @param bool $continue
      * @param array $contact
-     * @return boolean
+     * @return bool
      * @access protected
      */
     protected function _spamProtection($continue, $contact, Message $message)
@@ -113,6 +116,7 @@ class ContactsController extends AppController
         $this->Akismet->setCommentContent($message->body);
         if ($this->Akismet->isCommentSpam()) {
             $this->Flash->error(__d('croogo', 'Sorry, the message appears to be spam.'));
+
             return false;
         }
 
@@ -122,9 +126,9 @@ class ContactsController extends AppController
     /**
      * Captcha
      *
-     * @param boolean $continue
+     * @param bool $continue
      * @param array $contact
-     * @return boolean
+     * @return bool
      * @access protected
      */
     protected function _captcha($continue, $contact, Message $message)
@@ -135,6 +139,7 @@ class ContactsController extends AppController
 
         if (!$this->Recaptcha->verify()) {
             $this->Flash->error(__d('croogo', 'Invalid captcha entry'));
+
             return false;
         }
 
@@ -144,9 +149,9 @@ class ContactsController extends AppController
     /**
      * Send Email
      *
-     * @param boolean $continue
+     * @param bool $continue
      * @param array $contact
-     * @return boolean
+     * @return bool
      * @access protected
      */
     protected function _sendEmail($continue, $contact, Message $message)
@@ -166,8 +171,8 @@ class ContactsController extends AppController
                     'contact' => $contact,
                     'message' => $message,
                 ]);
-            if ($this->viewBuilder()->theme()) {
-                $email->theme($this->viewBuilder()->theme());
+            if ($this->viewBuilder()->getTheme()) {
+                $email->theme($this->viewBuilder()->getTheme());
             }
             if (!$email->send()) {
                 $continue = false;

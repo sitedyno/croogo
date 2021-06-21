@@ -5,7 +5,7 @@ use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Croogo\Core\Event\EventManager;
-use Croogo\Core\Plugin;
+use Croogo\Core\PluginManager;
 use Croogo\Core\TestSuite\IntegrationTestCase;
 use Croogo\Install\InstallManager;
 
@@ -15,41 +15,35 @@ use Croogo\Install\InstallManager;
 class NodesControllerTest extends IntegrationTestCase
 {
     public $fixtures = [
-        'plugin.croogo/users.role',
-        'plugin.croogo/users.user',
-        'plugin.croogo/users.aco',
-        'plugin.croogo/users.aro',
-        'plugin.croogo/users.aros_aco',
-        'plugin.croogo/blocks.block',
-        'plugin.croogo/comments.comment',
-        'plugin.croogo/contacts.contact',
-        'plugin.croogo/translate.i18n',
-        'plugin.croogo/settings.language',
-        'plugin.croogo/menus.link',
-        'plugin.croogo/menus.menu',
-        'plugin.croogo/contacts.message',
-        'plugin.croogo/meta.meta',
-        'plugin.croogo/nodes.node',
-        'plugin.croogo/taxonomy.model_taxonomy',
-        'plugin.croogo/blocks.region',
-        'plugin.croogo/core.settings',
-        'plugin.croogo/taxonomy.taxonomy',
-        'plugin.croogo/taxonomy.term',
-        'plugin.croogo/taxonomy.type',
-        'plugin.croogo/taxonomy.types_vocabulary',
-        'plugin.croogo/taxonomy.vocabulary',
+        'plugin.Croogo/Users.Role',
+        'plugin.Croogo/Users.User',
+        'plugin.Croogo/Users.Aco',
+        'plugin.Croogo/Users.Aro',
+        'plugin.Croogo/Users.ArosAco',
+        'plugin.Croogo/Blocks.Block',
+        'plugin.Croogo/Comments.Comment',
+        'plugin.Croogo/Contacts.Contact',
+        'plugin.Croogo/Translate.I18n',
+        'plugin.Croogo/Settings.Language',
+        'plugin.Croogo/Menus.Link',
+        'plugin.Croogo/Menus.Menu',
+        'plugin.Croogo/Contacts.Message',
+        'plugin.Croogo/Meta.Meta',
+        'plugin.Croogo/Nodes.Node',
+        'plugin.Croogo/Taxonomy.ModelTaxonomy',
+        'plugin.Croogo/Blocks.Region',
+        'plugin.Croogo/Core.Settings',
+        'plugin.Croogo/Taxonomy.Taxonomy',
+        'plugin.Croogo/Taxonomy.Term',
+        'plugin.Croogo/Taxonomy.Type',
+        'plugin.Croogo/Taxonomy.TypesVocabulary',
+        'plugin.Croogo/Taxonomy.Vocabulary',
     ];
 
     public function setUp()
     {
         parent::setUp();
 
-        Plugin::load('Croogo/Users', ['bootstrap' => true, 'routes' =>true]);
-        Plugin::load('Croogo/Nodes', ['bootstrap' => true, 'routes' => true]);
-        Plugin::load('Croogo/Blocks', ['bootstrap' => true, 'routes' => true]);
-        Plugin::load('Croogo/Taxonomy', ['bootstrap' => true, 'routes' => true]);
-        Plugin::routes();
-        Plugin::events();
         EventManager::loadListeners();
 
         $installer = new InstallManager();
@@ -98,8 +92,7 @@ class NodesControllerTest extends IntegrationTestCase
 
     public function testViewFallback()
     {
-        Plugin::load('Mytheme');
-
+        PluginManager::load('Mytheme');
         Configure::write('Site.theme', 'Mytheme');
 
         $this->disableErrorHandlerMiddleware();

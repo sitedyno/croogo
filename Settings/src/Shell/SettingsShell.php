@@ -3,7 +3,10 @@
 namespace Croogo\Settings\Shell;
 
 use Cake\Console\Shell;
+use Cake\Core\App;
+use Cake\Core\Configure;
 use Croogo\Core\Plugin;
+use Croogo\Core\PluginManager;
 
 /**
  * Settings Shell
@@ -28,8 +31,8 @@ class SettingsShell extends Shell
      */
     public function initialize()
     {
-        parent::initialize();
         $this->loadModel('Croogo/Settings.Settings');
+        Configure::write('Trackable.Auth.User', ['id' => 1]);
     }
 
     /**
@@ -38,7 +41,7 @@ class SettingsShell extends Shell
     public function getOptionParser()
     {
         return parent::getOptionParser()
-            ->description('Croogo Settings utility')
+            ->setDescription('Croogo Settings utility')
             ->addSubCommand('read', [
                 'help' => __d('croogo', 'Displays setting values'),
                 'parser' => [
@@ -130,6 +133,7 @@ class SettingsShell extends Shell
                 $key = null;
             } else {
                 $this->out($this->OptionParser->help('get'));
+
                 return;
             }
         } else {
@@ -165,6 +169,7 @@ class SettingsShell extends Shell
                 'Settings.key' => $key,
             ])
             ->first();
+        Configure::write('Trackable.Auth.User', ['id' => 1]);
         $this->out(__d('croogo', 'Updating %s', $key), 2);
         $ask = __d('croogo', "Confirm update");
         if ($setting || $this->params['create']) {
@@ -184,7 +189,8 @@ class SettingsShell extends Shell
 
                 if (isset($options['editable'])) {
                     $options['editable'] = in_array(
-                        $options['editable'], ['y', 'Y', '1']
+                        $options['editable'],
+                        ['y', 'Y', '1']
                     );
                 }
 
@@ -198,12 +204,12 @@ class SettingsShell extends Shell
         }
     }
 
-/**
- * Delete setting
- *
- * @param string $key
- * @return void
- */
+    /**
+     * Delete setting
+     *
+     * @param string $key
+     * @return void
+     */
     public function delete()
     {
         $key = $this->args[0];
@@ -227,58 +233,19 @@ class SettingsShell extends Shell
         }
     }
 
-/**
- * Update Croogo.version in settings
- */
+    /**
+     * Update Croogo.version in settings
+     */
     public function updateVersionInfo()
     {
-        $gitDir = realpath(Plugin::path('Croogo/Core') . '..') . DS . '.git';
-        if (!file_exists($gitDir)) {
-            $this->err('Git repository not found');
-            return false;
-        }
-        if (!is_dir($gitDir)) {
-            $gitDir = dirname($gitDir);
-        }
-
-        $git = trim(shell_exec('which git'));
-        if (empty($git)) {
-            $this->err('Git executable not found');
-            return false;
-        }
-
-        chdir($gitDir);
-        $version = trim(shell_exec('git describe --tags'));
-        if ($version) {
-            $this->runCommand(['write', 'Croogo.version', $version]);
-        }
+        return $this->Settings->updateVersionInfo();
     }
 
-/**
- * Update Croogo.appVersion in settings
- */
+    /**
+     * Update Croogo.appVersion in settings
+     */
     public function updateAppVersionInfo()
     {
-        $gitDir = realpath(ROOT . DS . '.git');
-        if (!file_exists($gitDir)) {
-            $this->err('Git repository not found');
-            return false;
-        }
-        if (!is_dir($gitDir)) {
-            $gitDir = dirname($gitDir);
-        }
-
-        $git = trim(shell_exec('which git'));
-        if (empty($git)) {
-            $this->err('Git executable not found');
-            return false;
-        }
-
-        chdir($gitDir);
-        $version = trim(shell_exec('git describe --tags'));
-        if ($version) {
-            $this->runCommand(['write', 'Croogo.appVersion', $version]);
-        }
+        return $this->Settings->updateAppVersionInfo();
     }
-
 }

@@ -9,6 +9,7 @@
     </div>
     <div class="float-right">
         <?= $this->element('Croogo/Nodes.admin/nodes_search') ?>
+        <?= $this->Form->input('chooser', ['type' => 'hidden', 'default' => true]); ?>
     </div>
 </div>
 <hr>
@@ -59,22 +60,32 @@
                 ];
                 $popup[] = [__d('croogo', 'Status'), $this->Layout->status($node->status)];
                 $popup[] = [__d('croogo', 'Created'), $node->created];
-                $popup = $this->Html->tag('table', $this->Html->tableCells($popup));
+                $popup = implode('<br>', array_map(function ($el) {
+                    return implode(': ', $el);
+                }, $popup));
                 $a = $this->Html->link('', '#', [
                     'class' => 'popovers action',
                     'icon' => 'info-sign',
+                    'escapeTitle' => false,
                     'data-title' => h($type),
                     'data-trigger' => 'click',
                     'data-placement' => 'right',
-                    'data-html' => true,
-                    'data-content' => h($popup),
+                    'data-html' => 'true',
+                    'data-content' => $popup,
                 ]);
-                echo $a;
+                echo "&nbsp; " . $a;
                 ?>
             </li>
         <?php endforeach ?>
     </ul>
-    <div class="pagination">
-        <ul><?= $this->Paginator->numbers() ?></ul>
+</div>
+<div class="row">
+    <div class="pagination-wrapper">
+        <ul class="pagination justify-content-center pagination-sm">
+            <?= $this->Paginator->numbers() ?>
+        </ul>
     </div>
 </div>
+<script>
+$('.popovers').popover();
+</script>

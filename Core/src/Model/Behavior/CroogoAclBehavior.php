@@ -4,7 +4,6 @@ namespace Croogo\Core\Model\Behavior;
 
 use Acl\Model\Behavior\AclBehavior;
 use Cake\ORM\Table;
-use Cake\ORM\TableRegistry;
 use Cake\Utility\Inflector;
 
 /**
@@ -20,12 +19,12 @@ use Cake\Utility\Inflector;
 class CroogoAclBehavior extends AclBehavior
 {
 
-/**
- * setup
- *
- * @param Model $table
- * @param array $config
- */
+    /**
+     * setup
+     *
+     * @param Model $table
+     * @param array $config
+     */
     public function __construct(Table $table, array $config = [])
     {
         parent::__construct($table, $config);
@@ -35,10 +34,10 @@ class CroogoAclBehavior extends AclBehavior
             unset($config[0]);
         }
 
-        $this->config($table->alias(), array_merge(['type' => 'controlled'], $config));
-        $this->config($table->alias() . '.type', strtolower($this->config($table->alias() . '.type')));
+        $this->setConfig($table->getAlias(), array_merge(['type' => 'controlled'], $config));
+        $this->setConfig($table->getAlias() . '.type', strtolower($this->getConfig($table->getAlias() . '.type')));
 
-        $types = $this->_typeMaps[$this->config($table->alias() . '.type')];
+        $types = $this->_typeMaps[$this->getConfig($table->getAlias() . '.type')];
 
         if (!is_array($types)) {
             $types = [$types];

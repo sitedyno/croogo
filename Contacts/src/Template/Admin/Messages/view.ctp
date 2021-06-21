@@ -5,7 +5,7 @@ $this->extend('Croogo/Core./Common/admin_view');
 $this->Breadcrumbs
     ->add(__d('croogo', 'Messages'), ['action' => 'index']);
 
-    $this->Breadcrumbs->add(h($message->title), $this->request->getRequestTarget());
+    $this->Breadcrumbs->add(h($message->title), $this->getRequest()->getRequestTarget());
 
 $this->append('action-buttons');
     echo $this->Croogo->adminAction(__d('croogo', 'List Messages'), ['action' => 'index']);
@@ -56,8 +56,8 @@ $this->append('main');
             <td><?= $this->Number->format($message->id) ?></td>
         </tr>
         <tr>
-            <th scope="row"><?= __d('croogo', 'Updated') ?></th>
-            <td><?= $this->Time->i18nFormat($message->updated) ?></td>
+            <th scope="row"><?= __d('croogo', 'Modified') ?></th>
+            <td><?= $this->Time->i18nFormat($message->modified) ?></td>
         </tr>
         <tr>
             <th scope="row"><?= __d('croogo', 'Created') ?></th>

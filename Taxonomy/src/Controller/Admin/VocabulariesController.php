@@ -1,6 +1,8 @@
 <?php
 
 namespace Croogo\Taxonomy\Controller\Admin;
+
+use Cake\Cache\Cache;
 use Cake\Event\Event;
 
 /**
@@ -21,21 +23,21 @@ class VocabulariesController extends AppController
     {
         parent::initialize();
 
-        $this->Crud->config('actions.moveUp', [
+        $this->Crud->setConfig('actions.moveUp', [
             'className' => 'Croogo/Core.Admin/MoveUp'
         ]);
-        $this->Crud->config('actions.moveDown', [
+        $this->Crud->setConfig('actions.moveDown', [
             'className' => 'Croogo/Core.Admin/MoveDown'
         ]);
     }
 
     public function beforeCrudRender(Event $event)
     {
-        if (!isset($event->subject()->entity)) {
+        if (!isset($event->getSubject()->entity)) {
             return;
         }
 
-        $entity = $event->subject()->entity;
+        $entity = $event->getSubject()->entity;
 
         $this->set('types', $this->Vocabularies->Types->pluginTypes($entity->plugin));
     }
@@ -43,7 +45,19 @@ class VocabulariesController extends AppController
     public function implementedEvents()
     {
         return parent::implementedEvents() + [
+            'Crud.afterSave' => 'afterCrudSave',
+            'Crud.beforeFind' => 'beforeCrudFind',
             'Crud.beforeRender' => 'beforeCrudRender'
         ];
+    }
+
+    public function beforeCrudFind(Event $event)
+    {
+        return $event->getSubject()->query->contain('Types');
+    }
+
+    public function afterCrudSave(Event $event)
+    {
+        Cache::clearAll();
     }
 }

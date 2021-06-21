@@ -1,9 +1,12 @@
 <?php
 // @codingStandardsIgnoreFile
 
+use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
-use Cake\Routing\Router;
-use Croogo\Core\Plugin;
+use Cake\Routing\DispatcherFactory;
+use Cake\Filesystem\Folder;
+use Croogo\Core\PluginManager;
+use Croogo\Core\Test\Fixture\SettingsFixture;
 
 $findVendor = function () {
     $root = dirname(__DIR__);
@@ -18,7 +21,7 @@ $findVendor = function () {
 };
 
 if (!defined('DS')) {
-	define('DS', DIRECTORY_SEPARATOR);
+    define('DS', DIRECTORY_SEPARATOR);
 }
 
 define('VENDOR', $findVendor());
@@ -45,46 +48,50 @@ require CORE_PATH . 'config' . DS . 'bootstrap.php';
 
 date_default_timezone_set('UTC');
 
-Cake\Core\Configure::write('App', [
-	'namespace' => 'App',
-	'paths' => [
+Configure::write('App', [
+    'namespace' => 'App',
+    'paths' => [
         'plugins' => [ROOT . DS . 'plugins' . DS],
         'templates' => [APP . 'Template' . DS],
         'locales' => [APP . 'Locale' . DS],
-	]
+    ]
 ]);
-Cake\Core\Configure::write('debug', true);
+Configure::write('debug', true);
 
 // silence deprecation errors until error handling is setup by the app
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+//error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 
-$tmpDirectory = new \Cake\Filesystem\Folder(TMP);
+$tmpDirectory = new Folder(TMP);
 $tmpDirectory->delete(TMP . 'cache');
 $tmpDirectory->create(TMP . 'cache/models', 0777);
 $tmpDirectory->create(TMP . 'cache/persistent', 0777);
 $tmpDirectory->create(TMP . 'cache/views', 0777);
 
 $cache = [
-	'default' => [
-		'engine' => 'File'
-	],
-	'_cake_core_' => [
-		'className' => 'File',
-		'prefix' => 'croogo_core_myapp_cake_core_',
-		'path' => CACHE . 'persistent/',
-		'serialize' => true,
-		'duration' => '+10 seconds'
-	],
-	'_cake_model_' => [
-		'className' => 'File',
-		'prefix' => 'croogo_core_my_app_cake_model_',
-		'path' => CACHE . 'models/',
-		'serialize' => 'File',
-		'duration' => '+10 seconds'
-	]
+    'default' => [
+        'engine' => 'File'
+    ],
+    '_cake_core_' => [
+        'className' => 'File',
+        'prefix' => 'croogo_core_myapp_cake_core_',
+        'path' => CACHE . 'persistent/',
+        'serialize' => true,
+        'duration' => '+10 seconds'
+    ],
+    '_cake_model_' => [
+        'className' => 'File',
+        'prefix' => 'croogo_core_my_app_cake_model_',
+        'path' => CACHE . 'models/',
+        'serialize' => 'File',
+        'duration' => '+10 seconds'
+    ],
+    'cached_settings' => [
+        'engine' => 'File',
+        'groups' => ['settings'],
+    ],
 ];
-Cake\Cache\Cache::config($cache);
-Cake\Core\Configure::write('Session', [
+Cake\Cache\Cache::setConfig($cache);
+Configure::write('Session', [
     'defaults' => 'php'
 ]);
 
@@ -93,7 +100,7 @@ if (!getenv('db_class')) {
     putenv('db_class=Cake\Database\Driver\Sqlite');
     putenv('db_dsn=sqlite::memory:');
 }
-ConnectionManager::config('test', [
+ConnectionManager::setConfig('test', [
     'className' => 'Cake\Database\Connection',
     'driver' => getenv('db_class'),
     'dsn' => getenv('db_dsn'),
@@ -102,7 +109,7 @@ ConnectionManager::config('test', [
     'password' => getenv('db_password'),
     'timezone' => 'UTC'
 ]);
-ConnectionManager::config('test_migrations', [
+ConnectionManager::setConfig('test_migrations', [
     'className' => 'Cake\Database\Connection',
     'driver' => getenv('db_class'),
     'dsn' => getenv('db_dsn'),
@@ -112,18 +119,17 @@ ConnectionManager::config('test_migrations', [
     'timezone' => 'UTC'
 ]);
 
-$settingsFixture = new \Croogo\Core\Test\Fixture\SettingsFixture();
+$settingsFixture = new SettingsFixture();
 
-\Cake\Datasource\ConnectionManager::alias('test', 'default');
-$settingsFixture->create(\Cake\Datasource\ConnectionManager::get('default'));
-$settingsFixture->insert(\Cake\Datasource\ConnectionManager::get('default'));
+ConnectionManager::alias('test', 'default');
+Configure::write('Acl.database', 'default');
+$settingsFixture->create(ConnectionManager::get('default'));
+$settingsFixture->insert(ConnectionManager::get('default'));
 
-Plugin::load('Croogo/Core', ['bootstrap' => true, 'routes' => true]);
-Plugin::load('Croogo/Settings', ['bootstrap' => true, 'routes' => true]);
+PluginManager::load('Croogo/Core', ['bootstrap' => true, 'routes' => true]);
+PluginManager::load('Croogo/Settings', ['bootstrap' => true, 'routes' => true]);
 
-Cake\Routing\DispatcherFactory::add('Routing');
-Cake\Routing\DispatcherFactory::add('ControllerFactory');
+DispatcherFactory::add('Routing');
+DispatcherFactory::add('ControllerFactory');
 
 class_alias('Croogo\Core\TestSuite\TestCase', 'Croogo\Core\TestSuite\CroogoTestCase');
-
-Plugin::routes();

@@ -2,6 +2,7 @@
 
 namespace Croogo\Menus\Model\Table;
 
+use Cake\Database\Schema\TableSchema;
 use Cake\Event\Event;
 use Cake\ORM\Entity;
 use Cake\ORM\RulesChecker;
@@ -27,38 +28,32 @@ class MenusTable extends CroogoTable
         $validator
             ->notBlank('title', __d('croogo', 'Title cannot be empty.'))
             ->notBlank('alias', __d('croogo', 'Alias cannot be empty.'));
+
         return $validator;
     }
 
     public function buildRules(RulesChecker $rules)
     {
         $rules
-            ->add($rules->isUnique( ['alias'],
+            ->add($rules->isUnique(
+                ['alias'],
                 __d('croogo', 'That alias is already taken')
             ));
+
         return $rules;
     }
 
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
-		$this->addBehavior('Croogo/Core.Cached', [
-			'groups' => [
-				'menus',
-			],
-		]);
+        $this->addBehavior('Croogo/Core.Cached', [
+            'groups' => [
+                'menus',
+            ],
+        ]);
         $this->addBehavior('Croogo/Core.Publishable');
         $this->addBehavior('Croogo/Core.Trackable');
 
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always'
-                ]
-            ]
-        ]);
+        $this->addBehavior('Timestamp');
         $this->addBehavior('Search.Search');
 
         $this->hasMany('Links', [
@@ -69,14 +64,21 @@ class MenusTable extends CroogoTable
         ]);
     }
 
-/**
- * beforeDelete callback
- */
+    protected function _initializeSchema(TableSchema $table)
+    {
+        $table->setColumnType('params', 'params');
+
+        return parent::_initializeSchema($table);
+    }
+
+    /**
+     * beforeDelete callback
+     */
     public function beforeDelete(Event $event, Entity $entity, $options)
     {
         // Set tree scope for Links association
         $settings = [
-            'scope' => [$this->Links->alias() . '.menu_id' => $entity->id],
+            'scope' => [$this->Links->getAlias() . '.menu_id' => $entity->id],
         ];
         if ($this->Links->hasBehavior('Tree')) {
             $this->Links->behaviors()->get('Tree')->config($settings);

@@ -9,6 +9,7 @@ use Cake\ORM\Behavior;
 use Cake\ORM\Query;
 use Cake\Utility\Hash;
 use Croogo\Core\Status;
+use DateTime;
 
 /**
  * Publishable Behavior
@@ -36,23 +37,20 @@ class PublishableBehavior extends Behavior
         ],
     ];
 
-/**
- * Setup
- *
- * Valid options:
- *
- *   `admin`: Enable/disable date filtering for users with Admin roles
- *   `fields`: Specifies the physical field name to use
- *
- * @return void
- */
+    /**
+     * Setup
+     *
+     * Valid options:
+     *
+     *   `admin`: Enable/disable date filtering for users with Admin roles
+     *   `fields`: Specifies the physical field name to use
+     *
+     * @return void
+     */
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->_CroogoStatus = new Status();
     }
-
 
     /**
      * Get status for conditions in query based on current user's role id
@@ -64,15 +62,15 @@ class PublishableBehavior extends Behavior
         return $this->_CroogoStatus->status($roleId, $statusType, $accessType);
     }
 
-/**
- * Filter records based on period
- *
- * @return array Options passed to Model::find()
- */
+    /**
+     * Filter records based on period
+     *
+     * @return array Options passed to Model::find()
+     */
     public function beforeFind(Event $event, Query $query, $options)
     {
         $table = $this->_table;
-        $config = $this->config();
+        $config = $this->getConfig();
         if (!empty($config['enabled'])) {
             return $query;
         }

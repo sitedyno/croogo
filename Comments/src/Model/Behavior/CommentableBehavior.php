@@ -20,8 +20,6 @@ class CommentableBehavior extends Behavior
 {
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->_table->hasMany('Comments', [
             'className' => 'Croogo/Comments.Comments',
             'foreignKey' => 'foreign_key',
@@ -41,29 +39,29 @@ class CommentableBehavior extends Behavior
             'dependent' => true,
             'cascadeCallbacks' => true
         ]);
-        $this->_table->Comments->belongsTo($this->_table->alias(), [
+        $this->_table->Comments->belongsTo($this->_table->getAlias(), [
             'className' => App::shortName(get_class($this->_table), 'Model/Table', 'Table'),
             'foreignKey' => 'foreign_key'
         ]);
     }
 
     /**
- * Setup behavior
- *
- * @return void
- */
+     * Setup behavior
+     *
+     * @return void
+     */
     public function setup(Model $model, $config = [])
     {
-        $this->settings[$model->alias] = $config;
+        $this->settings[$model->getAlias()] = $config;
 
         $this->_setupRelationships($model);
     }
 
-/**
- * Setup relationships
- *
- * @return void
- */
+    /**
+     * Setup relationships
+     *
+     * @return void
+     */
     protected function _setupRelationships(Model $model)
     {
         $model->bindModel([
@@ -74,7 +72,7 @@ class CommentableBehavior extends Behavior
                     'dependent' => true,
                     'limit' => 5,
                     'conditions' => [
-                        'model' => $model->alias,
+                        'model' => $model->getAlias(),
                         'status' => (bool)1,
                     ],
                 ],
@@ -82,13 +80,12 @@ class CommentableBehavior extends Behavior
         ], false);
     }
 
-/**
- * Get Comment settings from Type
- *
- * @param Model Model instance
- * @param array $data Model data to check
- * @return bool
- */
+    /**
+     * Get Comment settings from Type
+     *
+     * @param Node $node Model data to check
+     * @return array
+     */
     public function getTypeSetting(Node $node)
     {
         $defaultSetting = [
@@ -97,7 +94,7 @@ class CommentableBehavior extends Behavior
             'spamProtection' => false,
             'captchaProtection' => false,
         ];
-        if (!Plugin::loaded('Croogo/Taxonomy')) {
+        if (!Plugin::isLoaded('Croogo/Taxonomy')) {
             return $defaultSetting;
         }
         if (empty($node->type)) {
@@ -120,17 +117,18 @@ class CommentableBehavior extends Behavior
         ];
     }
 
-/**
- * Convenience method for Comment::add()
- *
- * @return bool
- * @see Comment::add()
- */
+    /**
+     * Convenience method for Comment::add()
+     *
+     * @return bool
+     * @see Comment::add()
+     */
     public function addComment(Model $Model, $data, $options = [])
     {
         if (!isset($Model->id)) {
             throw new UnexpectedValueException('Id is not set');
         }
+
         return $Model->Comment->add($data, $Model->alias, $Model->id, $options);
     }
 }

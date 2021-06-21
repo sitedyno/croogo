@@ -10,6 +10,18 @@ var Admin = typeof Admin == 'undefined' ? {} : Admin;
  */
 Admin.spinnerClass = function () {
   return Admin.iconClass('spinner') + ' ' + Admin.iconClass('spin', false);
+};
+
+// https://stackoverflow.com/a/26234977
+Admin.getCookie = function(cookieName) {
+    if (!cookieName) { return null; }
+    return decodeURIComponent(
+      document.cookie.replace(
+        new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(cookieName)
+          .replace(/[\-\.\+\*]/g, "\\$&")
+          + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1"
+      )
+    ) || null;
 }
 
 /**
@@ -24,12 +36,18 @@ Admin.form = function () {
   var ajaxToggle = function (e) {
     var $this = $(this);
     var spinnerClass = Admin.spinnerClass();
-    $this.find('i').attr('class', spinnerClass)
+    $this.find('i').attr('class', spinnerClass);
     var url = $this.data('url');
-    $.post(url, function (data) {
-      $this.parent().html(data);
+    $.post({
+      url: url,
+      headers: {
+        'X-CSRF-Token': Admin.getCookie('csrfToken'),
+      },
+      success: function (data) {
+        $this.parent().html(data);
+      },
     });
-  }
+  };
 
   // Autocomplete
   if (typeof $.fn.typeahead_autocomplete === 'function') {
@@ -40,7 +58,7 @@ Admin.form = function () {
   $('body')
     .on('click', 'a[data-row-action]', Admin.processLink)
     .on('click', 'a.ajax-toggle', ajaxToggle);
-}
+};
 
 /**
  * Protect forms for accidental page refresh
@@ -63,7 +81,7 @@ Admin.protectForms = function () {
         })
         .on('click', whitelist, function (e) {
           $form.data('dirty', false);
-          if (typeof Croogo.Wysiwyg.resetDirty == 'function') {
+          if (typeof Croogo.Wysiwyg !== 'undefined' && typeof Croogo.Wysiwyg.resetDirty == 'function') {
             Croogo.Wysiwyg.resetDirty();
           }
         });
@@ -78,7 +96,7 @@ Admin.protectForms = function () {
         }
       }
       if (!dirty) {
-        if (typeof Croogo.Wysiwyg.isDirty == 'function' && !Croogo.Wysiwyg.isDirty()) {
+        if (typeof Croogo.Wysiwyg !== 'undefined' && typeof Croogo.Wysiwyg.isDirty == 'function' && !Croogo.Wysiwyg.isDirty()) {
           return;
         } else {
           return;
@@ -92,7 +110,7 @@ Admin.protectForms = function () {
       return confirmationMessage;
     };
   }
-}
+};
 
 Admin.formFeedback = function () {
   $('body').on('submit', 'form', function (el) {
@@ -118,7 +136,7 @@ Admin.formFeedback = function () {
     $('#content .nav-tabs').find(selector).tab('show')
   };
   $('form input').on('invalid', _.debounce(activateErrorTab, 150))
-}
+};
 
 /**
  * Helper to process row action links
@@ -137,7 +155,7 @@ Admin.processLink = function (event) {
   $('#bulk-action select', form).val(action);
   form.submit();
   return false;
-}
+};
 
 Admin.removeHash = function() {
   var scrollV, scrollH, loc = window.location;
@@ -154,7 +172,7 @@ Admin.removeHash = function() {
     document.body.scrollTop = scrollV;
     document.body.scrollLeft = scrollH;
   }
-}
+};
 
 /**
  * Extra stuff
@@ -197,12 +215,9 @@ Admin.extra = function () {
   }
 
   if (typeof $.fn.select2 !== 'undefined') {
-    $('select:not(".no-select2")').select2({
-      dropdownAutoWidth: true,
-      theme: 'bootstrap'
-    });
+    $('select:not(".no-select2")').select2(Croogo.themeSettings.select2Defaults);
   }
-}
+};
 
 /**
  * Initialize boxes to enable to toggling Box content
@@ -233,7 +248,7 @@ Admin.toggleRowSelection = function (selector, checkboxSelector) {
   $selector.on('click', function (e) {
     $(checkboxSelector).prop('checked', $selector.is(':checked'));
   });
-}
+};
 
 /**
  * Helper method to get the proper icon class name based on theme settings
@@ -249,9 +264,9 @@ Admin.iconClass = function (icon, includeDefault) {
   if (includeDefault) {
     result = Croogo.themeSettings.iconDefaults['iconSet'] + ' ';
   }
-  result += Croogo.themeSettings.iconDefaults['iconSet'] + '-' + icon;
+  result += Croogo.themeSettings.iconDefaults['prefix'] + '-' + icon;
   return result.trim();
-}
+};
 
 Admin.dateTimeFields = function(datePickers) {
   datePickers = typeof datePickers !== 'undefined' ? datePickers : $('[role=datetime-picker]');
@@ -267,10 +282,10 @@ Admin.dateTimeFields = function(datePickers) {
       date = date.tz(timezone)
     }
 
-    var sDate = date ? date : picker.val()
+    var sDate = date ? date : picker.val();
 
     picker.on('dp.change', function(e) {
-      var sDate = ""
+      var sDate = "";
       date = moment(e.date);
       if (date.isValid()) {
         date.tz('UTC').locale('UTC');
@@ -284,23 +299,23 @@ Admin.dateTimeFields = function(datePickers) {
       format: picker.data('format'),
       date: date ? date : picker.val(),
       icons: {
-        time: 'fa fa-clock-o',
-        date: 'fa fa-calendar',
-        up: 'fa fa-chevron-up',
-        down: 'fa fa-chevron-down',
-        previous: 'fa fa-chevron-left',
-        next: 'fa fa-chevron-right',
-        today: 'fa fa-screenshot',
-        clear: 'fa fa-trash',
-        close: 'fa fa-remove'
+        time: Admin.iconClass('clock'),
+        date: Admin.iconClass('calendar'),
+        up: Admin.iconClass('chevron-up'),
+        down: Admin.iconClass('chevron-down'),
+        previous: Admin.iconClass('chevron-left'),
+        next: Admin.iconClass('chevron-right'),
+        today: Admin.iconClass('screenshot'),
+        clear: Admin.iconClass('trash'),
+        close: Admin.iconClass('remove')
       }
-    }
+    };
     if (picker.data('mindate')) {
       dpOptions.minDate = picker.data('mindate');
     }
     if (picker.data('maxdate')) {
-      dpOptions.maxDate =  picker.data('maxdate');
+      dpOptions.maxDate = picker.data('maxdate');
     }
     picker.datetimepicker(dpOptions);
   });
-}
+};

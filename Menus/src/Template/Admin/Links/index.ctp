@@ -1,6 +1,5 @@
 <?php
 
-use Cake\Utility\Inflector;
 use Croogo\Core\Status;
 
 $this->Croogo->adminscript('Croogo/Menus.admin');
@@ -8,10 +7,10 @@ $this->Croogo->adminscript('Croogo/Menus.admin');
 $this->extend('Croogo/Core./Common/admin_index');
 
 $this->Breadcrumbs->add(__d('croogo', 'Menus'), ['controller' => 'Menus', 'action' => 'index'])
-    ->add(h(__d('croogo', $menu->title)), $this->request->getRequestTarget());
+    ->add(h(__d('croogo', $menu->title)), $this->getRequest()->getRequestTarget());
 
 $this->append('action-buttons');
-echo $this->Croogo->adminAction(__d('croogo', 'New link'), ['action' => 'add', 'menu_id' => $menu->id], ['button' => 'success']);
+echo $this->Croogo->adminAction(__d('croogo', 'New link'), ['action' => 'add', 'menu_id' => $menu->id]);
 $this->end();
 
 $this->append('form-start', $this->Form->create(null, [
@@ -29,18 +28,19 @@ $tableHeaders = $this->Html->tableHeaders([
     __d('croogo', 'Status'),
     __d('croogo', 'Actions'),
 ]);
-echo $this->Html->tag('thead', $tableHeaders);
+echo $tableHeaders;
 $this->end();
 
 $this->append('table-body');
 $rows = [];
-foreach ($linksTree as $linkId => $linkTitle):
+foreach ($linksTree as $linkId => $linkTitle) :
     $actions = [];
     $actions[] = $this->Croogo->adminRowAction('', [
         'action' => 'moveUp',
         $linkId,
     ], [
         'icon' => $this->Theme->getIcon('move-up'),
+        'escapeTitle' => false,
         'tooltip' => __d('croogo', 'Move up'),
     ]);
     $actions[] = $this->Croogo->adminRowAction('', [
@@ -48,6 +48,7 @@ foreach ($linksTree as $linkId => $linkTitle):
         $linkId,
     ], [
         'icon' => $this->Theme->getIcon('move-down'),
+        'escapeTitle' => false,
         'tooltip' => __d('croogo', 'Move down'),
     ]);
     $actions[] = $this->Croogo->adminRowActions($linkId);
@@ -56,15 +57,18 @@ foreach ($linksTree as $linkId => $linkTitle):
         $linkId,
     ], [
         'icon' => $this->Theme->getIcon('update'),
+        'escapeTitle' => false,
         'tooltip' => __d('croogo', 'Edit this item'),
     ]);
     $actions[] = $this->Croogo->adminRowAction('', '#Link' . $linkId . 'Id', [
         'icon' => $this->Theme->getIcon('copy'),
+        'escapeTitle' => false,
         'tooltip' => __d('croogo', 'Create a copy'),
         'rowAction' => 'copy',
     ], __d('croogo', 'Create a copy of this Link?'));
     $actions[] = $this->Croogo->adminRowAction('', '#Link' . $linkId . 'Id', [
         'icon' => $this->Theme->getIcon('delete'),
+        'escapeTitle' => false,
         'class' => 'delete',
         'tooltip' => __d('croogo', 'Delete this item'),
         'rowAction' => 'delete',

@@ -4,6 +4,7 @@ namespace Croogo\Core\Model\Behavior;
 
 use Cake\Cache\Cache;
 use Cake\ORM\Behavior;
+use InvalidArgumentException;
 
 /**
  * Cached Behavior
@@ -47,13 +48,13 @@ class CachedBehavior extends Behavior
      */
     protected function _deleteCachedFiles()
     {
-        foreach ($this->config('groups') as $group) {
+        foreach ($this->getConfig('groups') as $group) {
             try {
                 $configs = Cache::groupConfigs($group);
                 foreach ($configs[$group] as $config) {
                     Cache::clearGroup($group, $config);
                 }
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 //Ignore invalid cache configs
             }
         }

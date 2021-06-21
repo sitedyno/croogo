@@ -1,4 +1,5 @@
 <?php
+
 use Migrations\AbstractMigration;
 
 class NodesInitialMigration extends AbstractMigration
@@ -93,9 +94,19 @@ class NodesInitialMigration extends AbstractMigration
                 'null' => true,
             ])
             ->addColumn('type', 'string', [
-                'default' => 'node',
+                'default' => 'post',
                 'limit' => 100,
                 'null' => false,
+            ])
+            ->addColumn('created_by', 'integer', [
+                'default' => null,
+                'limit' => 11,
+                'null' => false,
+            ])
+            ->addColumn('updated_by', 'integer', [
+                'default' => null,
+                'limit' => 11,
+                'null' => true,
             ])
             ->addColumn('publish_start', 'datetime', [
                 'default' => null,
@@ -107,31 +118,23 @@ class NodesInitialMigration extends AbstractMigration
                 'limit' => null,
                 'null' => true,
             ])
-            ->addColumn('updated', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
+            ->addTimestamps('created', 'updated')
+            ->addForeignKey('user_id', 'users', ['id'], [
+                'constraint' => 'fk_nodes2users',
+                'delete' => 'RESTRICT',
             ])
-            ->addColumn('updated_by', 'integer', [
-                'default' => null,
-                'limit' => 11,
-                'null' => true,
-            ])
-            ->addColumn('created', 'datetime', [
-                'default' => null,
-                'limit' => null,
-                'null' => false,
-            ])
-            ->addColumn('created_by', 'integer', [
-                'default' => null,
-                'limit' => 11,
-                'null' => true,
+            ->addIndex([
+                'type', 'slug',
+            ], [
+                'name' => 'ix_nodes_slug_by_type',
+                'unique' => true,
+                'limit' => 190,
             ])
             ->create();
     }
 
     public function down()
     {
-        $this->dropTable('nodes');
+        $this->table('nodes')->drop()->save();
     }
 }

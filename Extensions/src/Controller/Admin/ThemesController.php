@@ -2,7 +2,10 @@
 
 namespace Croogo\Extensions\Controller\Admin;
 
+use UnexpectedValueException;
 use Cake\Core\Configure;
+use Cake\Core\Exception\Exception;
+use Cake\Network\Exception\BadRequestException;
 use Croogo\Extensions\CroogoTheme;
 use Croogo\Extensions\Exception\MissingThemeException;
 use Croogo\Extensions\ExtensionsInstaller;
@@ -55,7 +58,14 @@ class ThemesController extends AppController
             $activeTheme = 'Croogo/Core';
         }
         $currentTheme = $this->_CroogoTheme->getData($activeTheme);
-        $this->set(compact('themes', 'themesData', 'currentTheme'));
+
+        $activeBackendTheme = Configure::read('Site.admin_theme');
+        if (empty($activeBackendTheme)) {
+            $activeBackendTheme = 'Croogo/Core';
+        }
+        $currentBackendTheme = $this->_CroogoTheme->getData($activeBackendTheme);
+
+        $this->set(compact('themes', 'themesData', 'currentTheme', 'currentBackendTheme'));
     }
 
     /**
@@ -63,11 +73,16 @@ class ThemesController extends AppController
      *
      * @param string $theme
      */
-    public function activate($theme = null)
+    public function activate()
     {
+        $theme = $this->getRequest()->getQuery('theme');
+        $type = $this->getRequest()->getQuery('type') ?: 'theme';
+
+        if (!$theme) {
+            throw new UnexpectedValueException();
+        }
         try {
-            $theme = base64_decode(urldecode($theme));
-            $this->_CroogoTheme->activate($theme);
+            $this->_CroogoTheme->activate($theme, $type);
 
             $this->Flash->success(__d('croogo', 'Theme activated.'));
         } catch (MissingThemeException $exception) {
@@ -80,21 +95,23 @@ class ThemesController extends AppController
     /**
      * Admin add
      *
-     * @return void
+     * @return \Cake\Http\Response|void
      */
     public function add()
     {
         $this->set('title_for_layout', __d('croogo', 'Upload a new theme'));
 
-        if (!empty($this->request->data)) {
-            $file = $this->request->data['Theme']['file'];
-            unset($this->request->data['Theme']['file']);
+        if ($this->getRequest()->is('post')) {
+            $data = $this->getRequest()->getData();
+            $file = $data['Theme']['file'];
+            unset($data['Theme']['file']);
+            $this->request = $this->getRequest()->withParsedBody($data);
 
             $Installer = new ExtensionsInstaller;
             try {
                 $Installer->extractTheme($file['tmp_name']);
                 $this->Flash->success(__d('croogo', 'Theme uploaded successfully.'));
-            } catch (CakeException $e) {
+            } catch (Exception $e) {
                 $this->Flash->error($e->getMessage());
             }
 
@@ -125,10 +142,13 @@ class ThemesController extends AppController
      * Admin delete
      *
      * @param string $alias
-     * @return void
+     * @return \Cake\Http\Response|void
      */
     public function delete($alias = null)
     {
+        if (!$alias) {
+            $alias = $this->getRequest()->getQuery('theme');
+        }
         if ($alias == null) {
             $this->Flash->error(__d('croogo', 'Invalid Theme.'));
 

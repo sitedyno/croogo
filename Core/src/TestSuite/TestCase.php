@@ -2,13 +2,13 @@
 
 namespace Croogo\Core\TestSuite;
 
-use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\Network\Request;
 use Cake\ORM\Query;
 use Cake\TestSuite\TestCase as CakeTestCase;
-use Croogo\Core\Plugin;
 use Croogo\Core\Event\EventManager;
+use Croogo\Core\PluginManager;
 use Croogo\Core\TestSuite\Constraint\QueryCount;
 use PHPUnit_Util_InvalidArgumentHelper;
 
@@ -37,11 +37,11 @@ class TestCase extends CakeTestCase
         Configure::write('Config.language', Configure::read('Site.locale'));
     }
 
-/**
- * setUp
- *
- * @return void
- */
+    /**
+     * setUp
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
@@ -49,8 +49,8 @@ class TestCase extends CakeTestCase
         EventManager::instance(new EventManager);
         Configure::write('EventHandlers', []);
 
-        Plugin::unload('Croogo/Install');
-        Plugin::load('Croogo/Example', ['autoload' => true, 'path' => '../Example/']);
+        PluginManager::unload('Croogo/Install');
+        PluginManager::load('Croogo/Example', ['autoload' => true, 'path' => '../Example/']);
         Configure::write('Acl.database', 'test');
 
         $this->previousPlugins = Plugin::loaded();
@@ -61,7 +61,10 @@ class TestCase extends CakeTestCase
         parent::tearDown();
 
         // Unload all plugins that were loaded while running tests
-        Plugin::unload(array_diff(Plugin::loaded(), $this->previousPlugins));
+        $diff = array_diff(Plugin::loaded(), $this->previousPlugins);
+        foreach ($diff as $plugin) {
+            PluginManager::unload($plugin);
+        }
     }
 
     public function assertQueryCount($count, Query $query, $message = '')
@@ -75,9 +78,9 @@ class TestCase extends CakeTestCase
         static::assertThat($query, $constraint, $message);
     }
 
-/**
- * Helper method to create an test API request (with the appropriate detector)
- */
+    /**
+     * Helper method to create an test API request (with the appropriate detector)
+     */
     protected function _apiRequest($params)
     {
         $request = new Request();
@@ -85,6 +88,7 @@ class TestCase extends CakeTestCase
         $request->addDetector('api', [
             'callback' => ['Croogo\\Core\\Router', 'isApiRequest'],
         ]);
+
         return $request;
     }
 }

@@ -1,15 +1,17 @@
 <?php
-if (!empty($this->Breadcrumbs->getCrumbs()))
-{
-    $this->Breadcrumbs->templates([
+if (!empty($this->Breadcrumbs->getCrumbs())) {
+    $this->Breadcrumbs->setTemplates([
         'item' => '<li class="breadcrumb-item" {{attrs}}><a href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
         'itemWithoutLink' => '<li class="breadcrumb-item" {{attrs}}><span{{innerAttrs}}>{{title}}</span></li>{{separator}}',
     ]);
 
     $this->Breadcrumbs->prepend($this->Html->icon('home'), '/admin', ['escape' => false]);
     $crumbs = $this->Breadcrumbs->render([
-        'class' => 'breadcrumb',
+        'class' => 'breadcrumb m-0',
     ]);
 
-    echo $this->Html->div('d-none d-md-block', $crumbs, ['id' => 'breadcrumb-container']);
+    echo $this->Html->tag('nav', $crumbs, [
+        'id' => 'breadcrumb-container',
+        'class' => 'd-none d-md-block',
+    ]);
 }

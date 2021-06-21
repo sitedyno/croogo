@@ -5,10 +5,10 @@ namespace Croogo\Nodes\Model\Table;
 use Cake\Database\Schema\TableSchema;
 use Cake\Event\Event;
 use Cake\I18n\I18n;
-use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\TableRegistry;
+use Cake\Routing\Router;
 use Cake\Validation\Validator;
 use Croogo\Core\Croogo;
 use Croogo\Core\Model\Table\CroogoTable;
@@ -18,8 +18,6 @@ class NodesTable extends CroogoTable
 {
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->addBehavior('Tree');
         $this->addBehavior('Croogo/Core.BulkProcess', [
             'actionsMap' => [
@@ -45,12 +43,10 @@ class NodesTable extends CroogoTable
             'groups' => ['nodes']
         ]);
         $this->addBehavior('Search.Search');
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new',
-                    'updated' => 'always',
-                ],
+        $this->addBehavior('Timestamp');
+        $this->addBehavior('Croogo/Core.Copyable', [
+            'stripFields' => [
+                'model_taxonomies',
             ],
         ]);
 
@@ -58,13 +54,6 @@ class NodesTable extends CroogoTable
         $this->belongsTo('Parent', [
             'className' => 'Croogo/Nodes.Nodes',
             'foreignKey' => 'parent_id',
-        ]);
-
-        $this->belongsTo('Types', [
-            'className' => 'Croogo/Nodes.Types',
-            'foreignKey' => 'type',
-            'bindingKey' => 'alias',
-            'propertyName' => 'node_type',
         ]);
 
         $this->searchManager()
@@ -97,7 +86,7 @@ class NodesTable extends CroogoTable
 
     protected function _initializeSchema(TableSchema $table)
     {
-        $table->columnType('visibility_roles', 'encoded');
+        $table->setColumnType('visibility_roles', 'encoded');
 
         return parent::_initializeSchema($table);
     }
@@ -154,9 +143,9 @@ class NodesTable extends CroogoTable
         $rules->isUnique(['slug', 'type'], __d('croogo', 'The slug has already been taken.'));
         $rules->add(function (Node $node) {
             if (($node->type === '') || ($node->type === null)) {
-                $node->type = 'node';
+                $node->type = 'post';
             }
-            if ($node->type === 'node') {
+            if ($node->type === 'post') {
                 return true;
             }
 
@@ -180,7 +169,7 @@ class NodesTable extends CroogoTable
      */
     public function saveNode(Node $node, $typeAlias = self::DEFAULT_TYPE)
     {
-        //		$node = $this->formatNode($node, $typeAlias);
+        // $node = $this->formatNode($node, $typeAlias);
         $event = Croogo::dispatchEvent('Model.Node.beforeSaveNode', $this, compact('node', 'typeAlias'));
         if ($event->isStopped()) {
             return $event->result;
@@ -318,14 +307,7 @@ class NodesTable extends CroogoTable
             ->andWhere([
                 $this->aliasField('status') . ' IN' => $this->status($options['roleId']),
             ])
-            ->contain([
-                'Taxonomies' => [
-                    'Terms',
-                    'Vocabularies',
-                ],
-                'Users',
-                'Types',
-            ]);
+            ->contain(['Users']);
     }
 
     public function findPromoted(Query $query)
@@ -337,7 +319,19 @@ class NodesTable extends CroogoTable
 
     public function beforeSave(Event $event)
     {
-        $node = $event->data()['entity'];
+        $node = $event->getData()['entity'];
+
+        if ($node->isDirty('type') || $node->isDirty('slug')) {
+            $node->path = Router::url([
+                'prefix' => false,
+                'plugin' => 'Croogo/Nodes',
+                'controller' => 'Nodes',
+                'action' => 'view',
+                'type' => $node->type,
+                'slug' => $node->slug
+            ]);
+        }
+
         $event = Croogo::dispatchEvent('Model.Node.beforeSaveNode', $this, [
             'node' => $node,
             'typeAlias' => $node->type
@@ -349,7 +343,7 @@ class NodesTable extends CroogoTable
 
     public function afterSave(Event $event)
     {
-        $node = $event->data()['entity'];
+        $node = $event->getData()['entity'];
         $event = Croogo::dispatchEvent('Model.Node.afterSaveNode', $this, [
             'node' => $node,
             'typeAlias' => $node->type

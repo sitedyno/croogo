@@ -11,7 +11,6 @@ class CommentsSeed extends AbstractSeed
             'parent_id' => null,
             'model' => 'Croogo/Nodes.Nodes',
             'foreign_key' => '1',
-            'user_id' => '0',
             'name' => 'Mr Croogo',
             'email' => 'email@example.com',
             'website' => 'http://www.croogo.org',
@@ -25,8 +24,6 @@ class CommentsSeed extends AbstractSeed
             'comment_type' => 'comment',
             'lft' => '1',
             'rght' => '2',
-            'updated' => '2009-12-25 12:00:00',
-            'created' => '2009-12-25 12:00:00'
         ],
     ];
 
@@ -35,5 +32,4 @@ class CommentsSeed extends AbstractSeed
         $Table = $this->table('comments');
         $Table->insert($this->records)->save();
     }
-
 }
