@@ -57,6 +57,11 @@ class InstallManager
      */
     protected $_croogoPlugin;
 
+    public function __construct()
+    {
+        Configure::write('Trackable.Auth.User.id', 1);
+    }
+
     public static function versionCheck()
     {
         return [
@@ -148,7 +153,6 @@ class InstallManager
     public function installCompleted()
     {
         PluginManager::load('Croogo/Settings', ['routes' => true]);
-        Configure::write('Trackable.Auth.User', ['id' => 1]);
         $Setting = TableRegistry::get('Croogo/Settings.Settings');
         $Setting->removeBehavior('Cached');
         if (!function_exists('mcrypt_decrypt')) {

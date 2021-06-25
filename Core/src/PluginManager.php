@@ -768,7 +768,7 @@ class PluginManager extends Plugin
             try {
                 static::load($plugin);
             } catch (MissingPluginException $e) {
-                return __d('Plugin "%s" could not be actived.', $plugin);
+                return __d('croogo', 'Plugin "%s" could not be actived.', $plugin);
             }
 
             $this->addBootstrap($plugin);
@@ -1296,7 +1296,7 @@ class PluginManager extends Plugin
         Configure::config('settings', new DatabaseConfig());
         try {
             Configure::load('settings', 'settings');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error($e->getMessage());
             Log::error('You can ignore the above error during installation');
         }
@@ -1324,7 +1324,11 @@ class PluginManager extends Plugin
             ]
         ]);
         Croogo::hookComponent('*', 'Croogo/Acl.Filter');
-        Croogo::hookComponent('*', 'Security');
+        Croogo::hookComponent('*', [
+            'Security' => [
+                'blackHoleCallback' => '_securityError',
+            ],
+        ]);
         Croogo::hookComponent('*', 'Acl.Acl');
         Croogo::hookComponent('*', 'Auth');
         Croogo::hookComponent('*', 'Flash');
