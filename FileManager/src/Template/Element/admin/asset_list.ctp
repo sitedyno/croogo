@@ -126,9 +126,10 @@ foreach ($attachments as $attachment) :
             'title' => $attachment->title
         ]);
     elseif ($mimeType === 'video') :
-        $thumbnail = $this->Html->media($attachment->asset->path, [
+        $thumbnail = $this->Html->media([$attachment->asset->path], [
             'width' => 200,
-            'controls' => true,
+            'controls', 'playsinline',
+            'poster' => $attachment->asset->poster_path ?: null,
         ]);
     else :
         $imgUrl = $this->Html->image('Croogo/Core./img/icons/page_white.png') . ' ';
@@ -204,14 +205,16 @@ foreach ($attachments as $attachment) :
         'tooltip' => __d('croogo', 'Edit Attachment'),
     ]);
 
-    if ($mimeType === 'image') :
+    if ($mimeType === 'image'):
         $action[] = $this->Croogo->adminRowAction('', $detailUrl, [
             'icon' => 'suitcase',
             'escapeTitle' => false,
             'data-toggle' => 'browse',
             'tooltip' => __d('croogo', 'View other sizes'),
         ]);
+    endif;
 
+    if ($mimeType === 'image' || $mimeType == 'video'):
         $action[] = $this->Croogo->adminRowAction('', $changeTypeUrl, [
             'icon' => 'star',
             'escapeTitle' => false,

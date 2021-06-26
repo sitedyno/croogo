@@ -2,12 +2,18 @@
 
 use Cake\Core\Configure;
 
+$this->loadHelper('Croogo/FileManager.FileManager');
+
 if (isset($node)) :
     $mastheadTitle = $node->title;
     $mastheadSubheading = $node->excerpt;
     $mastheadWrapperClass = "post-heading";
     if (isset($node->linked_assets['FeaturedImage'][0])) :
-        $bgImagePath = $node->linked_assets['FeaturedImage'][0]->path;
+        $media = $node->linked_assets['FeaturedImage'][0];
+        $bgImagePath = $media->path;
+        if (isset($media->poster_path)):
+            $posterPath = $media->poster_path;
+        endif;
     endif;
 elseif (isset($contact)) :
     $mastheadTitle = $contact->title;
@@ -31,9 +37,13 @@ if (!isset($bgImagePath)) :
 endif;
 
 $bgImageUrl = $this->Url->webroot($bgImagePath);
-$mastheadAttrs = [
-    "background-image: url($bgImageUrl)",
-];
+list($mimeType, $mimeSubtype) = explode('/', $this->FileManager->filename2mime($bgImageUrl));
+$mastheadAttrs = [];
+if ($mimeType == 'image'):
+    $mastheadAttrs = [
+        "background-image: url($bgImageUrl)",
+    ];
+endif;
 
 if (isset($contact)) :
     $mastheadAttrs[] = 'background-color: #222';
@@ -41,8 +51,36 @@ endif;
 
 $mastheadStyle = $mastheadAttrs ? implode(';', $mastheadAttrs) : null;
 
+if (isset($node->meta)):
+    $ogVideo = collection($node->meta)->firstMatch(['key' => 'og:video']);
+    if ($ogVideo && substr($ogVideo->value, -3) == 'mp4'):
+        $bgImageUrl = $ogVideo->value;
+        $mimeType = 'video';
+    endif;
+endif;
+
 ?>
 <header class="masthead" style="<?= $mastheadStyle ?>">
+<?php if ($mimeType === 'video'): ?>
+    <?= $this->Html->media([$bgImageUrl], [
+            'tag' => 'video',
+            'fullBase' => true,
+            'controls', 'playsinline',
+            'poster' => isset($posterPath) ? $posterPath : null,
+    ]) ?>
+<?php endif; ?>
+
+<?php if (isset($ogVideo) && strstr($ogVideo->value, 'youtu.be') !== false): ?>
+    <?php $parsed = parse_url($ogVideo->value); ?>
+    <iframe src="https://youtube.com/embed<?= $parsed['path'] ?>?controls=0"
+        class="youtube-embed"
+        allowfullscreen
+        frameborder="0"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+    >
+    </iframe>
+<?php endif; ?>
+
     <div class="container">
 
         <?php if (empty($mastheadWrapperClass)) : ?>
