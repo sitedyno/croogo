@@ -34,6 +34,13 @@ final class DbConfigReplacer extends NodeVisitorAbstract {
                             }
                         }
                     }
+                    if ($datasource->key->value === 'test') {
+                        foreach ($datasource->value->items as $item) {
+                            if (in_array($item->key->value, $replaceKeys) && !empty($this->config['test-' . $item->key->value])) {
+                                $item->value->value = $this->config['test-' . $item->key->value];
+                            }
+                        }
+                    }
                 }
             }
         }
