@@ -138,20 +138,7 @@ class InstallManager
         }
 
         $configPath = ROOT . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php';
-<<<<<<< HEAD
-        foreach (['host', 'username', 'password', 'database', 'driver'] as $field) {
-            if (isset($config[$field]) && (!empty($config[$field] || $field == 'password'))) {
-                $this->_updateDatasourceConfig($configPath, $field, $config[$field]);
-            }
-        }
-        foreach (['test-host', 'test-username', 'test-password', 'test-database', 'test-driver'] as $field) {
-            if (isset($config[$field]) && (!empty($config[$field] || $field == 'password'))) {
-                $this->_updateTestDatasourceConfig($configPath, $field, $config[$field]);
-            }
-        }
-=======
         DatasourceConfigUpdater::update($configPath, $config);
->>>>>>> 4.0.7
 
         return true;
     }
