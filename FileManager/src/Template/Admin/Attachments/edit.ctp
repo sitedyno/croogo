@@ -54,9 +54,9 @@ $this->append('tab-content');
         $this->end();
 
         $this->append('panels');
-        $redirect = ['action' => 'index'];
+        $redirect = $this->getRequest()->getQuery('redirect') ?: ['action' => 'index'];
         if ($this->getRequest()->getSession()->check('Wysiwyg.redirect')) {
-            $redirect = $this->getRequest()->getSsession()->read('Wysiwyg.redirect');
+            $redirect = $this->getRequest()->getSession()->read('Wysiwyg.redirect');
         }
         if ($this->getRequest()->getQuery('model')) {
             $redirect = array_merge(
@@ -98,6 +98,15 @@ $this->append('tab-content');
             $this->Html->link($imgUrl, $attachment->asset->path, [
                 'data-toggle' => 'lightbox',
                 'escapeTitle' => false,
+            ]);
+            echo $this->Html->endBox();
+        endif;
+
+        if (preg_match('/^video/', $attachment->asset->mime_type)) :
+            echo $this->Html->beginBox(__d('croogo', 'Preview')) .
+            $this->Html->media($attachment->asset->path, [
+                'width' => 200,
+                'controls' => true,
             ]);
             echo $this->Html->endBox();
         endif;

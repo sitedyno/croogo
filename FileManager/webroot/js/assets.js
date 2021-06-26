@@ -2,7 +2,7 @@ var Assets = {};
 
 Assets.reloadAssetsTab = function(e) {
   e && e.preventDefault();
-  var $tab = $('a[data-toggle="tab"][href$="-assets"]');
+  var $tab = $('a[data-toggle="tab"][href$="-media"]');
   var url = $('.asset-list').data('url');
   var loadingMsg = '<span><i class="' + Admin.iconClass('spinner') + ' fa-spin"></i> Loading. Please wait...</span>';
   $tab.tab('show');
@@ -24,7 +24,7 @@ Assets.popup = function(e) {
   var options = 'menubar=no,resizable=yes,chrome=yes,centerScreen=yes,scrollbars=yes' +
     ',top=' + top + ',left=' + left +
     ',width=' + width + ',height=' + height;
-  var $tab = $('a[data-toggle="tab"][href$="-assets"]').tab('show');
+  var $tab = $('a[data-toggle="tab"][href$="-media"]').tab('show');
   window.open(url, 'Asset Browser', options).focus();
   return false;
 };
@@ -117,7 +117,11 @@ Assets.unregisterAssetUsage = function(e) {
 Assets.resizeAsset = function(e) {
   e && e.preventDefault();
 
-  var width = parseInt(prompt('Resize to width: ', 300));
+  var inputWidth = prompt('Resize to width: ', 300)
+  if (inputWidth === null) {
+    return;
+  }
+  var width = parseInt(inputWidth);
   if (isNaN(width)) {
     return alert('Invalid number');
   }
@@ -130,6 +134,9 @@ Assets.resizeAsset = function(e) {
     method: 'post',
     url: $target.attr('href'),
     data: postData,
+    headers: {
+      'X-CSRF-Token': Admin.getCookie('csrfToken'),
+    },
     accepts: {
       'json': 'application/json',
     },
@@ -144,7 +151,7 @@ Assets.resizeAsset = function(e) {
   })
   .fail(function(xhr, textStatus, errorThrown) {
     console.log(xhr, textStatus, errorThrown);
-    if (typeof xhr.responseJSON.message !== 'undefined') {
+    if (xhr.responseJSON && typeof xhr.responseJSON.message !== 'undefined') {
       return alert(xhr.responseJSON.message);
     }
     return alert(errorThrown);
