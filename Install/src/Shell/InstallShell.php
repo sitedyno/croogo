@@ -4,6 +4,7 @@ namespace Croogo\Install\Shell;
 
 use Cake\Cache\Cache;
 use Cake\Console\Shell;
+use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\Exception\PersistenceFailedException;
@@ -205,10 +206,11 @@ class InstallShell extends Shell
 
         try {
             $this->out('Setting up access control objects. Please wait...');
-            $generator = new AclGenerator();
-            $generator->setShell($this);
-            $generator->insertAcos(ConnectionManager::get('default'));
+            Plugin::routes(null);
+            $InstallManager->controller = false;
+            $InstallManager->setupAcos();
             $InstallManager->setupGrants();
+
         } catch (Exception $e) {
             $this->err('Error installing access control objects');
             $this->err($e->getMessage());
@@ -249,7 +251,8 @@ class InstallShell extends Shell
 
         try {
             $this->out('Setting up admin user. Please wait...');
-            $user = TableRegistry::getTableLocator()->get('Croogo/Install.Install')->addAdminUser($user);
+            Configure::write('Trackable.Auth.User.id', 1);
+            $user = TableRegistry::get('Croogo/Install.Install')->addAdminUser($user);
             $InstallManager->installCompleted();
         } catch (PersistenceFailedException $e) {
             $this->abort('Error creating admin user: ' . $e->getMessage());
