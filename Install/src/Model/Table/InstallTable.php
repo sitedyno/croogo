@@ -41,6 +41,7 @@ class InstallTable extends Table
         $Users->removeBehavior('Cached');
         $Roles = TableRegistry::get('Croogo/Users.Roles');
         $Roles->addBehavior('Croogo/Core.Aliasable');
+        $Roles->reload();
         $Users->getValidator('default')->remove('email')->remove('password');
         $user['name'] = $user['username'];
         $user['email'] = '';
