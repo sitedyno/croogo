@@ -92,23 +92,6 @@ class InstallManager
         return 'Unable to update Security.salt value.';
     }
 
-    protected function _updateTestDatasourceConfig($path, $field, $value)
-    {
-        $field = str_replace('test-', '', $field);
-        $config = file_get_contents($path);
-        $config = preg_replace(
-            str_replace('__FIELD__', $field, InstallManager::TEST_DATASOURCE_REGEX),
-            '$1' . addslashes($value) . '$2',
-            $config
-        );
-
-        if (function_exists('opcache_reset')) {
-            opcache_reset();
-        }
-
-        return file_put_contents($path, $config);
-    }
-
     public function createDatabaseFile($config)
     {
         $config += $this->defaultConfig;
