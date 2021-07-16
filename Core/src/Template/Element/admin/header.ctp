@@ -9,7 +9,7 @@ $dashboardUrl = (new StringConverter())->linkStringToArray(
 );
 
 ?>
-<header class="navbar navbar-expand-md navbar-dark bg-black fixed-top">
+<header class="navbar navbar-expand-md navbar-dark bg-black">
     <?= $this->Html->link(
     Configure::read('Site.title'),
     $dashboardUrl,
