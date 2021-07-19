@@ -61,14 +61,14 @@ class DateTimeWidget extends CakeDateTimeWidget
             }
         }
 
-        if ($val instanceof DateTimeInterface) {
-            $val = $val->format(DateTime::ATOM);
-        }
-
         $request = Router::getRequest();
         $timezone = $request->getSession()->read('Auth.User.timezone');
         if (!$timezone) {
             $timezone = Configure::read('App.defaultTimezone');
+        }
+        if ($val instanceof DateTimeInterface) {
+            $val = $val->setTimeZone(new \DateTimeZone($timezone));
+            $val = $val->format('Y-m-d H:i:00 O');
         }
 
         if (!$format) {
@@ -91,8 +91,6 @@ class DateTimeWidget extends CakeDateTimeWidget
                     class="form-control datetimepicker-input"
                     name="{$name}"
                     value="{$val}"
-                    data-target="#{$id}"
-                    data-toggle="datetimepicker"
                     $required
                 />
 html;

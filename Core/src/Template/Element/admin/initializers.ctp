@@ -6,7 +6,6 @@ $adminThemeScripts = <<<EOF
     Admin.formFeedback();
     Admin.extra();
     Admin.slideBoxToggle();
-    Admin.dateTimeFields();
     Admin.navigation();
     Admin.modal();
 
